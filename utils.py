@@ -14,7 +14,8 @@ def timestamp():
 class TimeAxisItem(pg.AxisItem):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setLabel(text='Time', units=None)
+        self.setLabel(text="<span style=\"color:black;font-size:20px\">" +
+                                   'Время' + "</span>", units=None)
         self.enableAutoSIPrefix(False)
         self.setTextPen(QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
         self.setPen(QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))

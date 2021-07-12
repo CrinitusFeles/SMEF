@@ -1,7 +1,8 @@
 import sys
 from random import randint
-
-from PyQt5 import QtCore
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtGui import QPen
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QApplication)
 import pyqtgraph as pg
 from pyqtgraph import InfiniteLine
@@ -22,24 +23,35 @@ class CustomPlot(QWidget):
 
 class CustomPlotWidget(pg.PlotWidget):
     def __init__(self, parent=None):
-        self.real_time_x_axis_flag = True
-        if self.real_time_x_axis_flag:
-            pg.PlotWidget.__init__(self, parent=parent, axisItems={'bottom': TimeAxisItem(orientation='bottom')})
-            self.setXRange(timestamp() - 50, timestamp() + 50)
-            self.x = []  # list(range(100))  # 100 time points
-            self.y = [[], [], [], [], []]  # [randint(0, 100) for _ in range(100)]
-            
-        else:
-            pg.PlotWidget.__init__(self, parent=parent)
-            self.x = []  # list(range(100))  # 100 time points
-            self.y = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]  # [randint(0, 100) for _ in range(100)]
-            self.setXRange(- 50, 50)
+
+        self.sliding_window_size = 60
+
+        pg.PlotWidget.__init__(self, parent=parent, axisItems={'bottom': TimeAxisItem(orientation='bottom')})
+        self.setXRange(timestamp() - self.sliding_window_size/2, timestamp() + self.sliding_window_size/2)
+        self.data = np.array([[], [], [], [], [], []])
+
+        self.getPlotItem().setLabel('left', "<span style=\"color:black;font-size:20px\">" +
+                               'Амплитуда' + "</span>", units="В/м")
+        self.getPlotItem().getAxis('left').setTextPen(QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+        self.getPlotItem().getAxis('left').setPen(QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+        font = QtGui.QFont()
+        font.setPixelSize(16)
+        self.getPlotItem().getAxis('left').setTickFont(font)
+        self.getPlotItem().getAxis('left').setLogMode(True)
 
         self.sensor1 = 0
         self.sensor2 = 0
         self.sensor3 = 0
         self.sensor4 = 0
         self.sensor5 = 0
+
+        self.minmax = np.array([
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0]
+        ])
 
         self.demonstrate_mode = 1
 
@@ -50,86 +62,81 @@ class CustomPlotWidget(pg.PlotWidget):
         legend.setOffset((500, 10))
 
         self.showGrid(x=True, y=True)
-        self.data_line1 = self.plot(x=self.x, y2=self.y[0], name="Датчик 1",  pen=pg.mkPen(color='g', width=2),
+        self.data_line1 = self.plot(x=self.data[0], y2=self.data[1], name="Датчик 1",  pen=pg.mkPen(color='g', width=2),
                                     symbol='o', symbolPen='g', symbolSize=2)
 
-        self.data_line2 = self.plot(x=self.x, y=self.y[1], name="Датчик 2", pen=pg.mkPen(color='r', width=2),
+        self.data_line2 = self.plot(x=self.data[0], y=self.data[2], name="Датчик 2", pen=pg.mkPen(color='r', width=2),
                                     symbol='o', symbolPen='r', symbolSize=2)
-        self.data_line3 = self.plot(x=self.x, y=self.y[2], name="Датчик 3", pen=pg.mkPen(color='b', width=2),
+        self.data_line3 = self.plot(x=self.data[0], y=self.data[3], name="Датчик 3", pen=pg.mkPen(color='b', width=2),
                                     symbol='o', symbolPen='b', symbolSize=2)
-        self.data_line4 = self.plot(x=self.x, y=self.y[3], name="Датчик 4", pen=pg.mkPen(color='y', width=2),
+        self.data_line4 = self.plot(x=self.data[0], y=self.data[4], name="Датчик 4", pen=pg.mkPen(color='y', width=2),
                                     symbol='o', symbolPen='y', symbolSize=2)
-        self.data_line5 = self.plot(x=self.x, y=self.y[4], name="Датчик 5", pen=pg.mkPen(color='c', width=2),
+        self.data_line5 = self.plot(x=self.data[0], y=self.data[5], name="Датчик 5", pen=pg.mkPen(color='c', width=2),
                                     symbol='o', symbolPen='y', symbolSize=2)
 
         self.timer = pg.QtCore.QTimer()
-        if not self.real_time_x_axis_flag:
-            # self.timer.setInterval(100)
-            pass
-        else:
-            self.timer.setInterval(300)
-            self.timer.timeout.connect(self.update_plot_data)
-            self.timer.start()
+
+        self.timer.setInterval(1000)
+        self.timer.timeout.connect(self.update_plot_data)
+        self.timer.start()
 
         self.condition = 0
         self.scroll_access = 0
 
-    # def wheelEvent(self, ev):
-    #     if self.scroll_access:
-    #         super().wheelEvent(ev)
+    def wheelEvent(self, ev):
+        # if self.scroll_access:
+        super().wheelEvent(ev)
+
+    def update_xrange(self):
+        self.setXRange(timestamp() - self.sliding_window_size - 5, timestamp() + 5)
 
     def update_plot_data(self):
         if self.condition:
+            if len(self.data[0]) > self.sliding_window_size:
+                self.data = np.delete(self.data, 0, axis=1)  # Remove the first
 
-            if len(self.x) > 400:
-                self.x = self.x[1:]  # Remove the first y element.
-                for i in range(len(self.y)):
-                    self.y[i] = self.y[i][1:]  # Remove the first
-            if self.real_time_x_axis_flag:
-                self.x.append(timestamp())
-                self.setXRange(timestamp() - 50, timestamp() + 5)
-            else:
-                self.x.append(self.x[-1] + 1)  # Add a new value 1 higher than the last.
-                self.setXRange(self.x[-1] - 48, self.x[-1] + 2)
+            x_value = timestamp()
+            measure1 = randint(0, 100)
+            measure2 = np.cos(x_value)*20+50
+            measure3 = np.sin(x_value)*20+50
+            measure4 = np.sin(x_value)*10+200
+            measure5 = np.sin(x_value)*2+400
 
             if self.demonstrate_mode:
-                self.y[0].append(randint(0, 100))  # Add a new random value.
-                self.data_line1.setData(self.x, self.y[0])  # Update the data.
 
-                # print(np.cos(self.x[-1]))
-                self.y[1].append(np.cos(self.x[-1])*20+50)  # Add a new random value.
-                self.data_line2.setData(self.x, self.y[1])  # Update the data.
+                for i in np.nditer(self.minmax.reshape(1, 15)):
+                    pass
 
-                self.y[2].append(np.sin(self.x[-1])*20+50)  # Add a new random value.
-                self.data_line3.setData(self.x, self.y[2])  # Update the data.
+                new_data = np.array([x_value, measure1, measure2, measure3, measure4, measure5]).reshape(6, 1)
+                self.data = np.hstack((self.data, new_data))
+                self.data_line1.setData(self.data[0], self.data[1])  # Update the data.
+                self.data_line2.setData(self.data[0], self.data[2])  # Update the data.
+                self.data_line3.setData(self.data[0], self.data[3])  # Update the data.
+                self.data_line4.setData(self.data[0], self.data[4])  # Update the data.
+                self.data_line4.setData(self.data[0], self.data[5])  # Update the data.
 
-                self.y[3].append(np.sin(self.x[-1])*10+200)  # Add a new random value.
-                self.data_line4.setData(self.x, self.y[3])  # Update the data.
-
-                self.y[4].append(np.sin(self.x[-1])*2+400)  # Add a new random value.
-                self.data_line4.setData(self.x, self.y[4])  # Update the data.
 
             else:
-                self.y[0].append(self.sensor1)
+                self.y[0] = np.append(self.y[0], self.sensor1)
                 self.data_line1.setData(self.x, self.y[0])
 
-                self.y[1].append(self.sensor2)
+                self.y[1] = np.append(self.y[1], self.sensor2)
                 self.data_line2.setData(self.x, self.y[1])
 
-                self.y[2].append(self.sensor3)
+                self.y[2] = np.append(self.y[2], self.sensor3)
                 self.data_line3.setData(self.x, self.y[2])
 
-                self.y[3].append(self.sensor4)
+                self.y[3] = np.append(self.y[3], self.sensor4)
                 self.data_line4.setData(self.x, self.y[3])
 
-                self.y[4].append(self.sensor5)
+                self.y[4] = np.append(self.y[4], self.sensor5)
                 self.data_line5.setData(self.x, self.y[3])
 
     def clear_plot(self):
         if self.real_time_x_axis_flag:
             self.setXRange(timestamp() - 50, timestamp() + 50)
-            self.x = []  # list(range(100))  # 100 time points
-            self.y = [[], [], [], [], []]  # [randint(0, 100) for _ in range(100)]
+            self.x = np.array([], int)  # list(range(100))  # 100 time points
+            self.y = np.array([[], [], [], [], []])  # [randint(0, 100) for _ in range(100)]
         else:
             self.setXRange(self.x[-1] - 48, self.x[-1] + 2)
             self.x = [0, 0]  # list(range(100))  # 100 time points

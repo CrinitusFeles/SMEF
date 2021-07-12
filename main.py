@@ -1,7 +1,10 @@
 import socket
 import os
+from tabulate import tabulate
+import pandas as pd
 import subprocess
 import sys
+import openpyxl
 import time
 import pyqtgraph as pg
 from pyqtgraph import InfiniteLine
@@ -87,16 +90,23 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
         # self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # self.sock.connect((host, port1))
         # self.sock.settimeout(1)
-
         self.generator_settings_widget = GeneratorSettings()
         self.session_settings_widget = NewSession()
+        df = None
 
         self.start_button.pressed.connect(self.new_session)
         self.graph_start_button.pressed.connect(self.start_plot)
         self.open_generator_button.pressed.connect(self.open_generator_settings)
         self.open_button.pressed.connect(self.open_session)
         self.checkBox_6.stateChanged.connect(self.norma_checked)
-        self.graph_save_button.pressed.connect(self.copy_image)
+        self.slide_window_time_spinbox.valueChanged.connect(self.change_sliding_window_size)
+        self.norma_val_spinbox.valueChanged.connect(self.norma_checked)
+        self.copy_graph_button.pressed.connect(self.copy_image)
+        self.units_rbutton1.toggled.connect(self.update_units)
+        self.units_rbutton2.toggled.connect(self.update_units)
+        self.units_rbutton3.toggled.connect(self.update_units)
+        self.tittle_line_edit.textChanged.connect(self.set_title)
+        self.copy_data_button.pressed.connect(self.copy_data)
 
         self.data_update_timer = QtCore.QTimer()
         self.data_update_timer.timeout.connect(self.read_probe_data)
@@ -166,22 +176,33 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
         if self.graph_start_button.text() == 'Старт':
             self.data_update_timer.start(300)
             self.customplot.pgcustom.start()
-            self.graph_start_button.setText('Стоп')
-        elif self.graph_start_button.text() == 'Стоп':
+            self.graph_start_button.setText('Пауза')
+        elif self.graph_start_button.text() == 'Пауза':
             self.customplot.pgcustom.stop()
             self.data_update_timer.stop()
             self.graph_start_button.setText('Старт')
 
-    def norma_checked(self, state):
+    def norma_checked(self):
         # line = InfiniteLine(pos=1.0, pen=pg.mkPen('r', width=13))
         # self.customplot.pgcustom.addItem(line)
+        val = self.norma_val_spinbox.value()
+        state = self.checkBox_6.checkState()
+        if self.customplot.pgcustom.infinit_line is not None:
+            self.customplot.pgcustom.removeItem(self.customplot.pgcustom.infinit_line)
+            self.customplot.pgcustom.infinite_line = None
         if state == 2:
-            self.customplot.pgcustom.infinite_line = self.customplot.pgcustom.addLine(x=None, y=0.8, pen=pg.mkPen('r', width=3), label='                                                                                                               norma')
+            self.customplot.pgcustom.infinit_line = self.customplot.pgcustom.addLine(
+                x=None, y=val, pen=pg.mkPen('r', width=3), label='                                                     '
+                                                                 '                                                     '
+                                                                 '     norma')
         else:
-            self.customplot.pgcustom.removeItem( self.customplot.pgcustom.infinite_line)
+            self.customplot.pgcustom.removeItem( self.customplot.pgcustom.infinit_line)
+            self.customplot.pgcustom.infinit_line = None
+            print(self.customplot.pgcustom.infinit_line is None)
             pass
 
-    def converter(self, value, mode):
+    @staticmethod
+    def converter(value, mode):
         if mode == 1:  # В/м -> дБмкВ/м
             return 20 * np.log10(value * 10**6)
         elif mode == 2:  # В/м -> Вт/м2
@@ -200,13 +221,76 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
             app.clipboard().setMimeData(data)
             exporter.export(file_name)
             # os.remove('x:/SMEP/' + file_name)
-
-            x1 = datetime.datetime.fromtimestamp(self.customplot.pgcustom.visibleRange().getCoords()[0]).strftime("%d.%m.%Y\n%H:%M:%S")
-            x2 = datetime.datetime.fromtimestamp(self.customplot.pgcustom.visibleRange().getCoords()[2]).strftime("\n%d.%m.%Y\n%H:%M:%S")
-            print(x1, x2)
             
         except Exception as ex:
             print(ex)
+
+    def copy_data(self):
+        x1_timestamp = self.customplot.pgcustom.visibleRange().getCoords()[0]
+        x2_timestamp = self.customplot.pgcustom.visibleRange().getCoords()[2]
+        x = self.customplot.pgcustom.data[0]
+        mask = np.array((x > x1_timestamp) & (x < x2_timestamp))
+        data = self.customplot.pgcustom.data[:, mask]
+        self.df = pd.DataFrame({'Timestamp': data[0].astype(int),
+                                'Time': [datetime.datetime.fromtimestamp(x).strftime("%H:%M:%S \\ %d.%m.%Y") for x in
+                                         data[0].astype(int)],
+                                'Sensor1': data[1],
+                                'Sensor2': data[2],
+                                'Sensor3': data[3],
+                                'Sensor4': data[4],
+                                'Sensor5': data[5]})
+        print(self.df.to_markdown())
+        self.df.to_clipboard()
+
+    def change_sliding_window_size(self):
+        val = self.slide_window_time_spinbox.value() * 60
+        self.customplot.pgcustom.sliding_window_size = val
+
+    def update_units(self):
+        try:
+            if self.units_rbutton1.isChecked():
+                state = 'В/м'
+                self.customplot.pgcustom.getPlotItem().getAxis('left').setLogMode(False)
+            elif self.units_rbutton2.isChecked():
+                state = 'дБмкВ/м'
+                self.customplot.pgcustom.getPlotItem().getAxis('left').setLogMode(True)
+            else:
+                state = 'Вт/м2'
+                self.customplot.pgcustom.getPlotItem().getAxis('left').setLogMode(False)
+            self.norma_unit_label.setText(state)
+        except Exception as ex:
+            print(ex)
+
+    def set_title(self):
+        new_tittle = self.tittle_line_edit.text()
+        item = self.customplot.pgcustom.getPlotItem()
+        item.setTitle("<span style=\"color:black;font-size:30px\">" + new_tittle + "</span>")
+
+    def set_y_axis_label(self):
+        self.customplot.pgcustom.getPlotItem().setLabel('left', "<span style=\"color:black;font-size:20px\">" +
+                                                        self.plot_y_label_line_edit.text() + "</span>", units="°C")
+
+    def set_x_axis_label(self):
+        self.customplot.pgcustom.getPlotItem().setLabel('bottom', "<span style=\"color:black;font-size:20px\">" +
+                                                        self.plot_x_label_line_edit.text() + "</span>")
+
+    def export_data(self):
+        try:
+            if self.session_settings_widget.xlsx_checkbox.isChecked():
+                self.df.to_excel('output.xlsx')
+            elif self.session_settings_widget.csv_checkbox.isChecked():
+                self.df.to_csv('output.csv')
+            elif self.session_settings_widget.md_checkbox.isChecked():
+                self.df.to_csv('output.md')
+            elif self.session_settings_widget.html_checkbox.isChecked():
+                self.df.to_csv('output.html')
+            elif self.session_settings_widget.txt_checkbox.isChecked():
+                self.df.to_csv(r'output.txt', header=None, sep=' ', mode='a')
+            elif self.session_settings_widget.tex_checkbox.isChecked():
+                self.df.to_latex('output.tex')
+        except Exception as ex:
+            print(ex)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

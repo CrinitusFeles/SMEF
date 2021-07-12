@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>310</width>
-    <height>406</height>
+    <width>334</width>
+    <height>420</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -65,30 +65,48 @@
    <item>
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
-      <string>Единицы</string>
+      <string>Сохранять Log в формате</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <widget class="QRadioButton" name="radioButton">
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="xlsx_checkbox">
         <property name="text">
-         <string>В/м</string>
+         <string>.xlsx</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QRadioButton" name="radioButton_2">
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="csv_checkbox">
         <property name="text">
-         <string>дБмкВ/м</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
+         <string>.csv</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QRadioButton" name="radioButton_3">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="txt_checkbox">
         <property name="text">
-         <string>Вт/м2</string>
+         <string>.txt</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="json_checkbox">
+        <property name="text">
+         <string>.json</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="html_checkbox">
+        <property name="text">
+         <string>.html</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="gbq_checkbox">
+        <property name="text">
+         <string>.gbq</string>
         </property>
        </widget>
       </item>
