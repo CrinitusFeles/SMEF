@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>334</width>
-    <height>420</height>
+    <width>431</width>
+    <height>569</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QVBoxLayout" name="verticalLayout_5">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -55,6 +55,13 @@
           <item>
            <widget class="QLineEdit" name="filename_line_edit"/>
           </item>
+          <item>
+           <widget class="QPushButton" name="generate_name_button">
+            <property name="text">
+             <string>generate</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
@@ -63,50 +70,70 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="QGroupBox" name="groupBox_4">
      <property name="title">
-      <string>Сохранять Log в формате</string>
+      <string>Подключенные датчики</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="xlsx_checkbox">
-        <property name="text">
-         <string>.xlsx</string>
-        </property>
-       </widget>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QCheckBox" name="s1_checkbox">
+          <property name="text">
+           <string>№1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="s2_checkbox">
+          <property name="text">
+           <string>№2</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="s3_checkbox">
+          <property name="text">
+           <string>№3</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="s4_checkbox">
+          <property name="text">
+           <string>№4</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="s5_checkbox">
+          <property name="text">
+           <string>№5</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="updtade_sensors_button">
+          <property name="text">
+           <string>Обновить</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="csv_checkbox">
-        <property name="text">
-         <string>.csv</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="txt_checkbox">
-        <property name="text">
-         <string>.txt</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="json_checkbox">
-        <property name="text">
-         <string>.json</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="html_checkbox">
-        <property name="text">
-         <string>.html</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="gbq_checkbox">
-        <property name="text">
-         <string>.gbq</string>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Описание сессии</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QTextBrowser" name="session_comment_editor">
+        <property name="readOnly">
+         <bool>false</bool>
         </property>
        </widget>
       </item>

@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_10">
+   <layout class="QHBoxLayout" name="horizontalLayout_10">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
@@ -111,57 +111,32 @@
           <item>
            <widget class="QGroupBox" name="groupBox">
             <property name="title">
-             <string>Параметры скользящего окна</string>
+             <string>Размер скользящего окна</string>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_4">
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout">
+              <layout class="QHBoxLayout" name="horizontalLayout">
                <item>
-                <widget class="QLabel" name="label_2">
-                 <property name="text">
-                  <string>Размер скользящего окна</string>
+                <widget class="QSpinBox" name="slide_window_time_spinbox">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>120</number>
+                 </property>
+                 <property name="value">
+                  <number>1</number>
                  </property>
                 </widget>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout">
-                 <item>
-                  <widget class="QSpinBox" name="slide_window_time_spinbox">
-                   <property name="minimum">
-                    <number>1</number>
-                   </property>
-                   <property name="maximum">
-                    <number>9999</number>
-                   </property>
-                   <property name="value">
-                    <number>1</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QComboBox" name="time_combobox">
-                   <item>
-                    <property name="text">
-                     <string>мин</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>час</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                </layout>
+                <widget class="QLabel" name="label_2">
+                 <property name="text">
+                  <string>мин</string>
+                 </property>
+                </widget>
                </item>
               </layout>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="sliding_checkbox">
-               <property name="text">
-                <string>Следование</string>
-               </property>
-              </widget>
              </item>
             </layout>
            </widget>
@@ -173,7 +148,7 @@
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_9">
              <item>
-              <widget class="QCheckBox" name="checkBox_6">
+              <widget class="QCheckBox" name="norma_checkbox">
                <property name="text">
                 <string>Норма</string>
                </property>
@@ -195,7 +170,7 @@
              <item>
               <widget class="QLabel" name="norma_unit_label">
                <property name="text">
-                <string>дБмкВ/м</string>
+                <string>В/м</string>
                </property>
               </widget>
              </item>
@@ -273,8 +248,8 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>350</width>
-            <height>230</height>
+            <width>330</width>
+            <height>220</height>
            </size>
           </property>
           <property name="maximumSize">
@@ -348,6 +323,9 @@
              <property name="text">
               <string>В/м</string>
              </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
            <item>
@@ -356,7 +334,7 @@
               <string>дБмкВ/м</string>
              </property>
              <property name="checked">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -364,6 +342,48 @@
             <widget class="QRadioButton" name="units_rbutton3">
              <property name="text">
               <string>Вт/м2</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_7">
+          <property name="title">
+           <string>Период опроса датчиков</string>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <widget class="QSpinBox" name="measure_interval_line_edit">
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>60</number>
+             </property>
+             <property name="value">
+              <number>1</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>сек</string>
              </property>
             </widget>
            </item>

@@ -8,6 +8,9 @@ import pyqtgraph as pg
 from pyqtgraph import InfiniteLine
 import numpy as np
 from utils import TimeAxisItem, timestamp
+import app_logger
+
+logger = app_logger.get_logger(__name__)
 
 
 class CustomPlot(QWidget):
@@ -28,16 +31,20 @@ class CustomPlotWidget(pg.PlotWidget):
 
         pg.PlotWidget.__init__(self, parent=parent, axisItems={'bottom': TimeAxisItem(orientation='bottom')})
         self.setXRange(timestamp() - self.sliding_window_size/2, timestamp() + self.sliding_window_size/2)
-        self.data = np.array([[], [], [], [], [], []])
+        self.data = np.array([[], [], [], [], [], []], float)
 
         self.getPlotItem().setLabel('left', "<span style=\"color:black;font-size:20px\">" +
                                'Амплитуда' + "</span>", units="В/м")
-        self.getPlotItem().getAxis('left').setTextPen(QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        self.getPlotItem().getAxis('left').setPen(QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+        self.left_axis = self.getPlotItem().getAxis('left')
+        bottom_axis = self.getPlotItem().getAxis('bottom')
+
+        self.left_axis.setTextPen(QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+        self.left_axis.setPen(QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
         font = QtGui.QFont()
         font.setPixelSize(16)
-        self.getPlotItem().getAxis('left').setTickFont(font)
-        self.getPlotItem().getAxis('left').setLogMode(True)
+        # left_axis.setStyle(stopAxisAtTick=(True, True))
+        self.left_axis.setTickFont(font)
+        self.left_axis.setLogMode(False)
 
         self.sensor1 = 0
         self.sensor2 = 0
@@ -52,36 +59,52 @@ class CustomPlotWidget(pg.PlotWidget):
             [0, 0, 0],
             [0, 0, 0]
         ])
+        self.demonstrate_mode = 0
 
-        self.demonstrate_mode = 1
-
-        self.infinit_line = None
+        self.infinite_line = None
 
         self.setBackground('#FFFFFF')
-        legend = self.addLegend()
-        legend.setOffset((500, 10))
+        self.legend = self.addLegend()
+        self.legend.setOffset((700, 10))
 
         self.showGrid(x=True, y=True)
-        self.data_line1 = self.plot(x=self.data[0], y2=self.data[1], name="Датчик 1",  pen=pg.mkPen(color='g', width=2),
-                                    symbol='o', symbolPen='g', symbolSize=2)
+        self.data_line = [None] * 5
 
-        self.data_line2 = self.plot(x=self.data[0], y=self.data[2], name="Датчик 2", pen=pg.mkPen(color='r', width=2),
-                                    symbol='o', symbolPen='r', symbolSize=2)
-        self.data_line3 = self.plot(x=self.data[0], y=self.data[3], name="Датчик 3", pen=pg.mkPen(color='b', width=2),
-                                    symbol='o', symbolPen='b', symbolSize=2)
-        self.data_line4 = self.plot(x=self.data[0], y=self.data[4], name="Датчик 4", pen=pg.mkPen(color='y', width=2),
-                                    symbol='o', symbolPen='y', symbolSize=2)
-        self.data_line5 = self.plot(x=self.data[0], y=self.data[5], name="Датчик 5", pen=pg.mkPen(color='c', width=2),
-                                    symbol='o', symbolPen='y', symbolSize=2)
+        self.line_colors = ['r', 'g', 'b', 'm', 'c']
+        self.line_width = [2, 2, 2, 2, 2]
+        self.line_symbol_size = [2, 2, 2, 2, 2]
+        self.line_symbol_pen = ['r', 'g', 'b', 'm', 'c']
+        self.line_symbol = ['o', 'o', 'o', 'o', 'o']
+        for i in range(5):
+            self.data_line[i] = self.plot(x=self.data[0], y2=self.data[i+1], name="Датчик " + str(i+1),
+                                          pen=pg.mkPen(color=self.line_colors[i], width=self.line_width[i]),
+                                          symbol=self.line_symbol[i], symbolPen=self.line_symbol_pen[i],
+                                          symbolSize=self.line_symbol_size[i])
 
-        self.timer = pg.QtCore.QTimer()
-
-        self.timer.setInterval(1000)
-        self.timer.timeout.connect(self.update_plot_data)
-        self.timer.start()
+        # self.timer = pg.QtCore.QTimer()
+        #
+        # self.timer.setInterval(1000)
+        # self.timer.timeout.connect(self.update_plot_data)
+        # self.timer.start()
 
         self.condition = 0
         self.scroll_access = 0
+
+    def init_data(self, sensor_list=None):
+        if sensor_list is None:
+            sensor_list = [True, True, True, True, True]
+        else:
+            self.data_line = [None] * 5
+            for i in range(5):
+                if sensor_list[i]:
+                    self.data_line[i] = self.plot(x=self.data[0], y2=self.data[i + 1], name="Датчик " + str(i + 1),
+                                                  pen=pg.mkPen(color=self.line_colors[i], width=self.line_width[i]),
+                                                  symbol=self.line_symbol[i], symbolPen=self.line_symbol_pen[i],
+                                                  symbolSize=self.line_symbol_size[i])
+            self.legend.clear()
+            for i in range(5):
+                if sensor_list[i]:
+                    self.legend.addItem(self.data_line[i], "Датчик " + str(i + 1))
 
     def wheelEvent(self, ev):
         # if self.scroll_access:
@@ -96,56 +119,45 @@ class CustomPlotWidget(pg.PlotWidget):
                 self.data = np.delete(self.data, 0, axis=1)  # Remove the first
 
             x_value = timestamp()
-            measure1 = randint(0, 100)
-            measure2 = np.cos(x_value)*20+50
-            measure3 = np.sin(x_value)*20+50
-            measure4 = np.sin(x_value)*10+200
-            measure5 = np.sin(x_value)*2+400
+            if self.left_axis.logMode:
+                measure1 = randint(0, 100) / 10**6
+                measure2 = (np.cos(x_value)*20+50) / 10**6
+                measure3 = (np.sin(x_value)*20+50) / 10**6
+                measure4 = (np.sin(x_value)*10+200) / 10**6
+                measure5 = ((np.sin(x_value)*10 + 10) / randint(0, 100)) / 10**6
+            else:
+                measure1 = randint(0, 100)
+                measure2 = np.cos(x_value)*20+50
+                measure3 = np.sin(x_value)*15+25
+                measure4 = np.cos(np.sin(x_value))*10+20
+                measure5 = np.cos(x_value)*10
 
             if self.demonstrate_mode:
-
-                for i in np.nditer(self.minmax.reshape(1, 15)):
-                    pass
-
                 new_data = np.array([x_value, measure1, measure2, measure3, measure4, measure5]).reshape(6, 1)
                 self.data = np.hstack((self.data, new_data))
-                self.data_line1.setData(self.data[0], self.data[1])  # Update the data.
-                self.data_line2.setData(self.data[0], self.data[2])  # Update the data.
-                self.data_line3.setData(self.data[0], self.data[3])  # Update the data.
-                self.data_line4.setData(self.data[0], self.data[4])  # Update the data.
-                self.data_line4.setData(self.data[0], self.data[5])  # Update the data.
+                for i in range(5):
+                    if self.data_line[i] is not None:
+                        self.data_line[i].setData(self.data[0], self.data[i+1])
 
+                self.minmax = np.row_stack((np.amin(self.data[1:], axis=1), np.mean(self.data[1:], axis=1),
+                                            np.amax(self.data[1:], axis=1)))
 
             else:
-                self.y[0] = np.append(self.y[0], self.sensor1)
-                self.data_line1.setData(self.x, self.y[0])
+                new_data = np.array([x_value, self.sensor1, self.sensor2, self.sensor3, self.sensor4, self.sensor5]).reshape(6, 1)
+                self.data = np.hstack((self.data, new_data))
+                for i in range(5):
+                    if self.data_line[i] is not None:
+                        self.data_line[i].setData(self.data[0], self.data[i+1])
 
-                self.y[1] = np.append(self.y[1], self.sensor2)
-                self.data_line2.setData(self.x, self.y[1])
-
-                self.y[2] = np.append(self.y[2], self.sensor3)
-                self.data_line3.setData(self.x, self.y[2])
-
-                self.y[3] = np.append(self.y[3], self.sensor4)
-                self.data_line4.setData(self.x, self.y[3])
-
-                self.y[4] = np.append(self.y[4], self.sensor5)
-                self.data_line5.setData(self.x, self.y[3])
+                self.minmax = np.row_stack((np.amin(self.data[1:], axis=1), np.mean(self.data[1:], axis=1),
+                                            np.amax(self.data[1:], axis=1)))
 
     def clear_plot(self):
-        if self.real_time_x_axis_flag:
-            self.setXRange(timestamp() - 50, timestamp() + 50)
-            self.x = np.array([], int)  # list(range(100))  # 100 time points
-            self.y = np.array([[], [], [], [], []])  # [randint(0, 100) for _ in range(100)]
-        else:
-            self.setXRange(self.x[-1] - 48, self.x[-1] + 2)
-            self.x = [0, 0]  # list(range(100))  # 100 time points
-            self.y = [[0, 0], [0, 0], [0, 0], [0, 0]]  # [randint(0, 100) for _ in range(100)]
-        self.data_line1.setData(self.x, self.y[0])
-        self.data_line2.setData(self.x, self.y[1])
-        self.data_line3.setData(self.x, self.y[2])
-        self.data_line4.setData(self.x, self.y[3])
-        self.data_line5.setData(self.x, self.y[4])
+        self.setXRange(timestamp() - self.sliding_window_size/2, timestamp() + self.sliding_window_size/2)
+        self.data = np.array([[], [], [], [], [], []], float)
+        for i in range(5):
+            if self.data_line[i] is not None:
+                self.data_line[i].setData(self.data[0], self.data[i+1])
 
     def start(self):
         self.condition = 1
