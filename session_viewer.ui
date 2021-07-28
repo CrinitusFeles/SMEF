@@ -86,6 +86,25 @@
       </layout>
      </item>
      <item>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Описание сессии</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QTextBrowser" name="session_description_browser">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
       <widget class="QTableWidget" name="viewer_minmax_values_table">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
@@ -214,10 +233,10 @@
            <number>-199</number>
           </property>
           <property name="maximum">
-           <number>0</number>
+           <number>200</number>
           </property>
           <property name="value">
-           <number>-146</number>
+           <number>0</number>
           </property>
          </widget>
         </item>

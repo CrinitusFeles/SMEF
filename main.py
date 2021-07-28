@@ -32,6 +32,7 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
         self.config_file_name = 'config.json'
         self.output_folder = os.getcwd() + '\\output'
         self.event_log_folder = os.getcwd() + '\\event_log'
+        self.images_folder = self.output_folder + '\\images'
         if not os.path.isdir(self.output_folder):
             logger.info(f'Create new output folder {self.output_folder}')
             os.mkdir(self.output_folder)
@@ -41,7 +42,8 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
         self.sensors_port = [4001, 4002, 4003, 4004, 4005]
         self.sensors_amount = 0
         self.generator_ip = ''
-        self.alive_sensors = [False, False, False, False, False]
+        self.alive_sensors = [False, False, False, False, False]  # sensors with TCP connection
+        self.active_sensors = [False, False, False, False, False]  # checkbox status
         self.threads = [None, None, None, None, None]
         self.lock = Lock()
         self.socket = [socket.socket(socket.AF_INET, socket.SOCK_STREAM),
@@ -52,7 +54,6 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
 
         self.send_all_sensors_parallel(self.threads, self.connect)
 
-        print(self.socket)
         print(self.alive_sensors)
         self.generator_settings_widget = GeneratorSettings()
         self.connections_settings_widget = None
@@ -61,6 +62,8 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
         self.config_obj = None
         self.df = None
         self.table = None
+
+        self.app = app
 
         self.start_button.pressed.connect(self.new_session)
         self.stop_button.pressed.connect(self.stop_session)
@@ -162,26 +165,51 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
             print(ex)
             return False
 
+    def disconnect(self, sock):
+        try:
+            sock.close()
+            logger.info(f'{sock} disconnected')
+            return False
+        except Exception as ex:
+            logger.error(f'Socket disconnection error')
+            return False
+
     def update_sensors(self):
-        self.send_all_sensors_parallel(self.threads, read_sensor_ident)
+        self.send_all_sensors_parallel(self.threads, self.disconnect)
+        self.socket = [socket.socket(socket.AF_INET, socket.SOCK_STREAM),
+                       socket.socket(socket.AF_INET, socket.SOCK_STREAM),
+                       socket.socket(socket.AF_INET, socket.SOCK_STREAM),
+                       socket.socket(socket.AF_INET, socket.SOCK_STREAM),
+                       socket.socket(socket.AF_INET, socket.SOCK_STREAM)]
+        self.send_all_sensors_parallel(self.threads, self.connect)
         self.set_enable_sensors_checkbox()
 
     def set_enable_sensors_checkbox(self):
         if not self.alive_sensors[0]:
             self.session_settings_widget.s1_checkbox.setChecked(False)
             self.session_settings_widget.s1_checkbox.setEnabled(False)
+        else:
+            self.session_settings_widget.s1_checkbox.setEnabled(True)
         if not self.alive_sensors[1]:
             self.session_settings_widget.s2_checkbox.setChecked(False)
             self.session_settings_widget.s2_checkbox.setEnabled(False)
+        else:
+            self.session_settings_widget.s2_checkbox.setEnabled(True)
         if not self.alive_sensors[2]:
             self.session_settings_widget.s3_checkbox.setChecked(False)
             self.session_settings_widget.s3_checkbox.setEnabled(False)
+        else:
+            self.session_settings_widget.s3_checkbox.setEnabled(True)
         if not self.alive_sensors[3]:
             self.session_settings_widget.s4_checkbox.setChecked(False)
             self.session_settings_widget.s4_checkbox.setEnabled(False)
+        else:
+            self.session_settings_widget.s4_checkbox.setEnabled(True)
         if not self.alive_sensors[4]:
             self.session_settings_widget.s5_checkbox.setChecked(False)
             self.session_settings_widget.s5_checkbox.setEnabled(False)
+        else:
+            self.session_settings_widget.s5_checkbox.setEnabled(True)
 
     def send_all_sensors_parallel(self, threads, function):
         for sock, port, i in zip(self.socket, self.sensors_port, range(5)):
@@ -208,21 +236,21 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
         if file_dialog.exec_() == QtWidgets.QDialog.Accepted:
             file_full_path = str(file_dialog.selectedFiles()[0])
             print(file_full_path)
-            log = pd.read_csv(file_full_path, sep=';')
-            try:
-                del log['Time']
-            except Exception as ex:
+            log = pd.read_csv(file_full_path, sep=';', decimal=',')
+            print(list(log))
+            if 'Time' in log:
+                self.viewer = SessionViewer(data=log)
+                self.viewer.show()
+            else:
                 logger.error(f'Incorrect log file {file_full_path}')
-                QMessageBox.warning(self, 'Внимание!', "Выбран некорректный файл лога.", QMessageBox.Ok,
-                                        QMessageBox.Ok)
+                QMessageBox.warning(self, 'Внимание!', "Выбран некорректный файл лога.", QMessageBox.Ok, QMessageBox.Ok)
                 return
 
             # data = pd.concat([log['Timestamp'], log['Sensor1'], log['Sensor2'], log['Sensor3'], log['Sensor4'],
             #                   log['Sensor5']], axis=1)
             # table = pd.concat([log['min'], log['aver'], log['max']], axis=1)
             # print(table)
-            self.viewer = SessionViewer(data=log)
-            self.viewer.show()
+
             # self.path_line_edit.setText(file_full_path)
 
     def send_to_connected_sensors(self, sock, threads):
@@ -249,28 +277,41 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
         self.customplot.pgcustom.sensor5 = fields[4][3]
         self.customplot.pgcustom.update_plot_data()
 
-        with open(self.session_settings_widget.path_line_edit.text() + '\\' +
-                  self.session_settings_widget.filename_line_edit.text() + '.csv', 'a') as log:
-            log_string = str(time.time()) + ';' + str(time.strftime("%H:%M:%S \\ %d.%m.%Y")) + ';'
-            if self.session_settings_widget.s1_checkbox.isChecked():
-                log_string += str(fields[0][3]).replace('.', ',') + ';'
-            if self.session_settings_widget.s2_checkbox.isChecked():
-                log_string += str(fields[1][3]).replace('.', ',') + ';'
-            if self.session_settings_widget.s3_checkbox.isChecked():
-                log_string += str(fields[2][3]).replace('.', ',') + ';'
-            if self.session_settings_widget.s4_checkbox.isChecked():
-                log_string += str(fields[3][3]).replace('.', ',') + ';'
-            if self.session_settings_widget.s5_checkbox.isChecked():
-                log_string += str(fields[4][3]).replace('.', ',') + ';'
-            log.write(log_string[:-1] + '\n')
+        if self.log_checkbox.isChecked():
+            try:
+                with open(self.session_settings_widget.path_line_edit.text() + '\\' +
+                          self.session_settings_widget.filename_line_edit.text() + '.csv', 'a+') as log:
+                    log_string = str(time.time()).replace('.', ',') + ';' + str(time.strftime("%H:%M:%S \\ %d.%m.%Y")) + ';'
+                    if self.session_settings_widget.s1_checkbox.isChecked():
+                        log_string += str(fields[0][3]).replace('.', ',') + ';'
+                    if self.session_settings_widget.s2_checkbox.isChecked():
+                        log_string += str(fields[1][3]).replace('.', ',') + ';'
+                    if self.session_settings_widget.s3_checkbox.isChecked():
+                        log_string += str(fields[2][3]).replace('.', ',') + ';'
+                    if self.session_settings_widget.s4_checkbox.isChecked():
+                        log_string += str(fields[3][3]).replace('.', ',') + ';'
+                    if self.session_settings_widget.s5_checkbox.isChecked():
+                        log_string += str(fields[4][3]).replace('.', ',') + ';'
+                    log.write(log_string[:-1] + '\n')
+            except Exception as ex:
+                logger.error(f'Write log file error: {ex}')
+                QMessageBox.warning(self, 'Warning!', 'Проблема с доступом к файлу лога', QMessageBox.Ok,
+                                        QMessageBox.Ok)
+                self.customplot.pgcustom.stop()
+                self.data_update_timer.stop()
+                self.graph_start_button.setText('Старт')
 
         minmax = self.customplot.pgcustom.minmax
         self.table = pd.DataFrame({'min': minmax[0], 'aver': minmax[1], 'max': minmax[2]})
         for i, row in self.table.iterrows():
             for j in range(self.minmax_values_table.columnCount()):
-                self.minmax_values_table.setItem(i, j, QTableWidgetItem('{:.2f}'.format(row[j])))
+                if self.active_sensors[i]:
+                    self.minmax_values_table.setItem(i, j, QTableWidgetItem('{:.2f}'.format(row[j])))
+                else:
+                    break
 
         self.customplot.pgcustom.update_plot_data()
+        app.processEvents()
         return fields
 
     def new_session(self):
@@ -283,12 +324,10 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
             self.data_update_timer.start(self.update_period)
             self.customplot.pgcustom.start()
             self.graph_start_button.setText('Пауза')
-            self.measure_button.setEnabled(False)
         elif self.graph_start_button.text() == 'Пауза':
             self.customplot.pgcustom.stop()
             self.data_update_timer.stop()
             self.graph_start_button.setText('Старт')
-            self.measure_button.setEnabled(True)
 
     def norma_checked(self):
         # line = InfiniteLine(pos=1.0, pen=pg.mkPen('r', width=13))
@@ -319,14 +358,19 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
     
     def copy_image(self):
         try:
+            if not os.path.isdir(self.images_folder):
+                logger.info(f'Create new images folder {self.images_folder}')
+                os.mkdir(self.images_folder)
+            else:
+                logger.info('Images folder exists')
             file_name = datetime.datetime.now().strftime("\\%d.%m.%y-%H_%M_%S") + ".png"
             exporter = pg.exporters.ImageExporter(self.customplot.pgcustom.plotItem)
-            url = QtCore.QUrl.fromLocalFile(os.getcwd() + file_name)
+            url = QtCore.QUrl.fromLocalFile(self.images_folder + file_name)
             print(url)
             data = QtCore.QMimeData()
             data.setUrls([url])
-            app.clipboard().setMimeData(data)
-            exporter.export(file_name)
+            self.app.clipboard().setMimeData(data)
+            exporter.export(self.images_folder + file_name)
             # os.remove('x:/SMEP/' + file_name)
             
         except Exception as ex:
@@ -347,6 +391,12 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
                                 'Sensor4': data[4],
                                 'Sensor5': data[5]})
 
+        self.df['Sensor1'] = self.df['Sensor1'].astype(str).str.replace('.', ',', regex=False)
+        self.df['Sensor2'] = self.df['Sensor2'].astype(str).str.replace('.', ',', regex=False)
+        self.df['Sensor3'] = self.df['Sensor3'].astype(str).str.replace('.', ',', regex=False)
+        self.df['Sensor4'] = self.df['Sensor4'].astype(str).str.replace('.', ',', regex=False)
+        self.df['Sensor5'] = self.df['Sensor5'].astype(str).str.replace('.', ',', regex=False)
+
         if not self.session_settings_widget.s1_checkbox.isChecked():
             del self.df['Sensor1']
         if not self.session_settings_widget.s2_checkbox.isChecked():
@@ -358,19 +408,26 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
         if not self.session_settings_widget.s5_checkbox.isChecked():
             del self.df['Sensor5']
 
-        self.df.to_clipboard()
+        self.df.to_clipboard(index=False)
+        # print(app.clipboard().text())
 
-        log = pd.concat([self.df, pd.DataFrame({'----': ['']*5}),
-                         pd.DataFrame({'': ['Sensor1', 'Sensor2', 'Sensor3', 'Sensor4', 'Sensor5']}),
-                         self.table,
-                         pd.DataFrame({'norma': [self.norma_val_spinbox.value()]}),
-                         pd.DataFrame({'units': [self.units]})], axis=1)
-        log.to_csv('output.csv', mode='a', sep=';')
+        # log = pd.concat([self.df, pd.DataFrame({'----': ['']*5}),
+        #                  pd.DataFrame({'': ['Sensor1', 'Sensor2', 'Sensor3', 'Sensor4', 'Sensor5']}),
+        #                  self.table,
+        #                  pd.DataFrame({'norma': [self.norma_val_spinbox.value()]}),
+        #                  pd.DataFrame({'units': [self.units]})], axis=1)
 
     def change_sliding_window_size(self):
-        val = self.slide_window_time_spinbox.value() * 60
+        val = self.slide_window_time_spinbox.value() * 60 // self.measure_interval_line_edit.value()
         self.customplot.pgcustom.sliding_window_size = val
-        self.customplot.pgcustom.data = self.customplot.pgcustom.data[:, -self.customplot.pgcustom.sliding_window_size:]
+        if len(self.customplot.pgcustom.data[0]) > 0:
+            self.customplot.pgcustom.data = self.customplot.pgcustom.data[:, -self.customplot.pgcustom.sliding_window_size:]
+
+    def set_measure_interval(self):
+        self.update_period = self.measure_interval_line_edit.value() * 1000
+        self.data_update_timer.setInterval(self.update_period)
+        self.slide_window_time_spinbox.setValue(self.customplot.pgcustom.sliding_window_size // 60 * self.measure_interval_line_edit.value())
+        self.change_sliding_window_size()
 
     def update_units(self, units=None):
         if units is None:
@@ -426,16 +483,22 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
             self.graph_start_button.setEnabled(True)
             self.stop_button.setEnabled(True)
             self.sensors_amount = 0
+            self.active_sensors = [False, False, False, False, False]
             if self.session_settings_widget.s1_checkbox.isChecked():
                 self.sensors_amount += 1
+                self.active_sensors[0] = True
             if self.session_settings_widget.s2_checkbox.isChecked():
                 self.sensors_amount += 1
+                self.active_sensors[1] = True
             if self.session_settings_widget.s3_checkbox.isChecked():
                 self.sensors_amount += 1
+                self.active_sensors[2] = True
             if self.session_settings_widget.s4_checkbox.isChecked():
                 self.sensors_amount += 1
+                self.active_sensors[3] = True
             if self.session_settings_widget.s5_checkbox.isChecked():
                 self.sensors_amount += 1
+                self.active_sensors[4] = True
             self.output_folder = self.session_settings_widget.path_line_edit.text()
             self.customplot.pgcustom.clear_plot()
             self.customplot.pgcustom.init_data([self.session_settings_widget.s1_checkbox.isChecked(),
@@ -447,16 +510,11 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
             self.customplot.pgcustom.enableAutoRange(axis='y', enable=True)
             self.customplot.pgcustom.enableAutoRange(axis='x', enable=True)
 
-    def set_measure_interval(self):
-        self.update_period = self.measure_interval_line_edit.value() * 1000
-        self.data_update_timer.setInterval(self.update_period)
-
     def stop_session(self):
         if self.graph_start_button.text() == 'Пауза':
             self.customplot.pgcustom.stop()
             self.data_update_timer.stop()
             self.graph_start_button.setText('Старт')
-            self.measure_button.setEnabled(True)
         QMessageBox.information(self, 'Сеанс завершен', "Данные по этому сеансу находятся в папке\n" +
                                 self.session_settings_widget.path_line_edit.text(), QMessageBox.Ok, QMessageBox.Ok)
         self.graph_start_button.setEnabled(False)

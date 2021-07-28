@@ -77,7 +77,10 @@ class NewSession(QWidget, new_session_window.Ui_new_session_window):
                         log_sting += 'Sensor4;'
                     if self.s5_checkbox.isChecked():
                         log_sting += 'Sensor5;'
-                    log.write(log_sting[:-1] + self.session_comment_editor.toPlainText().replace('\n', ' ').replace(';', ',') + '\n')
+                    if self.session_comment_editor.toPlainText() != '':
+                        log.write(log_sting + self.session_comment_editor.toPlainText().replace('\n', ' ').replace(';', ',') + '\n')
+                    else:
+                        log.write(log_sting[:-1] + '\n')
                     # log.write(log_sting + '\n')
                 self.close()
             else:

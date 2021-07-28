@@ -98,13 +98,6 @@
                </property>
               </widget>
              </item>
-             <item>
-              <widget class="QPushButton" name="measure_button">
-               <property name="text">
-                <string>Измерение</string>
-               </property>
-              </widget>
-             </item>
             </layout>
            </widget>
           </item>
@@ -157,13 +150,13 @@
              <item>
               <widget class="QSpinBox" name="norma_val_spinbox">
                <property name="minimum">
-                <number>-199</number>
+                <number>-200</number>
                </property>
                <property name="maximum">
-                <number>0</number>
+                <number>200</number>
                </property>
                <property name="value">
-                <number>-146</number>
+                <number>0</number>
                </property>
               </widget>
              </item>
@@ -388,6 +381,16 @@
             </widget>
            </item>
           </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="log_checkbox">
+          <property name="text">
+           <string>Писать в лог</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
         <item>

@@ -25,7 +25,7 @@ def read_ident(sock):
             data = sock.recv(1024)
             answer += data.decode()
             data_counter += len(data)
-            if data[-1] == b'\r' or data_counter == 27 or answer == 'AR-WORLDWIDE,FI7000,REV3.10':
+            if data[-1] == b'\r' or data_counter >= 29 or answer == 'AR-WORLDWIDE,FI7000,REV3.10':
                 break
         logger.info(f'Sensor identificator: {answer}')
         return answer
@@ -45,9 +45,9 @@ def read_single_probe(sock):
             bytes_array += data
             answer += data.decode()
             data_counter += len(data)
-            if data_counter == 25 or bytes_array[-1] == '\n':
+            if data_counter >= 25 or bytes_array[-1] == '\n':
                 break
-        print(answer)
+        # print(answer)
         # fields = [float(x) for x in re.findall(r'\d{2}\.{1}\d{2}', answer)]
         fields = [float(x) for x in re.findall(r'\d{2}\.\d{2}', answer)]
         return fields
