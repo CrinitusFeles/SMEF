@@ -1,6 +1,5 @@
 __version__ = '0.2.0'
 
-from .main import *
 from .SessionViewer import *
 from .app_logger import *
 from .CustomPlot import *
