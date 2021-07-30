@@ -1,0 +1,1 @@
+pylupdate5 mainwindow.py -ts ru-eng.ts

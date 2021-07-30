@@ -1,0 +1,137 @@
+{
+ "version": "auto-py-to-exe-configuration_v1",
+ "pyinstallerOptions": [
+  {
+   "optionDest": "noconfirm",
+   "value": true
+  },
+  {
+   "optionDest": "filenames",
+   "value": "X:/GDrive/PyQt_projects/SMEF/main.py"
+  },
+  {
+   "optionDest": "onefile",
+   "value": true
+  },
+  {
+   "optionDest": "console",
+   "value": true
+  },
+  {
+   "optionDest": "icon_file",
+   "value": "X:/GDrive/PyQt_projects/SMEF/icon/engeneering.ico"
+  },
+  {
+   "optionDest": "ascii",
+   "value": false
+  },
+  {
+   "optionDest": "clean_build",
+   "value": false
+  },
+  {
+   "optionDest": "strip",
+   "value": false
+  },
+  {
+   "optionDest": "noupx",
+   "value": false
+  },
+  {
+   "optionDest": "uac_admin",
+   "value": false
+  },
+  {
+   "optionDest": "uac_uiaccess",
+   "value": false
+  },
+  {
+   "optionDest": "win_private_assemblies",
+   "value": false
+  },
+  {
+   "optionDest": "win_no_prefer_redirects",
+   "value": false
+  },
+  {
+   "optionDest": "bootloader_ignore_signals",
+   "value": false
+  },
+  {
+   "optionDest": "disable_windowed_traceback",
+   "value": false
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/app_logger.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/Config.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/connections_settings.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/ConnectionsSettings.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/custom_threading.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/CustomPlot.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/double_range_slider.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/generator_window.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/GeneratorSettings.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/mainwindow.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/new_session_window.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/NewSession.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/sensor_commands.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/session_viewer.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/SessionViewer.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/utils.py;."
+  },
+  {
+   "optionDest": "binaries",
+   "value": "X:/GDrive/PyQt_projects/SMEF/ru-eng.qm;."
+  }
+ ],
+ "nonPyinstallerOptions": {
+  "increaseRecursionLimit": true,
+  "manualArguments": ""
+ }
+}

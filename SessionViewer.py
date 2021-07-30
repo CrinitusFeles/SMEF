@@ -1,15 +1,16 @@
+import copy
 import os
 import pyqtgraph as pg
 import pyqtgraph.exporters
 import numpy as np
-import pandas as pd
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QApplication, QWidget, QTableWidgetItem
 import session_viewer
 import app_logger
 import double_range_slider
 import datetime
+import utils
+from utils import converter
 
 logger = app_logger.get_logger(__name__)
 
@@ -28,6 +29,9 @@ class SessionViewer(QWidget, session_viewer.Ui_session_viewer):
         self.viewer_copy_graph_button.pressed.connect(self.copy_image)
         self.viewer_norma_checkbox.stateChanged.connect(self.norma_checked)
         self.viewer_norma_val_spinbox.valueChanged.connect(self.norma_checked)
+        self.units_rbutton1.clicked.connect(self.units_update)
+        self.units_rbutton2.clicked.connect(self.units_update)
+        self.units_rbutton3.clicked.connect(self.units_update)
 
         self.slider = double_range_slider.RangeSlider(QtCore.Qt.Horizontal)
         self.slider.setMinimumHeight(30)
@@ -40,6 +44,8 @@ class SessionViewer(QWidget, session_viewer.Ui_session_viewer):
         # QtCore.QObject.connect(slider, QtCore.SIGNAL('sliderMoved(int)'), echo)
         # self.slider.show()
         # self.slider.raise_()
+        self.units = 'В/м'
+        self.units_mode = 0
         self.viewer_vertical_layout.addWidget(self.slider)
         self.connected_sensors = [False, False, False, False, False]
         self.data = kwargs.get('data', None)
@@ -47,6 +53,7 @@ class SessionViewer(QWidget, session_viewer.Ui_session_viewer):
         self.time = self.data['Time']
         del self.data['Time']
         self.description = ''
+        self.minmax = None
 
         if self.header[-1].find('Sensor') == -1:
             self.description = self.header[-1]
@@ -64,7 +71,7 @@ class SessionViewer(QWidget, session_viewer.Ui_session_viewer):
                 self.connected_sensors[3] = True
             elif header == 'Sensor5':
                 self.connected_sensors[4] = True
-        print(f'{self.connected_sensors=}')
+        logger.info(f'{self.connected_sensors = }')
 
         self.np_data = self.data.T.to_numpy()
         # self.viewer_norma_checkbox.setChecked(True)
@@ -75,24 +82,121 @@ class SessionViewer(QWidget, session_viewer.Ui_session_viewer):
         self.indices = [i for i, x in enumerate(self.connected_sensors) if x]
         self.viewer_custom_plot.pgcustom.legend.clear()
         self.data_len = len(self.np_data[0])
+        self.viewer_custom_plot.pgcustom.setLimits(yMin=-10000, yMax=10000, xMin=self.np_data[0][0] - 50000,
+                                                   xMax=self.np_data[0][-1] + 50000)
+        self.viewer_custom_plot.pgcustom.original_data = self.np_data
+        self.update_viewer(init_flag=True)
 
+    def update_viewer(self, init_flag=False):
         if self.data is not None:
             for i in range(len(self.np_data) - 1):
                 if self.np_data[i+1] is not None:
                     # boolean mask for self.viewer_custom_plot.pgcustom.data_line array
                     [b for a, b in zip(self.connected_sensors, self.viewer_custom_plot.pgcustom.data_line) if a][i].setData(self.np_data[0], self.np_data[i+1])
-                    self.viewer_custom_plot.pgcustom.legend.addItem(self.viewer_custom_plot.pgcustom.data_line[self.indices[i]], "Датчик " + str(self.indices[i] + 1))
+                    if init_flag:
+                        self.viewer_custom_plot.pgcustom.legend.addItem(self.viewer_custom_plot.pgcustom.data_line[self.indices[i]], "Датчик " + str(self.indices[i] + 1))
                     # self.viewer_custom_plot.pgcustom.data_line[i].setData(np_data[0], np_data[i+1])
             self.viewer_custom_plot.pgcustom.enableAutoRange(axis='y', enable=True)
             self.viewer_custom_plot.pgcustom.enableAutoRange(axis='x', enable=True)
             self.app.processEvents()
         else:
-            print('empty data')
+            logger.info('empty data')
 
         self.minmax = np.column_stack((np.amin(self.np_data[1:], axis=1), np.mean(self.np_data[1:], axis=1),
-                                    np.amax(self.np_data[1:], axis=1)))
+                                       np.amax(self.np_data[1:], axis=1)))
 
         self.update_table()
+
+    def units_update(self):
+        try:
+            if self.sender().text() != self.units:
+                convert_to_log = lambda x: 20 * np.log10(x * 10**6)
+                if self.units_rbutton1.isChecked():
+                    self.last_units = copy.copy(self.units)
+                    self.units = 'В/м'
+                    # self.viewer_custom_plot.pgcustom.convert_plot_data(mode=0)
+
+                    self.viewer_custom_plot.pgcustom.enableAutoRange(axis='y', enable=True)
+                    self.viewer_custom_plot.pgcustom.enableAutoRange(axis='x', enable=True)
+                    self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "В/м"
+                    self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
+
+                    if self.last_units == 'дБмкВ/м':
+                        self.viewer_norma_val_spinbox.setValue(utils.reverse_convert(self.viewer_norma_val_spinbox.value(), mode=2))
+                    elif self.last_units == 'Вт/м²':
+                        self.viewer_norma_val_spinbox.setValue(self.viewer_norma_val_spinbox.value() * 377)
+                    else:
+                        raise Exception
+
+                if self.units_rbutton2.isChecked():
+                    self.last_units = copy.copy(self.units)
+                    self.units = 'дБмкВ/м'
+                    self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "дБмкВ/м"
+                    self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
+                    if self.viewer_norma_val_spinbox.value() <= 0:
+                        self.viewer_norma_val_spinbox.setValue(0.001)
+                    if self.last_units == 'В/м':
+                        self.viewer_norma_val_spinbox.setValue(convert_to_log(self.viewer_norma_val_spinbox.value()))
+                    elif self.last_units == 'Вт/м²':
+                        self.viewer_norma_val_spinbox.setValue(self.viewer_norma_val_spinbox.value() * 377)
+                        self.viewer_norma_val_spinbox.setValue(convert_to_log(self.viewer_norma_val_spinbox.value()))
+                    else:
+                        raise Exception
+                    self.viewer_custom_plot.pgcustom.enableAutoRange(axis='y', enable=True)
+                    self.viewer_custom_plot.pgcustom.enableAutoRange(axis='x', enable=True)
+                if self.units_rbutton3.isChecked():
+                    self.last_units = copy.copy(self.units)
+                    self.units = 'Вт/м²'
+                    # self.viewer_custom_plot.pgcustom.convert_plot_data(mode=2)
+                    self.viewer_custom_plot.pgcustom.enableAutoRange(axis='y', enable=True)
+                    self.viewer_custom_plot.pgcustom.enableAutoRange(axis='x', enable=True)
+                    self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "Вт/м²"
+                    self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
+                    if self.last_units == 'дБмкВ/м':
+                        self.viewer_norma_val_spinbox.setValue(utils.reverse_convert(self.viewer_norma_val_spinbox.value(), mode=2))
+                        self.viewer_norma_val_spinbox.setValue(self.viewer_norma_val_spinbox.value() / 377)
+                    elif self.last_units == 'В/м':
+                        self.viewer_norma_val_spinbox.setValue(self.viewer_norma_val_spinbox.value() / 377)
+                    else:
+                        raise Exception
+                self.viewer_norma_unit_label.setText(self.units)
+        except Exception as ex:
+            logger.error(ex)
+
+        if self.units_rbutton1.isChecked():
+            # self.viewer_custom_plot.pgcustom.convert_plot_data(mode=0)
+            self.np_data = np.copy(self.viewer_custom_plot.pgcustom.original_data)
+            self.update_viewer()
+
+            self.viewer_custom_plot.pgcustom.enableAutoRange(axis='y', enable=True)
+            self.viewer_custom_plot.pgcustom.enableAutoRange(axis='x', enable=True)
+            self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "В/м"
+            self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
+            # self.norma_val_spinbox.setValue(utils.converter(self.norma_val_spinbox.value(), mode=0))
+            # utils.converter(self.norma_val_spinbox.value(), mode=0)
+        if self.units_rbutton2.isChecked():
+            self.np_data = np.copy(self.viewer_custom_plot.pgcustom.original_data)
+            self.np_data[1:, ] = converter(self.np_data[1:, ], mode=1)
+            self.update_viewer()
+            # self.viewer_custom_plot.pgcustom.convert_plot_data(mode=1)
+            self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "дБмкВ/м"
+            self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
+            # self.norma_val_spinbox.setValue(utils.converter(self.norma_val_spinbox.value(), mode=1))
+            # utils.converter(self.norma_val_spinbox.value(), mode=1)
+            self.viewer_custom_plot.pgcustom.enableAutoRange(axis='y', enable=True)
+            self.viewer_custom_plot.pgcustom.enableAutoRange(axis='x', enable=True)
+        if self.units_rbutton3.isChecked():
+            self.np_data = np.copy(self.viewer_custom_plot.pgcustom.original_data)
+            self.np_data[1:, ] = converter(self.np_data[1:, ], mode=2)
+            self.update_viewer()
+            # self.viewer_custom_plot.pgcustom.convert_plot_data(mode=2)
+            self.viewer_custom_plot.pgcustom.enableAutoRange(axis='y', enable=True)
+            self.viewer_custom_plot.pgcustom.enableAutoRange(axis='x', enable=True)
+            self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "Вт/м²"
+            self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
+            # print(utils.converter(self.norma_val_spinbox.value(), mode=2))
+            # self.norma_val_spinbox.setValue(utils.converter(self.norma_val_spinbox.value(), mode=2))
+        self.viewer_norma_unit_label.setText(self.units)
 
     def update_table(self):
         k = 0
@@ -206,5 +310,5 @@ class SessionViewer(QWidget, session_viewer.Ui_session_viewer):
                                                                  '                                                     '
                                                                  '     norma')
         else:
-            self.viewer_custom_plot.pgcustom.removeItem(self.customplot.pgcustom.infinite_line)
+            self.viewer_custom_plot.pgcustom.removeItem(self.viewer_custom_plot.pgcustom.infinite_line)
             self.viewer_custom_plot.pgcustom.infinite_line = None
