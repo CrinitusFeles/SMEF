@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "smef"
+name = "SMEF"
 version = "0.1.0"
 description = "graphical interface for electric field monitoring system"
 authors = ["crinitusfeles <crinitusfeles@gmail.com>"]
@@ -21,7 +21,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.semantic_release]
 version_variable = [
-    "MY_PROJECT_NAME/__init__.py:__version__",
+    "SMEF/__init__.py:__version__",
     "pyproject.toml:version"
 ]
 branch = "main"
