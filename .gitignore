@@ -9,11 +9,14 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
-exe/
-.vscode/
-output/
-event_log/
+SMEF/exe/
+SMEF/.vscode/
+SMEF/output/
+SMEF/event_log/
 develop-eggs/
+SMEF/dist/
+SMEF/__pychache/
+SMEF/.idea/
 dist/
 downloads/
 eggs/
