@@ -2,14 +2,14 @@ import subprocess
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QRegExp
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem
-import connections_settings
+from .connections_settings import *
 from PyQt5.QtGui import QRegExpValidator
-import app_logger
+from .app_logger import *
 
-logger = app_logger.get_logger(__name__)
+logger = get_logger(__name__)
 
 
-class ConnectionsSettings(QWidget, connections_settings.Ui_connections_settings):
+class ConnectionsSettings(QWidget, Ui_connections_settings):
     def __init__(self, **kwargs):
         super().__init__()
         self.setupUi(self)

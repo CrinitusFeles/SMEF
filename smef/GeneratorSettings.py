@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QWidget
-import generator_window
+from .generator_window import *
 from PyQt5.QtCore import Qt
 
 
-class GeneratorSettings(QWidget, generator_window.Ui_generator_settings):
+class GeneratorSettings(QWidget, Ui_generator_settings):
     def __init__(self):
         super().__init__()
         self.setupUi(self)

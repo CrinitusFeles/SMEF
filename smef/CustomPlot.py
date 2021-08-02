@@ -1,15 +1,14 @@
 import sys
-import time
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
 from PyQt5.QtGui import QPen
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QApplication)
 import pyqtgraph as pg
 import numpy as np
-from utils import TimeAxisItem, timestamp, converter
-import app_logger
+from .utils import TimeAxisItem, timestamp, converter
+from .app_logger import *
 
-logger = app_logger.get_logger(__name__)
+logger = get_logger(__name__)
 
 
 class CustomPlot(QWidget):

@@ -1,0 +1,24 @@
+{
+    "comment": "",
+    "connected_sensors": [
+        true,
+        true,
+        true,
+        true,
+        true
+    ],
+    "generator_ip": "10.6.1.98",
+    "generator_port": 8080,
+    "graph_title": "",
+    "last_name": "2021-08-02_09.44",
+    "last_path": "X:\\GDrive\\PyQt_projects\\SMEF\\output",
+    "norma": false,
+    "norma_val": -146,
+    "sensor1_port": 4001,
+    "sensor2_port": 4002,
+    "sensor3_port": 4003,
+    "sensor4_port": 4004,
+    "sensor5_port": 4005,
+    "terminal_server_ip": "10.6.1.95",
+    "units": "\u0412/\u043c"
+}

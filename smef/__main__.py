@@ -1,27 +1,24 @@
 import copy
 import socket
-import os
-import time
+from types import SimpleNamespace
+
 import pandas as pd
 import sys
-import pyqtgraph as pg
 import pyqtgraph.exporters
-import datetime
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
-from PyQt5 import QtCore, QtGui, QtWidgets
-import mainwindow
-import numpy as np
-import Config
+from .mainwindow import *
+from .Config import *
 import json
-from SessionViewer import SessionViewer
-from NewSession import NewSession
-from ConnectionsSettings import ConnectionsSettings
-import utils
-from custom_threading import ThreadWithReturnValue
-from GeneratorSettings import GeneratorSettings
-from sensor_commands import *
+from .SessionViewer import SessionViewer
+from .NewSession import NewSession
+from .ConnectionsSettings import ConnectionsSettings
+from .utils import *
+from .custom_threading import ThreadWithReturnValue
+from .GeneratorSettings import GeneratorSettings
+from .sensor_commands import *
+from .app_logger import *
 
-logger = app_logger.get_logger(__name__)
+logger = get_logger(__name__)
 
 """ Attention!
 LegendItem.py was modified at function 'paint' (361):
@@ -31,7 +28,7 @@ LegendItem.py was modified at function 'paint' (361):
 """
 
 
-class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
+class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -71,8 +68,6 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
                        socket.socket(socket.AF_INET, socket.SOCK_STREAM),
                        socket.socket(socket.AF_INET, socket.SOCK_STREAM)]
 
-        self.send_all_sensors_parallel(self.threads, self.connect)
-
         logger.info(self.alive_sensors)
         self.generator_settings_widget = GeneratorSettings()
         self.connections_settings_widget = None
@@ -111,8 +106,8 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
 
         if not self.search_config_file():
             logger.warning("Config file does not exist. Set default settings")
-            self.config_obj = Config.Config()
-            utils.create_json_file(self.config_obj, self.config_file_name)
+            self.config_obj = Config()
+            create_json_file(self.config_obj, self.config_file_name)
 
             # create widget object and fill its fields by config file
             self.session_settings_widget = NewSession()
@@ -127,11 +122,12 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
             self.session_settings_widget.updtade_sensors_button.pressed.connect(self.update_sensors)
 
             self.connections_settings_widget = ConnectionsSettings()
+            self.connections_settings_widget.accept_button.pressed.connect(self.accept_connection_settings)
         else:
             logger.info("Config exists. Settings loaded from file")
             try:
                 with open(self.config_file_name, "r+", encoding='utf8') as read_file:
-                    self.config_obj = Config.Config()
+                    self.config_obj = Config()
                     self.config_obj.__dict__ = json.load(read_file)
                     self.server_ip = self.config_obj.terminal_server_ip
                     self.sensors_port[0] = self.config_obj.sensor1_port
@@ -167,6 +163,9 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
                                                                            generator_ip=self.config_obj.generator_ip,
                                                                            generator_port=self.config_obj.generator_port
                                                                            )
+                    self.connections_settings_widget.accept_button.pressed.connect(self.accept_connection_settings)
+
+                    self.send_all_sensors_parallel(self.threads, self.connect)
 
             except Exception as error:
                 logger.error(error)
@@ -195,6 +194,8 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
         return False
 
     def update_sensors(self):
+        if self.connections_settings_widget.server_ip_line_edit.text() == '':
+            QMessageBox.warning(self, 'Внимание!', "Не указан IP сервера.\nУкажите IP в пункте \"Настройки соединения\"", QMessageBox.Ok, QMessageBox.Ok)
         self.send_all_sensors_parallel(self.threads, self.disconnect)
         self.socket = [socket.socket(socket.AF_INET, socket.SOCK_STREAM),
                        socket.socket(socket.AF_INET, socket.SOCK_STREAM),
@@ -449,7 +450,7 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
                         self.customplot.pgcustom.left_axis.label.setHtml(self.customplot.pgcustom.left_axis.labelString())
 
                         if self.last_units == 'дБмкВ/м':
-                            self.norma_val_spinbox.setValue(utils.reverse_convert(self.norma_val_spinbox.value(), mode=2))
+                            self.norma_val_spinbox.setValue(reverse_convert(self.norma_val_spinbox.value(), mode=2))
                         elif self.last_units == 'Вт/м²':
                             self.norma_val_spinbox.setValue(self.norma_val_spinbox.value() * 377)
                         else:
@@ -485,7 +486,7 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
                         self.customplot.pgcustom.left_axis.labelUnits = "Вт/м²"
                         self.customplot.pgcustom.left_axis.label.setHtml(self.customplot.pgcustom.left_axis.labelString())
                         if self.last_units == 'дБмкВ/м':
-                            self.norma_val_spinbox.setValue(utils.reverse_convert(self.norma_val_spinbox.value(), mode=2))
+                            self.norma_val_spinbox.setValue(reverse_convert(self.norma_val_spinbox.value(), mode=2))
                             self.norma_val_spinbox.setValue(self.norma_val_spinbox.value() / 377)
                         elif self.last_units == 'В/м':
                             self.norma_val_spinbox.setValue(self.norma_val_spinbox.value() / 377)
@@ -585,13 +586,21 @@ class MainWindow(QMainWindow, mainwindow.Ui_MainWindow):
             self.retranslateUi(self)
         super(MainWindow, self).changeEvent(event)
 
-    # def retranslateUi(self):
-    #     self.copy_graph_button.setText(QtWidgets.QApplication.translate('MainWindow', 'Копировать график'))
-    #     self.copy_data_button.setText(QtWidgets.QApplication.translate('MainWindow', 'Копировать данные'))
+    def accept_connection_settings(self):
+        logger.info(f'new server IP: {self.connections_settings_widget.server_ip_line_edit.text()}')
+        self.server_ip = self.connections_settings_widget.server_ip_line_edit.text()
+        with open('config.json') as f:
+            config = json.load(f, object_hook=lambda d: SimpleNamespace(**d))
+            config.terminal_server_ip = self.server_ip
+        with open('config.json', 'w') as f:
+            f.write(json.dumps(config, default=lambda o: o.__dict__, sort_keys=True, indent=4))
+        self.update_sensors()
+        self.connections_settings_widget.close()
 
 
-if __name__ == '__main__':
+def main():
     logger.info("Start application")
+    global app
     app = QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('icon/engeneering.ico'))
 
@@ -601,3 +610,7 @@ if __name__ == '__main__':
 
     app.exec_()
     logger.warning('Stop application')
+
+
+if __name__ == '__main__':
+    main()

@@ -1,7 +1,7 @@
-import app_logger
+from .app_logger import *
 import re
 
-logger = app_logger.get_logger(__name__)
+logger = get_logger(__name__)
 
 
 def read_sensor_ident(sock):

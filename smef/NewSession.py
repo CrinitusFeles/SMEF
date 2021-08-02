@@ -3,15 +3,15 @@ import os
 from PyQt5.QtWidgets import QWidget, QMessageBox
 from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
-import new_session_window
+from .new_session_window import *
 from types import SimpleNamespace
-import app_logger
+from .app_logger import *
 import time
 
-logger = app_logger.get_logger(__name__)
+logger = get_logger(__name__)
 
 
-class NewSession(QWidget, new_session_window.Ui_new_session_window):
+class NewSession(QWidget, Ui_new_session_window):
     def __init__(self, **kwargs):
         super().__init__()
         self.setupUi(self)

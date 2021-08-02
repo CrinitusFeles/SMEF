@@ -1,6 +1,7 @@
 __version__ = '0.2.1'
 
-from .SessionViewer import *
+from .mainwindow import Ui_MainWindow
+# from .SessionViewer import *
 from .app_logger import *
 from .CustomPlot import *
 from .double_range_slider import *
@@ -10,3 +11,4 @@ from .GeneratorSettings import *
 from .NewSession import *
 from .Config import *
 from .sensor_commands import *
+from .app_logger import *

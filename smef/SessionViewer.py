@@ -1,21 +1,15 @@
 import copy
-import os
-import pyqtgraph as pg
 import pyqtgraph.exporters
-import numpy as np
-from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QWidget, QTableWidgetItem
-import session_viewer
-import app_logger
-import double_range_slider
-import datetime
-import utils
-from utils import converter
+from .session_viewer import *
+from .app_logger import *
+from .double_range_slider import *
+from .utils import *
 
-logger = app_logger.get_logger(__name__)
+logger = get_logger(__name__)
 
 
-class SessionViewer(QWidget, session_viewer.Ui_session_viewer):
+class SessionViewer(QWidget, Ui_session_viewer):
     def __init__(self, **kwargs):
         super().__init__()
         self.setupUi(self)
@@ -33,7 +27,7 @@ class SessionViewer(QWidget, session_viewer.Ui_session_viewer):
         self.units_rbutton2.clicked.connect(self.units_update)
         self.units_rbutton3.clicked.connect(self.units_update)
 
-        self.slider = double_range_slider.RangeSlider(QtCore.Qt.Horizontal)
+        self.slider = RangeSlider(QtCore.Qt.Horizontal)
         self.slider.setMinimumHeight(30)
         self.slider.setMinimum(0)
         self.slider.setMaximum(100)
@@ -122,7 +116,7 @@ class SessionViewer(QWidget, session_viewer.Ui_session_viewer):
                     self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
 
                     if self.last_units == 'дБмкВ/м':
-                        self.viewer_norma_val_spinbox.setValue(utils.reverse_convert(self.viewer_norma_val_spinbox.value(), mode=2))
+                        self.viewer_norma_val_spinbox.setValue(reverse_convert(self.viewer_norma_val_spinbox.value(), mode=2))
                     elif self.last_units == 'Вт/м²':
                         self.viewer_norma_val_spinbox.setValue(self.viewer_norma_val_spinbox.value() * 377)
                     else:
@@ -153,7 +147,7 @@ class SessionViewer(QWidget, session_viewer.Ui_session_viewer):
                     self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "Вт/м²"
                     self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
                     if self.last_units == 'дБмкВ/м':
-                        self.viewer_norma_val_spinbox.setValue(utils.reverse_convert(self.viewer_norma_val_spinbox.value(), mode=2))
+                        self.viewer_norma_val_spinbox.setValue(reverse_convert(self.viewer_norma_val_spinbox.value(), mode=2))
                         self.viewer_norma_val_spinbox.setValue(self.viewer_norma_val_spinbox.value() / 377)
                     elif self.last_units == 'В/м':
                         self.viewer_norma_val_spinbox.setValue(self.viewer_norma_val_spinbox.value() / 377)
