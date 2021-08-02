@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.0 (2021-08-02)
+### Feature
+* Add compatibility with old python ([`03c6d82`](https://github.com/CrinitusFeles/SMEF/commit/03c6d823b276dea037372f65250df27414cc2fa4))
+
 ## v0.2.2 (2021-08-02)
 ### Fix
 * Packet dependencies fixes; add connection feature ([`38ec7bb`](https://github.com/CrinitusFeles/SMEF/commit/38ec7bb4f395022a1bac9847cfb36386ce91c4b8))
