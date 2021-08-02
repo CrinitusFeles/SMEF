@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.1 (2021-08-02)
+### Fix
+* Smal fixes ([`9a8ec13`](https://github.com/CrinitusFeles/SMEF/commit/9a8ec13da6f44b71f84b8ef51a97526d245a5d52))
+
 ## v0.3.0 (2021-08-02)
 ### Feature
 * Add compatibility with old python ([`03c6d82`](https://github.com/CrinitusFeles/SMEF/commit/03c6d823b276dea037372f65250df27414cc2fa4))
