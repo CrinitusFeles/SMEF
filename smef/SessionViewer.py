@@ -27,6 +27,12 @@ class SessionViewer(QWidget, Ui_session_viewer):
         self.units_rbutton2.clicked.connect(self.units_update)
         self.units_rbutton3.clicked.connect(self.units_update)
 
+        self.s1_legend_checkbox.stateChanged.connect(self.hide_line_plot)
+        self.checkBos2_legend_checkbox.stateChanged.connect(self.hide_line_plot)
+        self.s3_legend_checkbox.stateChanged.connect(self.hide_line_plot)
+        self.s4_legend_checkbox.stateChanged.connect(self.hide_line_plot)
+        self.s5_legend_checkbox.stateChanged.connect(self.hide_line_plot)
+
         self.slider = RangeSlider(QtCore.Qt.Horizontal)
         self.slider.setMinimumHeight(30)
         self.slider.setMinimum(0)
@@ -57,15 +63,21 @@ class SessionViewer(QWidget, Ui_session_viewer):
         for header in self.header:
             if header == 'Sensor1':
                 self.connected_sensors[0] = True
+                self.s1_legend_checkbox.setChecked(True)
             elif header == 'Sensor2':
                 self.connected_sensors[1] = True
+                self.checkBos2_legend_checkbox.setChecked(True)
             elif header == 'Sensor3':
                 self.connected_sensors[2] = True
+                self.s3_legend_checkbox.setChecked(True)
             elif header == 'Sensor4':
                 self.connected_sensors[3] = True
+                self.s4_legend_checkbox.setChecked(True)
             elif header == 'Sensor5':
                 self.connected_sensors[4] = True
-        logger.info(f'{self.connected_sensors = }')
+                self.s5_legend_checkbox.setChecked(True)
+
+        logger.info('connected sensors:', self.connected_sensors)
 
         self.np_data = self.data.T.to_numpy()
         # self.viewer_norma_checkbox.setChecked(True)
@@ -273,7 +285,7 @@ class SessionViewer(QWidget, Ui_session_viewer):
         try:
             images_folder = os.getcwd() + '\\output\\images'
             if not os.path.isdir(images_folder):
-                logger.info(f'Create new images folder {images_folder}')
+                logger.info('Create new images folder:', images_folder)
                 os.mkdir(images_folder)
             else:
                 logger.info('Images folder exists')
@@ -306,3 +318,11 @@ class SessionViewer(QWidget, Ui_session_viewer):
         else:
             self.viewer_custom_plot.pgcustom.removeItem(self.viewer_custom_plot.pgcustom.infinite_line)
             self.viewer_custom_plot.pgcustom.infinite_line = None
+
+    def hide_line_plot(self):
+        self.viewer_custom_plot.pgcustom.data_line[0].setVisible(self.s1_legend_checkbox.isChecked())
+        self.viewer_custom_plot.pgcustom.data_line[1].setVisible(self.checkBos2_legend_checkbox.isChecked())
+        self.viewer_custom_plot.pgcustom.data_line[2].setVisible(self.s3_legend_checkbox.isChecked())
+        self.viewer_custom_plot.pgcustom.data_line[3].setVisible(self.s4_legend_checkbox.isChecked())
+        self.viewer_custom_plot.pgcustom.data_line[4].setVisible(self.s5_legend_checkbox.isChecked())
+        self.viewer_custom_plot.pgcustom.legend.update()

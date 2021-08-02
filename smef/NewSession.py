@@ -1,8 +1,5 @@
 import json
-import os
 from PyQt5.QtWidgets import QWidget, QMessageBox
-from PyQt5.QtCore import Qt
-from PyQt5 import QtWidgets
 from .new_session_window import *
 from types import SimpleNamespace
 from .app_logger import *
@@ -16,7 +13,7 @@ class NewSession(QWidget, Ui_new_session_window):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle('Новый сеанс')
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        # self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
         self.path_tool_button.pressed.connect(self.open_file_system)
         self.accept_button.pressed.connect(self.accept_clicked)
@@ -51,7 +48,7 @@ class NewSession(QWidget, Ui_new_session_window):
 
         if self.path_line_edit.text() != '':
             if not os.path.isdir(self.path_line_edit.text()):
-                logger.info(f'Create new output folder {self.path_line_edit.text()}')
+                logger.info('Create new output folder' + self.path_line_edit.text())
                 os.makedirs(self.path_line_edit.text(), exist_ok=True)
             else:
                 logger.info('Output folder exists')

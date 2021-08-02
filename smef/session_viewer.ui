@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>1190</width>
-    <height>751</height>
+    <height>803</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
+  <layout class="QHBoxLayout" name="horizontalLayout_3">
    <item>
     <layout class="QVBoxLayout" name="viewer_vertical_layout">
      <item>
@@ -114,8 +114,8 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>330</width>
-         <height>220</height>
+         <width>350</width>
+         <height>250</height>
         </size>
        </property>
        <property name="maximumSize">
@@ -170,6 +170,54 @@
          <string>Макс.</string>
         </property>
        </column>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox_3">
+       <property name="title">
+        <string>Отображение графиков</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QCheckBox" name="s1_legend_checkbox">
+            <property name="text">
+             <string>S1</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="checkBos2_legend_checkbox">
+            <property name="text">
+             <string>S2</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="s3_legend_checkbox">
+            <property name="text">
+             <string>S3</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="s4_legend_checkbox">
+            <property name="text">
+             <string>S4</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="s5_legend_checkbox">
+            <property name="text">
+             <string>S5</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </widget>
      </item>
      <item>

@@ -12,7 +12,7 @@ def read_sensor_ident(sock):
         else:
             return False
     except Exception as ex:
-        logger.error(f'Read identificator error: {ex}')
+        logger.error('Read identificator error:' + str(ex))
         return False
 
 
@@ -27,10 +27,10 @@ def read_ident(sock):
             data_counter += len(data)
             if data[-1] == b'\r' or data_counter >= 29 or answer == 'AR-WORLDWIDE,FI7000,REV3.10':
                 break
-        logger.info(f'Sensor identificator: {answer}')
+        logger.info('Sensor identificator:' + str(answer))
         return answer
     except Exception as ex:
-        logger.warning(f'Can\'t read sensor identificator: {ex} | read {data_counter} bytes: {answer}')
+        logger.warning('Can\'t read sensor identificator:' + str(ex) + '| read ' + str(data_counter) + ' bytes: ' + str(answer))
         return answer
 
 
@@ -53,4 +53,4 @@ def read_single_probe(sock):
         return fields
     except Exception as ex:
         logger.error('Error at %s', 'socket', exc_info=ex)
-        logger.info(f'Readed {data_counter} bytes: {answer}')
+        logger.info('Read ' + str(data_counter) + ' bytes: ' + str(answer))

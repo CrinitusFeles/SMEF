@@ -10,10 +10,10 @@ _log_file_format = logging.Formatter("[%(levelname)s] [(%(threadName)s)] - %(nam
 
 
 def get_file_handler():
-    if not os.path.isdir(os.getcwd() + '\\event_log'):
+    if not os.path.isdir(os.getcwd() + '/event_log'):
         os.mkdir('event_log')
-    file_handler = logging.FileHandler("event_log\\event_log" + time.strftime("%Y-%m-%d_%H.%M.%S",
-                                                                              time.localtime()) + ".log")
+    file_handler = logging.FileHandler("event_log/event_log" + time.strftime("%Y-%m-%d_%H.%M.%S",
+                                                                             time.localtime()) + ".log")
     file_handler.setLevel(logging.WARNING)
     file_handler.setFormatter(_log_file_format)
     return file_handler

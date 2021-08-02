@@ -1,7 +1,6 @@
 import copy
 import socket
 from types import SimpleNamespace
-
 import pandas as pd
 import sys
 import pyqtgraph.exporters
@@ -34,11 +33,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.setWindowTitle("СМЭП КЛИЕНТ")
         self.config_file_name = 'config.json'
-        self.output_folder = os.getcwd() + '\\output'
-        self.event_log_folder = os.getcwd() + '\\event_log'
-        self.images_folder = self.output_folder + '\\images'
+        self.output_folder = os.getcwd() + '/output'
+        self.event_log_folder = os.getcwd() + '/event_log'
+        self.images_folder = self.output_folder + '/images'
         if not os.path.isdir(self.output_folder):
-            logger.info(f'Create new output folder {self.output_folder}')
+            logger.info('Create new output folder' + str(self.output_folder))
             os.mkdir(self.output_folder)
         else:
             logger.info('Output folder exists')
@@ -98,6 +97,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tittle_line_edit.textChanged.connect(self.set_title)
         self.copy_data_button.pressed.connect(self.copy_data)
         self.measure_interval_line_edit.valueChanged.connect(self.set_measure_interval)
+
+        self.s1_legend_checkbox.stateChanged.connect(self.hide_line_plot)
+        self.s2_legend_checkbox.stateChanged.connect(self.hide_line_plot)
+        self.s3_legend_checkbox.stateChanged.connect(self.hide_line_plot)
+        self.s4_legend_checkbox.stateChanged.connect(self.hide_line_plot)
+        self.s5_legend_checkbox.stateChanged.connect(self.hide_line_plot)
 
         self.data_update_timer = QtCore.QTimer()
         self.update_period = 1000
@@ -179,7 +184,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @staticmethod
     def connect(sock, ip, port):
         try:
-            logger.info(f'trying to connect to {ip}:{port}')
+            logger.info('trying to connect to ' + str(ip) + ':' + str(port))
             sock.connect((ip, port))
             sock.settimeout(2)
             return read_sensor_ident(sock)
@@ -190,12 +195,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @staticmethod
     def disconnect(sock):
         sock.close()
-        logger.info(f'{sock} disconnected')
+        logger.info(str(sock) + ' disconnected')
         return False
 
     def update_sensors(self):
         if self.connections_settings_widget.server_ip_line_edit.text() == '':
-            QMessageBox.warning(self, 'Внимание!', "Не указан IP сервера.\nУкажите IP в пункте \"Настройки соединения\"", QMessageBox.Ok, QMessageBox.Ok)
+            answer = QMessageBox.information(self, 'Внимание!', "Не указан IP сервера.\nУкажите IP в пункте \"Настройки соединения\"", QMessageBox.Ok, QMessageBox.Ok)
+            if answer:
+                self.session_settings_widget.raise_()
+            return
         self.send_all_sensors_parallel(self.threads, self.disconnect)
         self.socket = [socket.socket(socket.AF_INET, socket.SOCK_STREAM),
                        socket.socket(socket.AF_INET, socket.SOCK_STREAM),
@@ -236,10 +244,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for sock, port, i in zip(self.socket, self.sensors_port, range(5)):
             if function == self.connect:
                 threads[i] = ThreadWithReturnValue(target=function, args=(sock, self.server_ip, port),
-                                                   name=f'sensor {i} thread')
+                                                   name='sensor ' + str(i) + ' thread')
             else:
                 threads[i] = ThreadWithReturnValue(target=function, args=[sock],
-                                                   name=f'sensor {i} thread')
+                                                   name='sensor ' + str(i) + ' thread')
             threads[i].start()
         for i in range(5):
             self.alive_sensors[i] = threads[i].join()
@@ -263,7 +271,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.viewer = SessionViewer(data=log)
                 self.viewer.show()
             else:
-                logger.error(f'Incorrect log file {file_full_path}')
+                logger.error('Incorrect log file' + str(file_full_path))
                 QMessageBox.warning(self, 'Внимание!', "Выбран некорректный файл лога.", QMessageBox.Ok, QMessageBox.Ok)
                 return
 
@@ -275,7 +283,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                   [0, 0, 0, 0]]
         for s in [i for i, x in enumerate(self.alive_sensors) if x]:
             # fields[i] = read_single_probe(sock)
-            threads[s] = ThreadWithReturnValue(target=read_single_probe, args=[sock[s]], name=f'sensor {s} thread')
+            threads[s] = ThreadWithReturnValue(target=read_single_probe, args=[sock[s]], name='sensor ' + str(s) + ' thread')
             threads[s].start()
         for s in [i for i, x in enumerate(self.alive_sensors) if x]:
             fields[s] = threads[s].join()
@@ -309,7 +317,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         log_string += str(fields[4][3]).replace('.', ',') + ';'
                     log.write(log_string[:-1] + '\n')
             except Exception as ex:
-                logger.error(f'Write log file error: {ex}')
+                logger.error('Write log file error:' + str(ex))
                 QMessageBox.warning(self, 'Warning!', 'Проблема с доступом к файлу лога', QMessageBox.Ok,
                                     QMessageBox.Ok)
                 self.customplot.pgcustom.stop()
@@ -364,7 +372,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def copy_image(self):
         try:
             if not os.path.isdir(self.images_folder):
-                logger.info(f'Create new images folder {self.images_folder}')
+                logger.info('Create new images folder' + str(self.images_folder))
                 os.mkdir(self.images_folder)
             else:
                 logger.info('Images folder exists')
@@ -540,18 +548,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if self.session_settings_widget.s1_checkbox.isChecked():
                 self.sensors_amount += 1
                 self.active_sensors[0] = True
+                self.s1_legend_checkbox.setChecked(True)
             if self.session_settings_widget.s2_checkbox.isChecked():
                 self.sensors_amount += 1
                 self.active_sensors[1] = True
+                self.s2_legend_checkbox.setChecked(True)
             if self.session_settings_widget.s3_checkbox.isChecked():
                 self.sensors_amount += 1
                 self.active_sensors[2] = True
+                self.s3_legend_checkbox.setChecked(True)
             if self.session_settings_widget.s4_checkbox.isChecked():
                 self.sensors_amount += 1
                 self.active_sensors[3] = True
+                self.s4_legend_checkbox.setChecked(True)
             if self.session_settings_widget.s5_checkbox.isChecked():
                 self.sensors_amount += 1
                 self.active_sensors[4] = True
+                self.s5_legend_checkbox.setChecked(True)
             self.output_folder = self.session_settings_widget.path_line_edit.text()
             self.customplot.pgcustom.clear_plot()
             self.customplot.pgcustom.init_data([self.session_settings_widget.s1_checkbox.isChecked(),
@@ -587,7 +600,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super(MainWindow, self).changeEvent(event)
 
     def accept_connection_settings(self):
-        logger.info(f'new server IP: {self.connections_settings_widget.server_ip_line_edit.text()}')
+        logger.info('new server IP:' + self.connections_settings_widget.server_ip_line_edit.text())
         self.server_ip = self.connections_settings_widget.server_ip_line_edit.text()
         with open('config.json') as f:
             config = json.load(f, object_hook=lambda d: SimpleNamespace(**d))
@@ -596,6 +609,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             f.write(json.dumps(config, default=lambda o: o.__dict__, sort_keys=True, indent=4))
         self.update_sensors()
         self.connections_settings_widget.close()
+
+    def hide_line_plot(self):
+        self.customplot.pgcustom.data_line[0].setVisible(self.s1_legend_checkbox.isChecked())
+        self.customplot.pgcustom.data_line[1].setVisible(self.s2_legend_checkbox.isChecked())
+        self.customplot.pgcustom.data_line[2].setVisible(self.s3_legend_checkbox.isChecked())
+        self.customplot.pgcustom.data_line[3].setVisible(self.s4_legend_checkbox.isChecked())
+        self.customplot.pgcustom.data_line[4].setVisible(self.s5_legend_checkbox.isChecked())
+        self.customplot.pgcustom.legend.update()
 
 
 def main():
