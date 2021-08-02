@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_session_viewer(object):
     def setupUi(self, session_viewer):
         session_viewer.setObjectName("session_viewer")
-        session_viewer.resize(1190, 803)
+        session_viewer.resize(1190, 865)
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(session_viewer)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.viewer_vertical_layout = QtWidgets.QVBoxLayout()
@@ -94,6 +94,8 @@ class Ui_session_viewer(object):
         self.viewer_minmax_values_table.horizontalHeader().setDefaultSectionSize(80)
         self.viewer_minmax_values_table.horizontalHeader().setMinimumSectionSize(30)
         self.verticalLayout_6.addWidget(self.viewer_minmax_values_table)
+        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_6.addItem(spacerItem2)
         self.groupBox_3 = QtWidgets.QGroupBox(session_viewer)
         self.groupBox_3.setObjectName("groupBox_3")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.groupBox_3)
@@ -151,8 +153,8 @@ class Ui_session_viewer(object):
         self.viewer_norma_unit_label.setObjectName("viewer_norma_unit_label")
         self.horizontalLayout_9.addWidget(self.viewer_norma_unit_label)
         self.verticalLayout_6.addWidget(self.groupBox_5)
-        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_6.addItem(spacerItem2)
+        spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_6.addItem(spacerItem3)
         self.groupBox_4 = QtWidgets.QGroupBox(session_viewer)
         self.groupBox_4.setObjectName("groupBox_4")
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout(self.groupBox_4)

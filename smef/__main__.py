@@ -200,7 +200,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def update_sensors(self):
         if self.connections_settings_widget.server_ip_line_edit.text() == '':
-            answer = QMessageBox.information(self, 'Внимание!', "Не указан IP сервера.\nУкажите IP в пункте \"Настройки соединения\"", QMessageBox.Ok, QMessageBox.Ok)
+            answer = QMessageBox.information(self, 'Внимание!', "Не указан IP сервера.\nУкажите IP в пункте \"Настройки подключения\"", QMessageBox.Ok, QMessageBox.Ok)
             if answer:
                 self.session_settings_widget.raise_()
             return
@@ -301,7 +301,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if self.log_checkbox.isChecked():
             try:
-                with open(self.session_settings_widget.path_line_edit.text() + '\\' +
+                with open(self.session_settings_widget.path_line_edit.text() + '/' +
                           self.session_settings_widget.filename_line_edit.text() + '.csv', 'a+') as log:
                     log_string = str(time.time()).replace('.', ',') + ';' + \
                                  str(time.strftime("%H:%M:%S \\ %d.%m.%Y")) + ';'
@@ -376,7 +376,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 os.mkdir(self.images_folder)
             else:
                 logger.info('Images folder exists')
-            file_name = datetime.datetime.now().strftime("\\%d.%m.%y-%H_%M_%S") + ".png"
+            file_name = datetime.datetime.now().strftime("/%d.%m.%y-%H_%M_%S") + ".png"
             exporter = pg.exporters.ImageExporter(self.customplot.pgcustom.plotItem)
             url = QtCore.QUrl.fromLocalFile(self.images_folder + file_name)
             logger.info(url)

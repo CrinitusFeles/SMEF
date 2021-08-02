@@ -77,7 +77,7 @@ class SessionViewer(QWidget, Ui_session_viewer):
                 self.connected_sensors[4] = True
                 self.s5_legend_checkbox.setChecked(True)
 
-        logger.info('connected sensors:', self.connected_sensors)
+        logger.info('connected sensors:' + str(self.connected_sensors))
 
         self.np_data = self.data.T.to_numpy()
         # self.viewer_norma_checkbox.setChecked(True)
@@ -283,13 +283,13 @@ class SessionViewer(QWidget, Ui_session_viewer):
 
     def copy_image(self):
         try:
-            images_folder = os.getcwd() + '\\output\\images'
+            images_folder = os.getcwd() + '/output/images'
             if not os.path.isdir(images_folder):
-                logger.info('Create new images folder:', images_folder)
+                logger.info('Create new images folder:' + str(images_folder))
                 os.mkdir(images_folder)
             else:
                 logger.info('Images folder exists')
-            file_name = datetime.datetime.now().strftime("\\%d.%m.%y-%H_%M_%S") + ".png"
+            file_name = datetime.datetime.now().strftime("/%d.%m.%y-%H_%M_%S") + ".png"
             exporter = pg.exporters.ImageExporter(self.viewer_custom_plot.pgcustom.plotItem)
             url = QtCore.QUrl.fromLocalFile(images_folder + file_name)
             print(url)

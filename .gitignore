@@ -9,6 +9,9 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+output/
+event_log/
+config.json
 smef/exe/
 smef/.vscode/
 smef/output/

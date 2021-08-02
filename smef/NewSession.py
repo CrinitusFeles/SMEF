@@ -62,7 +62,7 @@ class NewSession(QWidget, Ui_new_session_window):
                 self.status = True
                 with open('config.json', 'w') as f:
                     f.write(json.dumps(config, default=lambda o: o.__dict__, sort_keys=True, indent=4))
-                with open(self.path_line_edit.text() + '\\' + self.filename_line_edit.text() + '.csv', 'w') as log:
+                with open(self.path_line_edit.text() + '/' + self.filename_line_edit.text() + '.csv', 'w') as log:
                     log_sting = 'Timestamp;Time;'
                     if self.s1_checkbox.isChecked():
                         log_sting += 'Sensor1;'

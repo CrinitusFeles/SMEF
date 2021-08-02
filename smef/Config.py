@@ -5,7 +5,7 @@ import os
 class Config:
     def __init__(self, **kwargs):
         # ===========  New Session window  ================
-        self.last_path = kwargs.get('last_path', os.getcwd() + '\\output')
+        self.last_path = kwargs.get('last_path', os.getcwd() + '/output')
         self.last_name = kwargs.get('last_name', '')
         self.connected_sensors = kwargs.get('connected_sensors', [False, False, False, False, False])
         self.comment = ''
