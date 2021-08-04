@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.0 (2021-08-04)
+### Feature
+* Add demo-server for simulating FL7040 connection ([`cc56ee5`](https://github.com/CrinitusFeles/SMEF/commit/cc56ee5d38c80c0391fecf8eacc99d54760899d1))
+
 ## v0.3.1 (2021-08-02)
 ### Fix
 * Smal fixes ([`9a8ec13`](https://github.com/CrinitusFeles/SMEF/commit/9a8ec13da6f44b71f84b8ef51a97526d245a5d52))
