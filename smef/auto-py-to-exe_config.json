@@ -62,68 +62,72 @@
    "value": false
   },
   {
-   "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/app_logger.py;."
+   "optionDest": "binaries",
+   "value": "X:/GDrive/PyQt_projects/SMEF/ru-eng.qm;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/Config.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/app_logger.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/connections_settings.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/Config.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/ConnectionsSettings.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/connections_settings.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/custom_threading.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/ConnectionsSettings.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/CustomPlot.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/custom_threading.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/double_range_slider.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/CustomPlot.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/generator_window.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/double_range_slider.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/GeneratorSettings.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/generator_window.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/mainwindow.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/GeneratorSettings.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/new_session_window.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/mainwindow.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/NewSession.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/new_session_window.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/sensor_commands.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/NewSession.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/session_viewer.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/sensor_commands.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/SessionViewer.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/session_viewer.py;."
   },
   {
    "optionDest": "datas",
-   "value": "X:/GDrive/PyQt_projects/SMEF/utils.py;."
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/SessionViewer.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/utils.py;."
   },
   {
    "optionDest": "binaries",

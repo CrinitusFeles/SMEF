@@ -1,6 +1,6 @@
 # SMEF
 
-Graphical interface for electric field monitoring system FL7006/Kit
+Graphical interface for electric field monitoring system FL7040
 
 #### Installation
 

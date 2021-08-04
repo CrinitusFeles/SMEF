@@ -619,7 +619,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.customplot.pgcustom.legend.update()
 
 
-def main():
+def main(*args):
     logger.info("Start application")
     global app
     app = QApplication(sys.argv)
