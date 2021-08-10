@@ -14,7 +14,7 @@ def get_file_handler():
         os.mkdir('event_log')
     file_handler = logging.FileHandler("event_log/event_log" + time.strftime("%Y-%m-%d_%H.%M.%S",
                                                                              time.localtime()) + ".log")
-    file_handler.setLevel(logging.WARNING)
+    file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(_log_file_format)
     return file_handler
 

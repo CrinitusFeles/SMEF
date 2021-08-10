@@ -104,6 +104,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.s4_legend_checkbox.stateChanged.connect(self.hide_line_plot)
         self.s5_legend_checkbox.stateChanged.connect(self.hide_line_plot)
 
+        self.marker_checkbox.stateChanged.connect(self.on_off_markers)
+
         self.data_update_timer = QtCore.QTimer()
         self.update_period = 1000
         self.data_update_timer.setInterval(self.update_period)
@@ -611,13 +613,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.connections_settings_widget.close()
 
     def hide_line_plot(self):
-        self.customplot.pgcustom.data_line[0].setVisible(self.s1_legend_checkbox.isChecked())
-        self.customplot.pgcustom.data_line[1].setVisible(self.s2_legend_checkbox.isChecked())
-        self.customplot.pgcustom.data_line[2].setVisible(self.s3_legend_checkbox.isChecked())
-        self.customplot.pgcustom.data_line[3].setVisible(self.s4_legend_checkbox.isChecked())
-        self.customplot.pgcustom.data_line[4].setVisible(self.s5_legend_checkbox.isChecked())
-        self.customplot.pgcustom.legend.update()
+        try:
+            self.customplot.pgcustom.data_line[0].setVisible(self.s1_legend_checkbox.isChecked())
+            self.customplot.pgcustom.data_line[1].setVisible(self.s2_legend_checkbox.isChecked())
+            self.customplot.pgcustom.data_line[2].setVisible(self.s3_legend_checkbox.isChecked())
+            self.customplot.pgcustom.data_line[3].setVisible(self.s4_legend_checkbox.isChecked())
+            self.customplot.pgcustom.data_line[4].setVisible(self.s5_legend_checkbox.isChecked())
+            self.customplot.pgcustom.legend.update()
+        except Exception as ex:
+            logger.error(ex)
+            logger.warning('Probably started new session while current session in process')
 
+    def on_off_markers(self, state):
+        if state:
+            self.customplot.pgcustom.display_data_under_mouse = True
+            self.customplot.pgcustom.cursor_vLine.setVisible(True)
+            self.customplot.pgcustom.cursor_hLine.setVisible(True)
+            self.customplot.pgcustom.marker_label.setVisible(True)
+        else:
+            self.customplot.pgcustom.display_data_under_mouse = False
+            self.customplot.pgcustom.cursor_vLine.setVisible(False)
+            self.customplot.pgcustom.cursor_hLine.setVisible(False)
+            self.customplot.pgcustom.marker_label.setVisible(False)
 
 def main(*args):
     logger.info("Start application")

@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtCore import Qt
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtCore
 from PyQt5.QtGui import QPen
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QApplication)
 import pyqtgraph as pg
@@ -64,6 +64,22 @@ class CustomPlotWidget(pg.PlotWidget):
 
         self.infinite_line = None
 
+        # cross hair
+        self.cursor_vLine = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen('g', width=2))
+        self.cursor_hLine = pg.InfiniteLine(angle=0, movable=False, pen=pg.mkPen('g', width=2))
+        # self.vb = [None, None, None, None, None]
+        self.marker_label = pg.TextItem()
+        self.marker_label.setPos(time.time() + 60, 1)
+        self.marker_label.setColor('k')
+        self.addItem(self.marker_label, ignoreBounds=True)
+        self.addItem(self.cursor_vLine, ignoreBounds=True)
+        self.addItem(self.cursor_hLine, ignoreBounds=True)
+        
+        self.display_data_under_mouse = True
+        self.freeze_cursor = False
+
+        self.last_mouse_position = None
+
         self.setBackground('#FFFFFF')
         self.legend = self.addLegend(brush='#08080805', pen='k', colCount=1, labelTextColor='k', labelTextSize='7pt')
 
@@ -78,10 +94,6 @@ class CustomPlotWidget(pg.PlotWidget):
         self.line_symbol_pen = ['r', 'g', 'b', 'm', 'c']
         self.line_symbol = ['o', 'o', 'o', 'o', 'o']
         for i in range(5):
-            # self.data_line[i] = self.plot(x=self.data[0], y2=self.data[i+1], name="Датчик " + str(i+1),
-            #                               pen=pg.mkPen(color=self.line_colors[i], width=self.line_width[i]),
-            #                               symbol=self.line_symbol[i], symbolPen=self.line_symbol_pen[i],
-            #                               symbolSize=self.line_symbol_size[i])
             self.data_line[i] = self.plot(x=self.data[0], y2=self.data[i+1], name="Датчик " + str(i+1),
                                           pen=({'color': (i, 5), 'width': 1}))
 
@@ -97,6 +109,7 @@ class CustomPlotWidget(pg.PlotWidget):
 
         self.condition = 0
         self.scroll_access = 0
+        self.proxy = pg.SignalProxy(self.scene().sigMouseMoved, rateLimit=60, slot=self.mouse_moved)
 
     def init_data(self, sensor_list=None):
 
@@ -106,10 +119,6 @@ class CustomPlotWidget(pg.PlotWidget):
             self.data_line = [None] * 5
             for i in range(5):
                 if sensor_list[i]:
-                    # self.data_line[i] = self.plot(x=self.data[0], y2=self.data[i + 1], name="Датчик " + str(i + 1),
-                    #                               pen=pg.mkPen(color=self.line_colors[i], width=self.line_width[i]),
-                    #                               symbol=self.line_symbol[i], symbolPen=self.line_symbol_pen[i],
-                    #                               symbolSize=self.line_symbol_size[i])
                     self.data_line[i] = self.plot(x=self.data[0], y2=self.data[i+1], name="Датчик " + str(i+1),
                                                   pen=({'color': (i, 5), 'width': 1}))
 
@@ -119,9 +128,40 @@ class CustomPlotWidget(pg.PlotWidget):
                     self.legend.addItem(self.data_line[i], "Датчик " + str(i + 1))
             # self.legend.items[i][0].item.opts['pen'] = {'color': (i, 5), 'width': 2}
 
+    def mouse_moved(self, evt):
+        if self.display_data_under_mouse and not self.freeze_cursor:
+            pos = evt[0]  ## using signal proxy turns original arguments into a tuple
+            self.last_mouse_position = pos
+            if self.sceneBoundingRect().contains(pos):
+                mouse_point = self.getPlotItem().vb.mapSceneToView(pos)
+                marker_text = ''
+                for i, data in enumerate(self.data[1:]):
+                    # if len(data) > 0:
+                    index = np.where(self.data[0].astype(int) == int(mouse_point.x()))[0]
+                    if len(index) > 0 and self.data_line[i] is not None:
+                        self.marker_label.setFont(QtGui.QFont('Times', 10, QtGui.QFont.Bold))
+                        # self.marker_label.setColor(pg.intColor(i))
+                        marker_text += 'Д' + str(i + 1) + ': ' + str(data[index[0]]) + ',\n'
+                marker_text = marker_text[:-2]
+                self.marker_label.setText(marker_text)
+                self.marker_label.setPos(mouse_point)
+
+                self.cursor_vLine.setPos(mouse_point.x())
+                self.cursor_hLine.setPos(mouse_point.y())
+
     def wheelEvent(self, ev):
         # if self.scroll_access:
         super().wheelEvent(ev)
+
+    def mousePressEvent(self, ev):
+        if ev.buttons() != Qt.MiddleButton:
+            super().mousePressEvent(ev)
+        else:
+            self.freeze_cursor = True
+
+    def mouseReleaseEvent(self, ev):
+        super().mouseReleaseEvent(ev)
+        self.freeze_cursor = False
 
     def update_xrange(self):
         self.setXRange(timestamp() - self.sliding_window_size - 5, timestamp() + 5)
@@ -133,33 +173,6 @@ class CustomPlotWidget(pg.PlotWidget):
                 self.original_data = np.delete(self.original_data, 0, axis=1)
 
             x_value = timestamp()
-            # if self.demonstrate_mode:
-            #     if self.left_axis.logMode:
-            #         measure1 = randint(0, 100) / 10**6
-            #         measure2 = (np.cos(x_value)*20+50) / 10**6
-            #         measure3 = (np.sin(x_value)*20+50) / 10**6
-            #         measure4 = (np.sin(x_value)*10+200) / 10**6
-            #         measure5 = ((np.sin(x_value)*10 + 10) / randint(0, 100)) / 10**6
-            #     else:
-            #         measure1 = randint(0, 100)
-            #         measure2 = np.cos(x_value)*20+50
-            #         measure3 = np.sin(x_value)*15+25
-            #         measure4 = np.cos(np.sin(x_value))*10+20
-            #         measure5 = np.cos(x_value)*10
-            #
-            # if self.demonstrate_mode:
-            #     new_data = np.array([x_value, measure1, measure2, measure3, measure4, measure5]).reshape(6, 1)
-            #     self.data = np.hstack((self.data, new_data))
-            #     for i in range(5):
-            #         if self.data_line[i] is not None:
-            #             self.data_line[i].setData(self.data[0], self.data[i+1])
-            #             self.legend.items[i][0].item.opts['pen'] = {'color': (i, 5), 'width': 2}
-            #
-            #     self.minmax = np.row_stack((np.amin(self.data[1:], axis=1), np.mean(self.data[1:], axis=1),
-            #                                 np.amax(self.data[1:], axis=1)))
-            #
-            #
-            # else:
             sensor_data = np.array([self.sensor1, self.sensor2, self.sensor3, self.sensor4, self.sensor5]).reshape(5, 1)
             new_data = np.array([x_value, self.sensor1, self.sensor2, self.sensor3, self.sensor4, self.sensor5])
             self.original_data = np.append(self.original_data, np.vstack([[x_value], sensor_data]), axis=1)
@@ -171,6 +184,8 @@ class CustomPlotWidget(pg.PlotWidget):
 
             self.minmax = np.row_stack((np.amin(self.data[1:], axis=1), np.mean(self.data[1:], axis=1),
                                         np.amax(self.data[1:], axis=1)))
+
+            self.mouse_moved((self.last_mouse_position, 0))
 
     def convert_plot_data(self, mode=0):
         copy_array = np.copy(self.original_data)

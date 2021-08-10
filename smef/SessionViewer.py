@@ -33,6 +33,8 @@ class SessionViewer(QWidget, Ui_session_viewer):
         self.s4_legend_checkbox.stateChanged.connect(self.hide_line_plot)
         self.s5_legend_checkbox.stateChanged.connect(self.hide_line_plot)
 
+        self.marker_checkbox.stateChanged.connect(self.on_off_markers)
+
         self.slider = RangeSlider(QtCore.Qt.Horizontal)
         self.slider.setMinimumHeight(30)
         self.slider.setMinimum(0)
@@ -91,6 +93,7 @@ class SessionViewer(QWidget, Ui_session_viewer):
         self.viewer_custom_plot.pgcustom.setLimits(yMin=-10000, yMax=10000, xMin=self.np_data[0][0] - 50000,
                                                    xMax=self.np_data[0][-1] + 50000)
         self.viewer_custom_plot.pgcustom.original_data = self.np_data
+        self.viewer_custom_plot.pgcustom.data = self.np_data
         self.update_viewer(init_flag=True)
 
     def update_viewer(self, init_flag=False):
@@ -326,3 +329,15 @@ class SessionViewer(QWidget, Ui_session_viewer):
         self.viewer_custom_plot.pgcustom.data_line[3].setVisible(self.s4_legend_checkbox.isChecked())
         self.viewer_custom_plot.pgcustom.data_line[4].setVisible(self.s5_legend_checkbox.isChecked())
         self.viewer_custom_plot.pgcustom.legend.update()
+
+    def on_off_markers(self, state):
+        if state:
+            self.viewer_custom_plot.pgcustom.display_data_under_mouse = True
+            self.viewer_custom_plot.pgcustom.cursor_vLine.setVisible(True)
+            self.viewer_custom_plot.pgcustom.cursor_hLine.setVisible(True)
+            self.viewer_custom_plot.pgcustom.marker_label.setVisible(True)
+        else:
+            self.viewer_custom_plot.pgcustom.display_data_under_mouse = False
+            self.viewer_custom_plot.pgcustom.cursor_vLine.setVisible(False)
+            self.viewer_custom_plot.pgcustom.cursor_hLine.setVisible(False)
+            self.viewer_custom_plot.pgcustom.marker_label.setVisible(False)
