@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.0 (2021-08-10)
+### Feature
+* Added cursor cross hair ([`33690fc`](https://github.com/CrinitusFeles/SMEF/commit/33690fcff7996c2be10504fd848cc601bc50a899))
+
 ## v0.4.0 (2021-08-04)
 ### Feature
 * Add demo-server for simulating FL7040 connection ([`cc56ee5`](https://github.com/CrinitusFeles/SMEF/commit/cc56ee5d38c80c0391fecf8eacc99d54760899d1))
