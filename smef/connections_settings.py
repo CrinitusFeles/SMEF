@@ -146,7 +146,7 @@ class Ui_connections_settings(object):
 
     def retranslateUi(self, connections_settings):
         _translate = QtCore.QCoreApplication.translate
-        connections_settings.setWindowTitle(_translate("connections_settings", "Form"))
+        connections_settings.setWindowTitle(_translate("connections_settings", "Настройки соединения"))
         self.groupBox_2.setTitle(_translate("connections_settings", "Настройки терминального сервера"))
         self.label.setText(_translate("connections_settings", "Ip"))
         self.label_2.setText(_translate("connections_settings", "Sensor1 port"))

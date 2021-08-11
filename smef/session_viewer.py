@@ -181,7 +181,7 @@ class Ui_session_viewer(object):
 
     def retranslateUi(self, session_viewer):
         _translate = QtCore.QCoreApplication.translate
-        session_viewer.setWindowTitle(_translate("session_viewer", "Form"))
+        session_viewer.setWindowTitle(_translate("session_viewer", "Просмотр сеанса"))
         self.groupBox_6.setTitle(_translate("session_viewer", "Заголовок графика"))
         self.groupBox.setTitle(_translate("session_viewer", "Описание сессии"))
         item = self.viewer_minmax_values_table.verticalHeaderItem(0)
@@ -201,11 +201,11 @@ class Ui_session_viewer(object):
         item = self.viewer_minmax_values_table.horizontalHeaderItem(2)
         item.setText(_translate("session_viewer", "Макс."))
         self.groupBox_3.setTitle(_translate("session_viewer", "Отображение графиков"))
-        self.s1_legend_checkbox.setText(_translate("session_viewer", "S1"))
-        self.checkBos2_legend_checkbox.setText(_translate("session_viewer", "S2"))
-        self.s3_legend_checkbox.setText(_translate("session_viewer", "S3"))
-        self.s4_legend_checkbox.setText(_translate("session_viewer", "S4"))
-        self.s5_legend_checkbox.setText(_translate("session_viewer", "S5"))
+        self.s1_legend_checkbox.setText(_translate("session_viewer", "Д1"))
+        self.checkBos2_legend_checkbox.setText(_translate("session_viewer", "Д2"))
+        self.s3_legend_checkbox.setText(_translate("session_viewer", "Д3"))
+        self.s4_legend_checkbox.setText(_translate("session_viewer", "Д4"))
+        self.s5_legend_checkbox.setText(_translate("session_viewer", "Д5"))
         self.groupBox_2.setTitle(_translate("session_viewer", "Единицы измерения"))
         self.units_rbutton1.setText(_translate("session_viewer", "В/м"))
         self.units_rbutton2.setText(_translate("session_viewer", "дБмкВ/м"))

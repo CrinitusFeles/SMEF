@@ -19,6 +19,9 @@ class SessionViewer(QWidget, Ui_session_viewer):
 
         self.app = [x.app for x in QApplication.topLevelWidgets() if x.objectName() == 'MainWindow'][0]
 
+        self.trans = QtCore.QTranslator(self)
+        self.retranslateUi(self)
+
         self.viewer_copy_data_button.pressed.connect(self.copy_data)
         self.viewer_copy_graph_button.pressed.connect(self.copy_image)
         self.viewer_norma_checkbox.stateChanged.connect(self.norma_checked)
@@ -46,6 +49,8 @@ class SessionViewer(QWidget, Ui_session_viewer):
         # QtCore.QObject.connect(slider, QtCore.SIGNAL('sliderMoved(int)'), echo)
         # self.slider.show()
         # self.slider.raise_()
+        self.current_locale = 'ru'
+
         self.units = 'В/м'
         self.units_mode = 0
         self.viewer_vertical_layout.addWidget(self.slider)
@@ -96,6 +101,11 @@ class SessionViewer(QWidget, Ui_session_viewer):
         self.viewer_custom_plot.pgcustom.data = self.np_data
         self.update_viewer(init_flag=True)
 
+    def changeEvent(self, event):
+        if event.type() == QtCore.QEvent.LanguageChange:
+            self.retranslateUi(self)
+        super(SessionViewer, self).changeEvent(event)
+
     def update_viewer(self, init_flag=False):
         if self.data is not None:
             for i in range(len(self.np_data) - 1):
@@ -122,31 +132,43 @@ class SessionViewer(QWidget, Ui_session_viewer):
                 convert_to_log = lambda x: 20 * np.log10(x * 10**6)
                 if self.units_rbutton1.isChecked():
                     self.last_units = copy.copy(self.units)
-                    self.units = 'В/м'
                     # self.viewer_custom_plot.pgcustom.convert_plot_data(mode=0)
 
                     self.viewer_custom_plot.pgcustom.enableAutoRange(axis='y', enable=True)
                     self.viewer_custom_plot.pgcustom.enableAutoRange(axis='x', enable=True)
-                    self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "В/м"
+                    if self.current_locale == 'ru':
+                        self.units = 'В/м'
+                        self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "В/м"
+                        self.viewer_custom_plot.pgcustom.russian_labels['units'] = "В/м"
+                    else:
+                        self.units = 'V/m'
+                        self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "V/m"
+                        self.viewer_custom_plot.pgcustom.english_labels['units'] = "V/m"
                     self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
 
-                    if self.last_units == 'дБмкВ/м':
+                    if self.last_units in ['дБмкВ/м', 'dBµV/m']:
                         self.viewer_norma_val_spinbox.setValue(reverse_convert(self.viewer_norma_val_spinbox.value(), mode=2))
-                    elif self.last_units == 'Вт/м²':
+                    elif self.last_units in ['Вт/м²', 'W/m²']:
                         self.viewer_norma_val_spinbox.setValue(self.viewer_norma_val_spinbox.value() * 377)
                     else:
                         raise Exception
 
                 if self.units_rbutton2.isChecked():
                     self.last_units = copy.copy(self.units)
-                    self.units = 'дБмкВ/м'
-                    self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "дБмкВ/м"
+                    if self.current_locale == 'ru':
+                        self.units = 'дБмкВ/м'
+                        self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "дБмкВ/м"
+                        self.viewer_custom_plot.pgcustom.russian_labels['units'] = "дБмкВ/м"
+                    else:
+                        self.units = 'dBµV/m'
+                        self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "dBµV/m"
+                        self.viewer_custom_plot.pgcustom.english_labels['units'] = "dBµV/m"
                     self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
                     if self.viewer_norma_val_spinbox.value() <= 0:
                         self.viewer_norma_val_spinbox.setValue(0.001)
-                    if self.last_units == 'В/м':
+                    if self.last_units in ['В/м', 'V/m']:
                         self.viewer_norma_val_spinbox.setValue(convert_to_log(self.viewer_norma_val_spinbox.value()))
-                    elif self.last_units == 'Вт/м²':
+                    elif self.last_units in ['Вт/м²', 'W/m²']:
                         self.viewer_norma_val_spinbox.setValue(self.viewer_norma_val_spinbox.value() * 377)
                         self.viewer_norma_val_spinbox.setValue(convert_to_log(self.viewer_norma_val_spinbox.value()))
                     else:
@@ -155,40 +177,59 @@ class SessionViewer(QWidget, Ui_session_viewer):
                     self.viewer_custom_plot.pgcustom.enableAutoRange(axis='x', enable=True)
                 if self.units_rbutton3.isChecked():
                     self.last_units = copy.copy(self.units)
-                    self.units = 'Вт/м²'
                     # self.viewer_custom_plot.pgcustom.convert_plot_data(mode=2)
                     self.viewer_custom_plot.pgcustom.enableAutoRange(axis='y', enable=True)
                     self.viewer_custom_plot.pgcustom.enableAutoRange(axis='x', enable=True)
-                    self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "Вт/м²"
+                    if self.current_locale == 'ru':
+                        self.units = 'Вт/м²'
+                        self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "Вт/м²"
+                        self.viewer_custom_plot.pgcustom.russian_labels['units'] = "Вт/м²"
+                    else:
+                        self.units = 'W/m²'
+                        self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "W/m²"
+                        self.viewer_custom_plot.pgcustom.english_labels['units'] = "W/m²"
                     self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
-                    if self.last_units == 'дБмкВ/м':
+                    if self.last_units in ('дБмкВ/м', 'dBµV/m'):
                         self.viewer_norma_val_spinbox.setValue(reverse_convert(self.viewer_norma_val_spinbox.value(), mode=2))
                         self.viewer_norma_val_spinbox.setValue(self.viewer_norma_val_spinbox.value() / 377)
-                    elif self.last_units == 'В/м':
+                    elif self.last_units in ('В/м', 'V/m'):
                         self.viewer_norma_val_spinbox.setValue(self.viewer_norma_val_spinbox.value() / 377)
                     else:
                         raise Exception
                 self.viewer_norma_unit_label.setText(self.units)
+                self.viewer_custom_plot.pgcustom.change_locale(self.current_locale)
         except Exception as ex:
             logger.error(ex)
 
         if self.units_rbutton1.isChecked():
             # self.viewer_custom_plot.pgcustom.convert_plot_data(mode=0)
             self.np_data = np.copy(self.viewer_custom_plot.pgcustom.original_data)
+            self.viewer_custom_plot.pgcustom.data = self.np_data
             self.update_viewer()
 
             self.viewer_custom_plot.pgcustom.enableAutoRange(axis='y', enable=True)
             self.viewer_custom_plot.pgcustom.enableAutoRange(axis='x', enable=True)
-            self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "В/м"
+            if self.current_locale == 'ru':
+                self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "В/м"
+                self.viewer_norma_unit_label.setText("В/м")
+            else:
+                self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "V/m"
+                self.viewer_norma_unit_label.setText("V/m")
             self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
             # self.norma_val_spinbox.setValue(utils.converter(self.norma_val_spinbox.value(), mode=0))
             # utils.converter(self.norma_val_spinbox.value(), mode=0)
         if self.units_rbutton2.isChecked():
             self.np_data = np.copy(self.viewer_custom_plot.pgcustom.original_data)
             self.np_data[1:, ] = converter(self.np_data[1:, ], mode=1)
+            self.viewer_custom_plot.pgcustom.data = self.np_data
             self.update_viewer()
             # self.viewer_custom_plot.pgcustom.convert_plot_data(mode=1)
-            self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "дБмкВ/м"
+            if self.current_locale == 'ru':
+                self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "дБмкВ/м"
+                self.viewer_norma_unit_label.setText("дБмкВ/м")
+            else:
+                self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "dBµV/m"
+                self.viewer_norma_unit_label.setText("dBµV/m")
             self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
             # self.norma_val_spinbox.setValue(utils.converter(self.norma_val_spinbox.value(), mode=1))
             # utils.converter(self.norma_val_spinbox.value(), mode=1)
@@ -197,15 +238,20 @@ class SessionViewer(QWidget, Ui_session_viewer):
         if self.units_rbutton3.isChecked():
             self.np_data = np.copy(self.viewer_custom_plot.pgcustom.original_data)
             self.np_data[1:, ] = converter(self.np_data[1:, ], mode=2)
+            self.viewer_custom_plot.pgcustom.data = self.np_data
             self.update_viewer()
             # self.viewer_custom_plot.pgcustom.convert_plot_data(mode=2)
             self.viewer_custom_plot.pgcustom.enableAutoRange(axis='y', enable=True)
             self.viewer_custom_plot.pgcustom.enableAutoRange(axis='x', enable=True)
-            self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "Вт/м²"
+            if self.current_locale == 'ru':
+                self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "Вт/м²"
+                self.viewer_norma_unit_label.setText("Вт/м²")
+            else:
+                self.viewer_custom_plot.pgcustom.left_axis.labelUnits = "W/m²"
+                self.viewer_norma_unit_label.setText("W/m²")
             self.viewer_custom_plot.pgcustom.left_axis.label.setHtml(self.viewer_custom_plot.pgcustom.left_axis.labelString())
             # print(utils.converter(self.norma_val_spinbox.value(), mode=2))
             # self.norma_val_spinbox.setValue(utils.converter(self.norma_val_spinbox.value(), mode=2))
-        self.viewer_norma_unit_label.setText(self.units)
 
     def update_table(self):
         k = 0

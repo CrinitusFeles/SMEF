@@ -31,7 +31,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.setWindowTitle("СМЭП КЛИЕНТ")
+        # self.setWindowTitle("СМЭП КЛИЕНТ")
         self.config_file_name = 'config.json'
         self.output_folder = os.getcwd() + '/output'
         self.event_log_folder = os.getcwd() + '/event_log'
@@ -52,6 +52,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.units = 'В/м'
 
         options = ([('Russian', ''), ('English', 'ru-eng'), ])
+        self.current_locale = 'ru'
         self.trans = QtCore.QTranslator(self)
         for i, (text, lang) in enumerate(options):
             self.locale_combo_box.addItem(text)
@@ -84,6 +85,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.graph_start_button.pressed.connect(self.start_plot)
         self.graph_start_button.setEnabled(False)
         self.open_generator_button.pressed.connect(self.open_generator_settings)
+        self.open_generator_button.setEnabled(False)
         self.open_button.pressed.connect(self.open_session)
         self.connection_settings_button.pressed.connect(self.open_connections_settings)
         self.norma_checkbox.stateChanged.connect(self.norma_checked)
@@ -202,7 +204,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def update_sensors(self):
         if self.connections_settings_widget.server_ip_line_edit.text() == '':
-            answer = QMessageBox.information(self, 'Внимание!', "Не указан IP сервера.\nУкажите IP в пункте \"Настройки подключения\"", QMessageBox.Ok, QMessageBox.Ok)
+            if self.current_locale == 'ru':
+                answer = QMessageBox.information(self, 'Внимание!',
+                                                 "Не указан IP сервера.\nУкажите IP в пункте \"Настройки подключения\"",
+                                                 QMessageBox.Ok, QMessageBox.Ok)
+            else:
+                answer = QMessageBox.information(self, 'Warning!',
+                                                 "Ip did not set.\nSet server Ip address in \"Connection settings\"",
+                                                 QMessageBox.Ok, QMessageBox.Ok)
             if answer:
                 self.session_settings_widget.raise_()
             return
@@ -271,6 +280,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             logger.info(list(log))
             if 'Time' in log:
                 self.viewer = SessionViewer(data=log)
+                self.viewer.viewer_custom_plot.pgcustom.change_locale(self.current_locale)
+                self.change_plot_locale(self.locale_combo_box.currentIndex())
+                self.viewer.current_locale = self.current_locale
                 self.viewer.show()
             else:
                 logger.error('Incorrect log file' + str(file_full_path))
@@ -344,14 +356,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def start_plot(self):
         self.stop_button.setEnabled(True)
-        if self.graph_start_button.text() == 'Старт':
+
+        if self.graph_start_button.text() in ['Старт', 'Start']:
             self.data_update_timer.start(self.update_period)
             self.customplot.pgcustom.start()
-            self.graph_start_button.setText('Пауза')
-        elif self.graph_start_button.text() == 'Пауза':
+            if self.current_locale == 'ru':
+                self.graph_start_button.setText('Пауза')
+            else:
+                self.graph_start_button.setText('Pause')
+        elif self.graph_start_button.text() in ['Пауза', 'Pause']:
             self.customplot.pgcustom.stop()
             self.data_update_timer.stop()
-            self.graph_start_button.setText('Старт')
+            if self.current_locale == 'ru':
+                self.graph_start_button.setText('Старт')
+            else:
+                self.graph_start_button.setText('Start')
 
     def norma_checked(self):
         # line = InfiniteLine(pos=1.0, pen=pg.mkPen('r', width=13))
@@ -451,17 +470,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     convert_to_log = lambda x: 20 * np.log10(x * 10**6)
                     if self.units_rbutton1.isChecked():
                         self.last_units = copy.copy(self.units)
-                        self.units = 'В/м'
-                        self.customplot.pgcustom.convert_plot_data(mode=0)
 
+                        self.customplot.pgcustom.convert_plot_data(mode=0)
                         self.customplot.pgcustom.enableAutoRange(axis='y', enable=True)
                         self.customplot.pgcustom.enableAutoRange(axis='x', enable=True)
-                        self.customplot.pgcustom.left_axis.labelUnits = "В/м"
+                        if self.current_locale == 'ru':
+                            self.units = 'В/м'
+                            self.customplot.pgcustom.left_axis.labelUnits = "В/м"
+                        else:
+                            self.units = 'V/m'
+                            self.customplot.pgcustom.left_axis.labelUnits = "V/m"
                         self.customplot.pgcustom.left_axis.label.setHtml(self.customplot.pgcustom.left_axis.labelString())
 
-                        if self.last_units == 'дБмкВ/м':
+                        if self.last_units in ['дБмкВ/м', 'dBµV/m']:
                             self.norma_val_spinbox.setValue(reverse_convert(self.norma_val_spinbox.value(), mode=2))
-                        elif self.last_units == 'Вт/м²':
+                        elif self.last_units in ['Вт/м²', 'W/m²']:
                             self.norma_val_spinbox.setValue(self.norma_val_spinbox.value() * 377)
                         else:
                             raise Exception
@@ -469,14 +492,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         self.units_mode = 0
                     if self.units_rbutton2.isChecked():
                         self.last_units = copy.copy(self.units)
-                        self.units = 'дБмкВ/м'
-                        self.customplot.pgcustom.left_axis.labelUnits = "дБмкВ/м"
+                        if self.current_locale == 'ru':
+                            self.units = 'дБмкВ/м'
+                            self.customplot.pgcustom.left_axis.labelUnits = "дБмкВ/м"
+                        else:
+                            self.units = 'dBµV/m'
+                            self.customplot.pgcustom.left_axis.labelUnits = 'dBµV/m'
                         self.customplot.pgcustom.left_axis.label.setHtml(self.customplot.pgcustom.left_axis.labelString())
                         if self.norma_val_spinbox.value() <= 0:
                             self.norma_val_spinbox.setValue(0.001)
-                        if self.last_units == 'В/м':
+                        if self.last_units in ['В/м', 'V/m']:
                             self.norma_val_spinbox.setValue(convert_to_log(self.norma_val_spinbox.value()))
-                        elif self.last_units == 'Вт/м²':
+                        elif self.last_units in ['Вт/м²', 'W/m²']:
                             self.norma_val_spinbox.setValue(self.norma_val_spinbox.value() * 377)
                             self.norma_val_spinbox.setValue(convert_to_log(self.norma_val_spinbox.value()))
                         else:
@@ -484,21 +511,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         try:
                             self.customplot.pgcustom.convert_plot_data(mode=1)
                         except Exception as ex:
-                            print(ex)
+                            logger.error(ex)
                         self.customplot.pgcustom.enableAutoRange(axis='y', enable=True)
                         self.customplot.pgcustom.enableAutoRange(axis='x', enable=True)
                         self.units_mode = 1
                     if self.units_rbutton3.isChecked():
                         self.last_units = copy.copy(self.units)
-                        self.units = 'Вт/м²'
                         self.customplot.pgcustom.enableAutoRange(axis='y', enable=True)
                         self.customplot.pgcustom.enableAutoRange(axis='x', enable=True)
-                        self.customplot.pgcustom.left_axis.labelUnits = "Вт/м²"
+                        if self.current_locale == 'ru':
+                            self.units = 'Вт/м²'
+                            self.customplot.pgcustom.left_axis.labelUnits = "Вт/м²"
+                        else:
+                            self.units = 'W/m²'
+                            self.customplot.pgcustom.left_axis.labelUnits = "W/m²"
                         self.customplot.pgcustom.left_axis.label.setHtml(self.customplot.pgcustom.left_axis.labelString())
-                        if self.last_units == 'дБмкВ/м':
+                        if self.last_units in ('дБмкВ/м', 'dBµV/m'):
                             self.norma_val_spinbox.setValue(reverse_convert(self.norma_val_spinbox.value(), mode=2))
                             self.norma_val_spinbox.setValue(self.norma_val_spinbox.value() / 377)
-                        elif self.last_units == 'В/м':
+                        elif self.last_units in ('В/м', 'V/m'):
                             self.norma_val_spinbox.setValue(self.norma_val_spinbox.value() / 377)
                         else:
                             raise Exception
@@ -509,19 +540,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         self.units_mode = 2
                     self.norma_unit_label.setText(self.units)
             except Exception as ex:
+                print(ex)
                 logger.error(ex)
         else:  # after load config file
-            if units == 'В/м':
+            if units in ['В/м', 'V/m']:
                 self.units_rbutton1.setChecked(True)
-                self.units = 'В/м'
+                if self.current_locale == 'ru':
+                    self.units = 'В/м'
+                else:
+                    self.units = 'V/m'
                 self.units_mode = 0
-            elif units == 'дБмкВ/м':
+            elif units in ['дБмкВ/м', 'dBµV/m']:
                 self.units_rbutton2.setChecked(True)
-                self.units = 'дБмкВ/м'
+                if self.current_locale == 'ru':
+                    self.units = 'дБмкВ/м'
+                else:
+                    self.units = 'dBµV/m'
                 self.units_mode = 1
-            elif units == 'Вт/м²':
+            elif units in ['Вт/м²', 'W/m²']:
                 self.units_rbutton3.setChecked(True)
-                self.units = 'Вт/м²'
+                if self.current_locale == 'ru':
+                    self.units = 'Вт/м²'
+                else:
+                    self.units = 'W/m²'
                 self.units_mode = 2
             self.update_units()
 
@@ -579,12 +620,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.customplot.pgcustom.enableAutoRange(axis='x', enable=True)
 
     def stop_session(self):
-        if self.graph_start_button.text() == 'Пауза':
+        if self.graph_start_button.text() == ('Пауза' or 'Pause'):
             self.customplot.pgcustom.stop()
             self.data_update_timer.stop()
-            self.graph_start_button.setText('Старт')
-        QMessageBox.information(self, 'Сеанс завершен', "Данные по этому сеансу находятся в папке\n" +
-                                self.session_settings_widget.path_line_edit.text(), QMessageBox.Ok, QMessageBox.Ok)
+            if self.current_locale == 'ru':
+                self.graph_start_button.setText('Старт')
+            else:
+                self.graph_start_button.setText('Start')
+        if self.current_locale == 'ru':
+            QMessageBox.information(self, 'Сеанс завершен', "Данные по этому сеансу находятся в папке\n" +
+                                    self.session_settings_widget.path_line_edit.text(), QMessageBox.Ok, QMessageBox.Ok)
+        else:
+            QMessageBox.information(self, 'Session has finished', "The data for this session is located in the folder:\n" +
+                                    self.session_settings_widget.path_line_edit.text(), QMessageBox.Ok, QMessageBox.Ok)
         self.graph_start_button.setEnabled(False)
         self.stop_button.setEnabled(False)
 
@@ -592,14 +640,89 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         data = self.locale_combo_box.itemData(index)
         if data:
             self.trans.load(data)
+            self.session_settings_widget.trans.load(data)
+            self.connections_settings_widget.trans.load(data)
+            if self.viewer is not None:
+                self.viewer.trans.load(data)
+                self.viewer.current_locale = self.current_locale
             QtWidgets.QApplication.instance().installTranslator(self.trans)
         else:
             QtWidgets.QApplication.instance().removeTranslator(self.trans)
+        self.change_plot_locale(index)
+
+    def change_plot_locale(self, index):
+        if index:
+            self.current_locale = 'en'
+            self.units = self.get_translated_units()
+            self.customplot.pgcustom.english_labels['units'] = self.units
+            self.customplot.pgcustom.change_locale('en')
+            if self.viewer is not None:
+                self.viewer.current_locale = self.current_locale
+                self.viewer.units_update()
+                self.viewer.viewer_custom_plot.pgcustom.change_locale(self.current_locale)
+                self.viewer.viewer_custom_plot.pgcustom.legend.clear()
+                for i, val in enumerate(self.viewer.connected_sensors):
+                    if val:
+                        self.viewer.viewer_custom_plot.pgcustom.legend.addItem(
+                            self.viewer.viewer_custom_plot.pgcustom.data_line[i],
+                            self.viewer.viewer_custom_plot.pgcustom.english_labels.get('legend') + str(i + 1))
+        else:
+            self.current_locale = 'ru'
+            self.units = self.get_translated_units()
+            self.customplot.pgcustom.russian_labels['units'] = self.units
+            self.customplot.pgcustom.change_locale('ru')
+            if self.viewer is not None:
+                self.viewer.current_locale = self.current_locale
+                self.viewer.units_update()
+                self.viewer.viewer_custom_plot.pgcustom.change_locale(self.current_locale)
+                self.viewer.viewer_custom_plot.pgcustom.legend.clear()
+                for i, val in enumerate(self.viewer.connected_sensors):
+                    if val:
+                        self.viewer.viewer_custom_plot.pgcustom.legend.addItem(
+                            self.viewer.viewer_custom_plot.pgcustom.data_line[i],
+                            self.viewer.viewer_custom_plot.pgcustom.russian_labels.get('legend') + str(i + 1))
+
+    def get_translated_units(self):
+        if self.units_rbutton1.isChecked():
+            if self.current_locale == 'ru':
+                return 'В/м'
+            else:
+                return 'V/m'
+        elif self.units_rbutton2.isChecked():
+            if self.current_locale == 'ru':
+                return 'дБмкВ/м'
+            else:
+                return 'dBµV/m'
+        elif self.units_rbutton3.isChecked():
+            if self.current_locale == 'ru':
+                return 'Вт/м²'
+            else:
+                return 'W/m²'
+
+        # if units == 'В/м':
+        #     return 'V/m'
+        # elif units == 'дБмкВ/м':
+        #     return 'dBµV/m'
+        # elif units == 'Вт/м²':
+        #     return 'W/m²'
+        #
+        # elif units == 'V/m':
+        #     return 'В/м'
+        # elif units == 'dBµV/m':
+        #     return 'дБмкВ/м'
+        # elif units == 'W/m²':
+        #     return 'Вт/м²'
+        else:
+            raise Exception
 
     def changeEvent(self, event):
         if event.type() == QtCore.QEvent.LanguageChange:
             self.retranslateUi(self)
         super(MainWindow, self).changeEvent(event)
+        try:
+            self.norma_unit_label.setText(self.units)
+        except Exception as ex:
+            logger.warning(ex)
 
     def accept_connection_settings(self):
         logger.info('new server IP:' + self.connections_settings_widget.server_ip_line_edit.text())
@@ -635,6 +758,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.customplot.pgcustom.cursor_vLine.setVisible(False)
             self.customplot.pgcustom.cursor_hLine.setVisible(False)
             self.customplot.pgcustom.marker_label.setVisible(False)
+
 
 def main(*args):
     logger.info("Start application")

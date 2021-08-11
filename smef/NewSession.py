@@ -15,6 +15,9 @@ class NewSession(QWidget, Ui_new_session_window):
         self.setWindowTitle('Новый сеанс')
         # self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
+        self.trans = QtCore.QTranslator(self)
+        self.retranslateUi(self)
+
         self.path_tool_button.pressed.connect(self.open_file_system)
         self.accept_button.pressed.connect(self.accept_clicked)
         self.cancel_button.pressed.connect(self.cancel_clicked)
@@ -32,6 +35,11 @@ class NewSession(QWidget, Ui_new_session_window):
         self.generate_name()
 
         self.status = False
+
+    def changeEvent(self, event):
+        if event.type() == QtCore.QEvent.LanguageChange:
+            self.retranslateUi(self)
+        super(NewSession, self).changeEvent(event)
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)

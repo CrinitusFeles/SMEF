@@ -32,11 +32,23 @@ class CustomPlotWidget(pg.PlotWidget):
         self.data = np.array([[], [], [], [], [], []], float)
         self.original_data = np.array([[], [], [], [], [], []], float)
 
+        self.current_locale = 'ru'
+        self.russian_labels = {'xAxis': '<span style=\"color:black;font-size:20px\">Время</span>',
+                               'yAxis': '<span style=\"color:black;font-size:20px\">Амплитуда</span>',
+                               'units': 'В/м',
+                               'legend': 'Датчик ',
+                               'marker': 'Д'}
+        self.english_labels = {'xAxis': '<span style=\"color:black;font-size:20px\">Time</span>',
+                               'yAxis': '<span style=\"color:black;font-size:20px\">Amplitude</span>',
+                               'units': 'V/m',
+                               'legend': 'Sensor ',
+                               'marker': 'S'}
+
         self.getPlotItem().setLabel('left', "<span style=\"color:black;font-size:20px\">" +
                                     'Амплитуда' + "</span>", units="В/м")
         self.left_axis = self.getPlotItem().getAxis('left')
         self.left_axis.enableAutoSIPrefix(enable=False)
-        bottom_axis = self.getPlotItem().getAxis('bottom')
+        self.bottom_axis = self.getPlotItem().getAxis('bottom')
 
         self.left_axis.setTextPen(QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
         self.left_axis.setPen(QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
@@ -88,18 +100,9 @@ class CustomPlotWidget(pg.PlotWidget):
         self.showGrid(x=True, y=True)
         self.data_line = [None] * 5
 
-        self.line_colors = ['r', 'g', 'b', 'm', 'c']
-        self.line_width = [1, 1, 1, 1, 1]
-        self.line_symbol_size = [2, 2, 2, 2, 2]
-        self.line_symbol_pen = ['r', 'g', 'b', 'm', 'c']
-        self.line_symbol = ['o', 'o', 'o', 'o', 'o']
         for i in range(5):
-            self.data_line[i] = self.plot(x=self.data[0], y2=self.data[i+1], name="Датчик " + str(i+1),
+            self.data_line[i] = self.plot(x=self.data[0], y2=self.data[i+1], name=self.get_label('legend') + str(i+1),
                                           pen=({'color': (i, 5), 'width': 1}))
-
-            # print(self.data_line[i])
-            # print(self.data_line[i].opts)
-        # print(self.legend.items[0][0].item.opts.get('pen'))
 
         # self.timer = pg.QtCore.QTimer()
         #
@@ -119,18 +122,18 @@ class CustomPlotWidget(pg.PlotWidget):
             self.data_line = [None] * 5
             for i in range(5):
                 if sensor_list[i]:
-                    self.data_line[i] = self.plot(x=self.data[0], y2=self.data[i+1], name="Датчик " + str(i+1),
+                    self.data_line[i] = self.plot(x=self.data[0], y2=self.data[i+1], name=self.get_label('legend') + str(i+1),
                                                   pen=({'color': (i, 5), 'width': 1}))
 
             self.legend.clear()
             for i in range(5):
                 if sensor_list[i]:
-                    self.legend.addItem(self.data_line[i], "Датчик " + str(i + 1))
+                    self.legend.addItem(self.data_line[i], self.get_label('legend') + str(i + 1))
             # self.legend.items[i][0].item.opts['pen'] = {'color': (i, 5), 'width': 2}
 
     def mouse_moved(self, evt):
         if self.display_data_under_mouse and not self.freeze_cursor:
-            pos = evt[0]  ## using signal proxy turns original arguments into a tuple
+            pos = evt[0]  # using signal proxy turns original arguments into a tuple
             self.last_mouse_position = pos
             if self.sceneBoundingRect().contains(pos):
                 mouse_point = self.getPlotItem().vb.mapSceneToView(pos)
@@ -141,8 +144,8 @@ class CustomPlotWidget(pg.PlotWidget):
                     if len(index) > 0 and self.data_line[i] is not None:
                         self.marker_label.setFont(QtGui.QFont('Times', 10, QtGui.QFont.Bold))
                         # self.marker_label.setColor(pg.intColor(i))
-                        marker_text += 'Д' + str(i + 1) + ': ' + str(data[index[0]]) + ',\n'
-                marker_text = marker_text[:-2]
+                        marker_text += self.get_label('marker') + str(i + 1) + ': ' + "{:.2f}".format(data[index[0]]) + '\n'
+                marker_text = marker_text[:-1]
                 self.marker_label.setText(marker_text)
                 self.marker_label.setPos(mouse_point)
 
@@ -153,15 +156,19 @@ class CustomPlotWidget(pg.PlotWidget):
         # if self.scroll_access:
         super().wheelEvent(ev)
 
-    def mousePressEvent(self, ev):
-        if ev.buttons() != Qt.MiddleButton:
-            super().mousePressEvent(ev)
-        else:
-            self.freeze_cursor = True
+    # def mousePressEvent(self, ev):
+    #     if ev.buttons() != Qt.MiddleButton:
+    #         super().mousePressEvent(ev)
+    #     else:
+    #         self.freeze_cursor = True
+    #
+    # def mouseReleaseEvent(self, ev):
+    #     super().mouseReleaseEvent(ev)
+    #     self.freeze_cursor = False
 
-    def mouseReleaseEvent(self, ev):
-        super().mouseReleaseEvent(ev)
-        self.freeze_cursor = False
+    def mouseDoubleClickEvent(self, ev):
+        super().mouseDoubleClickEvent(ev)
+        self.freeze_cursor = not self.freeze_cursor
 
     def update_xrange(self):
         self.setXRange(timestamp() - self.sliding_window_size - 5, timestamp() + 5)
@@ -204,6 +211,27 @@ class CustomPlotWidget(pg.PlotWidget):
 
     def stop(self):
         self.condition = 0
+
+    def change_locale(self, locale='ru'):
+        if locale == 'ru':
+            labels = self.russian_labels
+            self.current_locale = 'ru'
+        else:
+            labels = self.english_labels
+            self.current_locale = 'en'
+        self.left_axis.setLabel(labels.get('yAxis'), units=labels.get('units'))
+        self.bottom_axis.setLabel(labels.get('xAxis'))
+        self.legend.clear()
+        for i in range(5):
+            if self.data_line[i] is not None:
+                self.legend.addItem(self.data_line[i], labels.get('legend') + str(i + 1))
+
+    def get_label(self, key):
+        if self.current_locale == 'ru':
+            labels = self.russian_labels
+        else:
+            labels = self.english_labels
+        return labels.get(key)
 
 
 if __name__ == '__main__':

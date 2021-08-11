@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>СМЭП Клиент</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_13">
@@ -137,7 +137,7 @@
           <item>
            <widget class="QGroupBox" name="groupBox_5">
             <property name="title">
-             <string>Параметры нормы и меркеров</string>
+             <string>Параметры нормы и маркеров</string>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_9">
              <item>
@@ -441,35 +441,35 @@
              <item>
               <widget class="QCheckBox" name="s1_legend_checkbox">
                <property name="text">
-                <string>S1</string>
+                <string>Д1</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QCheckBox" name="s2_legend_checkbox">
                <property name="text">
-                <string>S2</string>
+                <string>Д2</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QCheckBox" name="s3_legend_checkbox">
                <property name="text">
-                <string>S3</string>
+                <string>Д3</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QCheckBox" name="s4_legend_checkbox">
                <property name="text">
-                <string>S4</string>
+                <string>Д4</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QCheckBox" name="s5_legend_checkbox">
                <property name="text">
-                <string>S5</string>
+                <string>Д5</string>
                </property>
               </widget>
              </item>
@@ -575,7 +575,7 @@
   <customwidget>
    <class>CustomPlot</class>
    <extends>QWidget</extends>
-   <header location="global">CustomPlot</header>
+   <header location="global">.CustomPlot</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

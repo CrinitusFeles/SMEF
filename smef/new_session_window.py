@@ -99,7 +99,7 @@ class Ui_new_session_window(object):
 
     def retranslateUi(self, new_session_window):
         _translate = QtCore.QCoreApplication.translate
-        new_session_window.setWindowTitle(_translate("new_session_window", "Form"))
+        new_session_window.setWindowTitle(_translate("new_session_window", "Новый сеанс"))
         self.groupBox.setTitle(_translate("new_session_window", "Сохранение"))
         self.label.setText(_translate("new_session_window", "Путь"))
         self.path_tool_button.setText(_translate("new_session_window", "..."))

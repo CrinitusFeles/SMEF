@@ -15,6 +15,10 @@ class ConnectionsSettings(QWidget, Ui_connections_settings):
         self.setupUi(self)
         self.setWindowTitle('Настройки соединения')
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
+
+        self.trans = QtCore.QTranslator(self)
+        self.retranslateUi(self)
+
         self.server_ip_line_edit.setText(kwargs.get('server_ip', 'localhost'))
         self.s1_port_line_edit.setText(str(kwargs.get('s1_port', 4001)))
         self.s2_port_line_edit.setText(str(kwargs.get('s2_port', 4002)))
@@ -39,6 +43,11 @@ class ConnectionsSettings(QWidget, Ui_connections_settings):
 
     def ping_generator(self):
         ping(self.generator_ip_line_edit.text())
+
+    def changeEvent(self, event):
+        if event.type() == QtCore.QEvent.LanguageChange:
+            self.retranslateUi(self)
+        super(ConnectionsSettings, self).changeEvent(event)
 
 
 def ping(ip: str):
