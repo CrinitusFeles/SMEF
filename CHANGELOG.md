@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.0 (2021-08-11)
+### Feature
+* Update localization ([`e3c919a`](https://github.com/CrinitusFeles/SMEF/commit/e3c919a6a3e91c7ba052e60e6720e277a72ccf18))
+
 ## v0.5.0 (2021-08-10)
 ### Feature
 * Added cursor cross hair ([`33690fc`](https://github.com/CrinitusFeles/SMEF/commit/33690fcff7996c2be10504fd848cc601bc50a899))
