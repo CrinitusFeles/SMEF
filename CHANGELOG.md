@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.7.0 (2021-08-26)
+### Feature
+* Added dark theme and small fixes ([`92f2ecd`](https://github.com/CrinitusFeles/SMEF/commit/92f2ecdab06e214a61214bebf49c182f98fce62e))
+
 ## v0.6.0 (2021-08-11)
 ### Feature
 * Update localization ([`e3c919a`](https://github.com/CrinitusFeles/SMEF/commit/e3c919a6a3e91c7ba052e60e6720e277a72ccf18))
