@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui, QtCore
-from PyQt5.QtGui import QPen
+from PyQt5.QtGui import QPen, QColor
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QApplication)
 import pyqtgraph as pg
 import numpy as np
@@ -27,25 +27,29 @@ class CustomPlotWidget(pg.PlotWidget):
 
         self.sliding_window_size = 3600
 
+        self.theme = 'light'
+        self.palette = None
+
         pg.PlotWidget.__init__(self, parent=parent, axisItems={'bottom': TimeAxisItem(orientation='bottom')})
         self.setXRange(timestamp() - self.sliding_window_size/2, timestamp() + self.sliding_window_size/2)
         self.data = np.array([[], [], [], [], [], []], float)
         self.original_data = np.array([[], [], [], [], [], []], float)
 
         self.current_locale = 'ru'
-        self.russian_labels = {'xAxis': '<span style=\"color:black;font-size:20px\">Время</span>',
-                               'yAxis': '<span style=\"color:black;font-size:20px\">Амплитуда</span>',
+        self.russian_labels = {'xAxis': 'Время',
+                               'yAxis': 'Напряженность',
                                'units': 'В/м',
                                'legend': 'Датчик ',
                                'marker': 'Д'}
-        self.english_labels = {'xAxis': '<span style=\"color:black;font-size:20px\">Time</span>',
-                               'yAxis': '<span style=\"color:black;font-size:20px\">Amplitude</span>',
+
+        self.english_labels = {'xAxis': 'Time',
+                               'yAxis': 'Electric field',
                                'units': 'V/m',
                                'legend': 'Sensor ',
                                'marker': 'S'}
 
         self.getPlotItem().setLabel('left', "<span style=\"color:black;font-size:20px\">" +
-                                    'Амплитуда' + "</span>", units="В/м")
+                                    'Напряженность' + "</span>", units="В/м")
         self.left_axis = self.getPlotItem().getAxis('left')
         self.left_axis.enableAutoSIPrefix(enable=False)
         self.bottom_axis = self.getPlotItem().getAxis('bottom')
@@ -94,7 +98,7 @@ class CustomPlotWidget(pg.PlotWidget):
 
         self.setBackground('#FFFFFF')
         self.legend = self.addLegend(brush='#08080805', pen='k', colCount=1, labelTextColor='k', labelTextSize='7pt')
-
+        self.set_theme(self.theme)
         # self.legend.setOffset((700, 10))
 
         self.showGrid(x=True, y=True)
@@ -114,8 +118,47 @@ class CustomPlotWidget(pg.PlotWidget):
         self.scroll_access = 0
         self.proxy = pg.SignalProxy(self.scene().sigMouseMoved, rateLimit=60, slot=self.mouse_moved)
 
-    def init_data(self, sensor_list=None):
 
+    def set_theme(self, theme):
+        self.theme = theme
+        try:
+            if theme == 'dark':
+                self.palette = {'background': '#121212', 'axis': Qt.white, 'legend_background': '#00000020',
+                                'legend_text_color': 'w', 'label_color': '#FFFFFF', 'color': 'white'}
+            else:
+                self.palette = {'background': '#FFFFFF', 'axis': Qt.black, 'legend_background': '#08080805',
+                                'legend_text_color': 'k', 'label_color': '#000000', 'color': 'black'}
+                # labelStyle = {'color': '#000000', 'font-size': '12pt'}
+            labelStyle = {'color': self.palette.get('label_color'), 'font-size': '12pt'}
+            print(self.palette)
+
+            self.left_axis.setTextPen(QPen(self.palette.get('axis'), 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+            self.left_axis.setPen(QPen(self.palette.get('axis'), 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+            self.left_axis.setLabel(self.get_label('yAxis'), units=self.left_axis.labelUnits, **labelStyle)
+
+            self.bottom_axis.setPen(QPen(self.palette.get('axis'), 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+            self.bottom_axis.setTextPen(QPen(self.palette.get('axis'), 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+            self.bottom_axis.setLabel(self.get_label('xAxis'), units=self.bottom_axis.labelUnits, **labelStyle)
+
+            self.setBackground(self.palette.get('background'))
+
+            self.legend.setPen(QPen(self.palette.get('axis'), 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+            self.legend.setBrush(self.palette.get('legend_background'))
+            self.legend.opts['labelTextColor'] = self.palette.get('legend_text_color')
+            self.legend.clear()
+            if self.current_locale == 'ru':
+                labels = self.russian_labels
+            else:
+                labels = self.english_labels
+
+            for i in range(5):
+                if self.data_line[i] is not None:
+                    self.legend.addItem(self.data_line[i], labels.get('legend') + str(i + 1))
+
+        except Exception as ex:
+            logger.error(ex)
+
+    def init_data(self, sensor_list=None):
         if sensor_list is None:
             sensor_list = [True, True, True, True, True]
         else:

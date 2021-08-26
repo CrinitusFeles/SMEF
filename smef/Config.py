@@ -14,7 +14,7 @@ class Config:
         # =============== Main Window ===================
         self.graph_title = kwargs.get('graph_title', '')
         self.norma = kwargs.get('norma', False)
-        self.norma_val = kwargs.get('norma_val', -146)
+        self.norma_val = kwargs.get('norma_val', 0)
         self.units = kwargs.get('units', 'В/м')
         # ===============================================
 

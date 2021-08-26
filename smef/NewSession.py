@@ -56,7 +56,7 @@ class NewSession(QWidget, Ui_new_session_window):
 
         if self.path_line_edit.text() != '':
             if not os.path.isdir(self.path_line_edit.text()):
-                logger.info('Create new output folder' + self.path_line_edit.text())
+                logger.info('Create new output folder ' + self.path_line_edit.text())
                 os.makedirs(self.path_line_edit.text(), exist_ok=True)
             else:
                 logger.info('Output folder exists')

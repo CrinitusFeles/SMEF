@@ -3,6 +3,9 @@ import socket
 from types import SimpleNamespace
 import pandas as pd
 import sys
+import qdarkstyle
+from qdarkstyle.dark.palette import DarkPalette
+from qdarkstyle.light.palette import LightPalette
 import pyqtgraph.exporters
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
 from .mainwindow import *
@@ -16,6 +19,7 @@ from .custom_threading import ThreadWithReturnValue
 from .GeneratorSettings import GeneratorSettings
 from .sensor_commands import *
 from .app_logger import *
+from .__init__ import __version__
 
 logger = get_logger(__name__)
 
@@ -31,7 +35,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        # self.setWindowTitle("СМЭП КЛИЕНТ")
+
         self.config_file_name = 'config.json'
         self.output_folder = os.getcwd() + '/output'
         self.event_log_folder = os.getcwd() + '/event_log'
@@ -58,6 +62,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.locale_combo_box.addItem(text)
             self.locale_combo_box.setItemData(i, lang)
         self.retranslateUi(self)
+        self.setWindowTitle(self.windowTitle() + ' v.' + __version__)
 
         self.last_units = copy.copy(self.units)
         self.prev_units = copy.copy(self.units)
@@ -89,6 +94,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.open_button.pressed.connect(self.open_session)
         self.connection_settings_button.pressed.connect(self.open_connections_settings)
         self.norma_checkbox.stateChanged.connect(self.norma_checked)
+        self.dark_theme_checkbox.stateChanged.connect(self.change_theme)
         self.slide_window_time_spinbox.valueChanged.connect(self.change_sliding_window_size)
         self.norma_val_spinbox.valueChanged.connect(self.norma_checked)
         self.copy_graph_button.pressed.connect(self.copy_image)
@@ -284,6 +290,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.change_plot_locale(self.locale_combo_box.currentIndex())
                 self.viewer.current_locale = self.current_locale
                 self.viewer.show()
+                self.viewer.setWindowIcon(QtGui.QIcon('smef/icon/engeneering.ico'))
+                if self.dark_theme_checkbox.isChecked():
+                    self.viewer.viewer_custom_plot.pgcustom.set_theme('dark')
+                else:
+                    self.viewer.viewer_custom_plot.pgcustom.set_theme('light')
             else:
                 logger.error('Incorrect log file' + str(file_full_path))
                 QMessageBox.warning(self, 'Внимание!', "Выбран некорректный файл лога.", QMessageBox.Ok, QMessageBox.Ok)
@@ -406,7 +417,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.app.clipboard().setMimeData(data)
             exporter.export(self.images_folder + file_name)
             # os.remove('x:/SMEP/' + file_name)
-            
+
         except Exception as ex:
             logger.error(ex)
 
@@ -569,7 +580,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def set_title(self):
         new_tittle = self.tittle_line_edit.text()
         item = self.customplot.pgcustom.getPlotItem()
-        item.setTitle("<span style=\"color:black;font-size:30px\">" + new_tittle + "</span>")
+        if self.dark_theme_checkbox.isChecked():
+            item.setTitle("<span style=\"color:white;font-size:30px\">" + new_tittle + "</span>")
+        else:
+            item.setTitle("<span style=\"color:black;font-size:30px\">" + new_tittle + "</span>")
 
     def set_y_axis_label(self):
         self.customplot.pgcustom.getPlotItem().setLabel('left', "<span style=\"color:black;font-size:20px\">" +
@@ -718,6 +732,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def changeEvent(self, event):
         if event.type() == QtCore.QEvent.LanguageChange:
             self.retranslateUi(self)
+            self.setWindowTitle(self.windowTitle() + ' v.' + __version__)
         super(MainWindow, self).changeEvent(event)
         try:
             self.norma_unit_label.setText(self.units)
@@ -759,15 +774,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.customplot.pgcustom.cursor_hLine.setVisible(False)
             self.customplot.pgcustom.marker_label.setVisible(False)
 
+    def change_theme(self, state):
+        if state:
+            app.setStyleSheet(qdarkstyle.load_stylesheet(palette=DarkPalette, qt_api='pyqt5'))
+            self.customplot.pgcustom.set_theme('dark')
+            if self.viewer is not None:
+                self.viewer.viewer_custom_plot.pgcustom.set_theme('dark')
+                self.viewer.set_title()
+        else:
+            app.setStyleSheet(qdarkstyle.load_stylesheet(palette=LightPalette, qt_api='pyqt5'))
+            self.customplot.pgcustom.set_theme('light')
+            if self.viewer is not None:
+                self.viewer.viewer_custom_plot.pgcustom.set_theme('light')
+                self.viewer.set_title()
+        self.set_title()
+
 
 def main(*args):
     logger.info("Start application")
     global app
     app = QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon('icon/engeneering.ico'))
+    app.setWindowIcon(QtGui.QIcon('smef/icon/engeneering.ico'))
+    app.setStyleSheet(qdarkstyle.load_stylesheet(palette=LightPalette, qt_api='pyqt5'))
 
     w = MainWindow()
-    w.setWindowIcon(QtGui.QIcon('icon/engeneering.ico'))
+    # w.setWindowIcon(QtGui.QIcon('smef/icon/engeneering.ico'))
     w.show()
 
     app.exec_()

@@ -14,6 +14,7 @@ class SessionViewer(QWidget, Ui_session_viewer):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle('Просмотр сеанса')
+        self.setWindowIcon(QtGui.QIcon('./icon/engeneering.ico'))
 
         self.viewer_tittle_line_edit.textChanged.connect(self.set_title)
 
@@ -38,14 +39,14 @@ class SessionViewer(QWidget, Ui_session_viewer):
 
         self.marker_checkbox.stateChanged.connect(self.on_off_markers)
 
-        self.slider = RangeSlider(QtCore.Qt.Horizontal)
-        self.slider.setMinimumHeight(30)
-        self.slider.setMinimum(0)
-        self.slider.setMaximum(100)
-        self.slider.setLow(0)
-        self.slider.setHigh(100)
-        # self.slider.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.slider.sliderMoved.connect(self.update_plot)
+        self.slider = QRangeSlider()
+        # self.slider.show()
+        self.slider.setRange(0, 100)
+        self.slider.startValueChanged.connect(self.update_plot)
+        self.slider.endValueChanged.connect(self.update_plot)
+        self.slider.setBackgroundStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #222, stop:1 #333);')
+        self.slider.handle.setStyleSheet('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #282, stop:1 #393);')
+        self.slider.setDrawValues(False)
         # QtCore.QObject.connect(slider, QtCore.SIGNAL('sliderMoved(int)'), echo)
         # self.slider.show()
         # self.slider.raise_()
@@ -273,7 +274,9 @@ class SessionViewer(QWidget, Ui_session_viewer):
                 for j in range(3):
                     self.viewer_minmax_values_table.setItem(i, j, QTableWidgetItem('{:.2f}'.format(normalized_minmax[i, j])))
 
-    def update_plot(self, low_range, high_range):
+    def update_plot(self, value):
+        low_range = self.slider.start()
+        high_range = self.slider.end()
         for i in range(len(self.np_data) - 1):
             if self.np_data[i+1] is not None:
                 # boolean mask for self.viewer_custom_plot.pgcustom.data_line array
@@ -303,7 +306,10 @@ class SessionViewer(QWidget, Ui_session_viewer):
     def set_title(self):
         new_tittle = self.viewer_tittle_line_edit.text()
         item = self.viewer_custom_plot.pgcustom.getPlotItem()
-        item.setTitle("<span style=\"color:black;font-size:30px\">" + new_tittle + "</span>")
+        if self.viewer_custom_plot.pgcustom.theme == 'dark':
+            item.setTitle("<span style=\"color:white;font-size:30px\">" + new_tittle + "</span>")
+        else:
+            item.setTitle("<span style=\"color:black;font-size:30px\">" + new_tittle + "</span>")
 
     def copy_data(self):
         x1_timestamp = int(self.viewer_custom_plot.pgcustom.visibleRange().getCoords()[0])

@@ -94,6 +94,7 @@ class Ui_session_viewer(object):
         self.viewer_minmax_values_table.setHorizontalHeaderItem(2, item)
         self.viewer_minmax_values_table.horizontalHeader().setDefaultSectionSize(80)
         self.viewer_minmax_values_table.horizontalHeader().setMinimumSectionSize(30)
+        self.viewer_minmax_values_table.horizontalHeader().setStretchLastSection(True)
         self.verticalLayout_6.addWidget(self.viewer_minmax_values_table)
         spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_6.addItem(spacerItem2)

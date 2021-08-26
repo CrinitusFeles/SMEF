@@ -19,7 +19,7 @@
   },
   {
    "optionDest": "icon_file",
-   "value": "X:/GDrive/PyQt_projects/SMEF/icon/engeneering.ico"
+   "value": "X:/GDrive/PyQt_projects/SMEF/smef/icon/engeneering.ico"
   },
   {
    "optionDest": "ascii",
@@ -128,10 +128,6 @@
   {
    "optionDest": "datas",
    "value": "X:/GDrive/PyQt_projects/SMEF/smef/utils.py;."
-  },
-  {
-   "optionDest": "binaries",
-   "value": "X:/GDrive/PyQt_projects/SMEF/ru-eng.qm;."
   }
  ],
  "nonPyinstallerOptions": {
