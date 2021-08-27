@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.7.2 (2021-08-27)
+### Fix
+* Fix poetry ([`c5204c1`](https://github.com/CrinitusFeles/SMEF/commit/c5204c10c0679aee55298f41660a94c167e6d872))
+
 ## v0.7.1 (2021-08-27)
 ### Fix
 * Added demo server as start parameter. Small fixes ([`804aed9`](https://github.com/CrinitusFeles/SMEF/commit/804aed9390336893694e9929589b276e1884ec0d))
