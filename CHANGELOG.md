@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.7.1 (2021-08-27)
+### Fix
+* Added demo server as start parameter. Small fixes ([`804aed9`](https://github.com/CrinitusFeles/SMEF/commit/804aed9390336893694e9929589b276e1884ec0d))
+
 ## v0.7.0 (2021-08-26)
 ### Feature
 * Added dark theme and small fixes ([`92f2ecd`](https://github.com/CrinitusFeles/SMEF/commit/92f2ecdab06e214a61214bebf49c182f98fce62e))
