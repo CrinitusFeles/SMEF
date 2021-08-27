@@ -12,6 +12,7 @@ PyQt5 = "^5.10"
 pyqtgraph = "^0.12.2"
 numpy = "^1.21.1"
 coloredlogs = "^15.0.1"
+QDarkStyle=="^3.0.0"
 
 [tool.poetry.dev-dependencies]
 

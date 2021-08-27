@@ -20,6 +20,7 @@ try:
     from .sensor_commands import *
     from .app_logger import *
     from .__init__ import __version__
+    from .demo_server import DemoServer
 except Exception as ex:
     print(ex)
     from mainwindow import *

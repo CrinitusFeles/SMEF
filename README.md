@@ -17,19 +17,19 @@ or run install_packet.bat (for Windows)
 При наличии оборудования запустить в терминале
 
 ```sh 
-python3 smef
+python3 -m smef
 ```
 
 При отсутствии оборудования запустить в терминале 
 
 ```sh 
-python3 smef --demo
+python3 -m smef --demo
 ```
 
 или 
 
 ```sh 
-python3 smef -d
+python3 -m smef -d
 ```
 
 Запущенный процесс будет эмулировать работу оборудования и генерировать случайные данные для поля.
