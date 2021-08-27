@@ -5,9 +5,12 @@ from PyQt5.QtGui import QPen, QColor
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QApplication)
 import pyqtgraph as pg
 import numpy as np
-from .utils import TimeAxisItem, timestamp, converter
-from .app_logger import *
-
+try:
+    from .utils import TimeAxisItem, timestamp, converter
+    from .app_logger import *
+except Exception as ex:
+    from utils import TimeAxisItem, timestamp, converter
+    from app_logger import *
 logger = get_logger(__name__)
 
 
@@ -130,7 +133,6 @@ class CustomPlotWidget(pg.PlotWidget):
                                 'legend_text_color': 'k', 'label_color': '#000000', 'color': 'black'}
                 # labelStyle = {'color': '#000000', 'font-size': '12pt'}
             labelStyle = {'color': self.palette.get('label_color'), 'font-size': '12pt'}
-            print(self.palette)
 
             self.left_axis.setTextPen(QPen(self.palette.get('axis'), 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
             self.left_axis.setPen(QPen(self.palette.get('axis'), 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
@@ -186,6 +188,10 @@ class CustomPlotWidget(pg.PlotWidget):
                     index = np.where(self.data[0].astype(int) == int(mouse_point.x()))[0]
                     if len(index) > 0 and self.data_line[i] is not None:
                         self.marker_label.setFont(QtGui.QFont('Times', 10, QtGui.QFont.Bold))
+                        if self.theme == 'dark':
+                            self.marker_label.setColor("#FFFFFF")
+                        else:
+                            self.marker_label.setColor("#000000")
                         # self.marker_label.setColor(pg.intColor(i))
                         marker_text += self.get_label('marker') + str(i + 1) + ': ' + "{:.2f}".format(data[index[0]]) + '\n'
                 marker_text = marker_text[:-1]

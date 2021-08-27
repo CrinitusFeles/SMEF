@@ -2,9 +2,13 @@ import subprocess
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QRegExp
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem
-from .connections_settings import *
 from PyQt5.QtGui import QRegExpValidator
-from .app_logger import *
+try:
+    from .connections_settings import *
+    from .app_logger import *
+except Exception as ex:
+    from connections_settings import *
+    from app_logger import *
 
 logger = get_logger(__name__)
 

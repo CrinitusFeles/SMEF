@@ -1,25 +1,40 @@
+import argparse
 import copy
 import socket
 from types import SimpleNamespace
 import pandas as pd
-import sys
 import qdarkstyle
 from qdarkstyle.dark.palette import DarkPalette
 from qdarkstyle.light.palette import LightPalette
 import pyqtgraph.exporters
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
-from .mainwindow import *
-from .Config import *
-import json
-from .SessionViewer import SessionViewer
-from .NewSession import NewSession
-from .ConnectionsSettings import ConnectionsSettings
-from .utils import *
-from .custom_threading import ThreadWithReturnValue
-from .GeneratorSettings import GeneratorSettings
-from .sensor_commands import *
-from .app_logger import *
-from .__init__ import __version__
+try:
+    from .mainwindow import *
+    from .Config import *
+    from .SessionViewer import SessionViewer
+    from .NewSession import NewSession
+    from .ConnectionsSettings import ConnectionsSettings
+    from .utils import *
+    from .custom_threading import ThreadWithReturnValue
+    from .GeneratorSettings import GeneratorSettings
+    from .sensor_commands import *
+    from .app_logger import *
+    from .__init__ import __version__
+except Exception as ex:
+    print(ex)
+    from mainwindow import *
+    from Config import *
+    from SessionViewer import SessionViewer
+    from NewSession import NewSession
+    from ConnectionsSettings import ConnectionsSettings
+    from utils import *
+    from custom_threading import ThreadWithReturnValue
+    from GeneratorSettings import GeneratorSettings
+    from sensor_commands import *
+    from app_logger import *
+    from __init__ import __version__
+    from demo_server import DemoServer
+
 
 logger = get_logger(__name__)
 
@@ -790,7 +805,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_title()
 
 
-def main(*args):
+def main():
     logger.info("Start application")
     global app
     app = QApplication(sys.argv)
@@ -798,7 +813,6 @@ def main(*args):
     app.setStyleSheet(qdarkstyle.load_stylesheet(palette=LightPalette, qt_api='pyqt5'))
 
     w = MainWindow()
-    # w.setWindowIcon(QtGui.QIcon('smef/icon/engeneering.ico'))
     w.show()
 
     app.exec_()
@@ -806,4 +820,20 @@ def main(*args):
 
 
 if __name__ == '__main__':
-    main()
+    # if sys.version_info >= (3, 6):
+    #     print(f'python version ' + str(sys.version) + ' OK')
+    # else:
+    #     print('python version ' + str(sys.version) + ' is old')
+    parser = argparse.ArgumentParser(description='SMEF client')
+    parser.add_argument('-d', '--demo', help='start program with demo server',  action='store_true')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+    args = parser.parse_args()
+    if args.demo:
+        print('Starting demo server')
+        server = DemoServer(debug_print=False)
+        server.start_server()
+        time.sleep(2)
+        main()
+    else:
+        print('Starting withot demo server')
+        main()

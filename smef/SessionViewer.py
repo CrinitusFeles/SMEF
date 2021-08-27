@@ -1,10 +1,16 @@
 import copy
 import pyqtgraph.exporters
 from PyQt5.QtWidgets import QApplication, QWidget, QTableWidgetItem
-from .session_viewer import *
-from .app_logger import *
-from .double_range_slider import *
-from .utils import *
+try:
+    from .session_viewer import *
+    from .app_logger import *
+    from .double_range_slider import *
+    from .utils import *
+except Exception as ex:
+    from session_viewer import *
+    from app_logger import *
+    from double_range_slider import *
+    from utils import *
 
 logger = get_logger(__name__)
 

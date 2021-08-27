@@ -35,6 +35,6 @@ def get_logger(name):
     logger.addHandler(get_file_handler())
     logger.addHandler(get_stream_handler())
 
-    sys.excepthook = lambda type_, value, tb: logger.exception(f"Uncaught exception: {type_, value, tb}")
+    # sys.excepthook = lambda type_, value, tb: logger.exception(f"Uncaught exception: {type_, value, tb}")
 
     return logger

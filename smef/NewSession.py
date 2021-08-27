@@ -1,10 +1,13 @@
 import json
 from PyQt5.QtWidgets import QWidget, QMessageBox
-from .new_session_window import *
-from types import SimpleNamespace
-from .app_logger import *
 import time
-
+from types import SimpleNamespace
+try:
+    from .new_session_window import *
+    from .app_logger import *
+except Exception as ex:
+    from new_session_window import *
+    from app_logger import *
 logger = get_logger(__name__)
 
 

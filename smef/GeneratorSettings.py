@@ -1,6 +1,10 @@
 from PyQt5.QtWidgets import QWidget
-from .generator_window import *
 from PyQt5.QtCore import Qt
+try:
+    from .generator_window import *
+except Exception as ex:
+    from generator_window import *
+
 
 
 class GeneratorSettings(QWidget, Ui_generator_settings):

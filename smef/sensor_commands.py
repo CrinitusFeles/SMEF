@@ -1,5 +1,8 @@
-from .app_logger import *
 import re
+try:
+    from .app_logger import *
+except Exception as ex:
+    from app_logger import *
 
 logger = get_logger(__name__)
 

@@ -338,4 +338,7 @@ class Ui_MainWindow(object):
         self.groupBox_4.setTitle(_translate("MainWindow", "Копирование данных"))
         self.copy_graph_button.setText(_translate("MainWindow", "Копировать график"))
         self.copy_data_button.setText(_translate("MainWindow", "Копировать данные"))
-from .CustomPlot import CustomPlot
+try:
+    from .CustomPlot import CustomPlot
+except Exception as ex:
+    from CustomPlot import CustomPlot

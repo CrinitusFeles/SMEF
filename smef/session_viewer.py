@@ -219,4 +219,7 @@ class Ui_session_viewer(object):
         self.groupBox_4.setTitle(_translate("session_viewer", "Копирование данных"))
         self.viewer_copy_graph_button.setText(_translate("session_viewer", "Копировать график"))
         self.viewer_copy_data_button.setText(_translate("session_viewer", "Копировать данные"))
-from .CustomPlot import CustomPlot
+try:
+    from .CustomPlot import CustomPlot
+except Exception as ex:
+    from CustomPlot import CustomPlot
