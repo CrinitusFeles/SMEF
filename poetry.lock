@@ -77,14 +77,14 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "pyqtgraph"
-version = "0.12.2"
+version = "0.11.1"
 description = "Scientific Graphics and GUI Library for Python"
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = "*"
 
 [package.dependencies]
-numpy = ">=1.17.0"
+numpy = ">=1.8.0"
 
 [[package]]
 name = "pyreadline"
@@ -123,8 +123,8 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [metadata]
 lock-version = "1.1"
-python-versions = "3.9"
-content-hash = "23f724bf2a456cfb8c85d626ab1b1d61caa9ee55c55577d1d76f55ff00c9c8ce"
+python-versions = "^3.5.1"
+content-hash = "cdbb8b94afd6fbbfe0913ce4645bdad57c8a3af7fad841bb85ceb3d790484db9"
 
 [metadata.files]
 coloredlogs = [
@@ -219,8 +219,8 @@ pyqt5-sip = [
     {file = "PyQt5_sip-12.9.0.tar.gz", hash = "sha256:d3e4489d7c2b0ece9d203ae66e573939f7f60d4d29e089c9f11daa17cfeaae32"},
 ]
 pyqtgraph = [
-    {file = "pyqtgraph-0.12.2-py3-none-any.whl", hash = "sha256:151f2616c75353fdfffa9915ad37b9391af86e5d42ec1e99cb1d1b3062e6353e"},
-    {file = "pyqtgraph-0.12.2.tar.gz", hash = "sha256:fd0cf0678267b65ec28fb4908a7393424978a8c4b369e5749daf8861478fa4ca"},
+    {file = "pyqtgraph-0.11.1-py2.py3-none-any.whl", hash = "sha256:1df7a4ac2e6cbfaa27a2cace22016db755b51ed4b48d831b5f05189672b0d0f5"},
+    {file = "pyqtgraph-0.11.1.tar.gz", hash = "sha256:7d1417f36b5b92d1365671633a91711513e5afbcc82f32475d0690317607714e"},
 ]
 pyreadline = [
     {file = "pyreadline-2.1.win-amd64.exe", hash = "sha256:9ce5fa65b8992dfa373bddc5b6e0864ead8f291c94fbfec05fbd5c836162e67b"},
