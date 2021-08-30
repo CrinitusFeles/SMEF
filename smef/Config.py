@@ -19,13 +19,13 @@ class Config:
         # ===============================================
 
         # ============== Connection window ===================
-        self.terminal_server_ip = kwargs.get('server_ip', '10.6.1.95')
+        self.terminal_server_ip = kwargs.get('server_ip', '127.0.0.1')
         self.sensor1_port = kwargs.get('sensor1_port', 4001)
         self.sensor2_port = kwargs.get('sensor2_port', 4002)
         self.sensor3_port = kwargs.get('sensor3_port', 4003)
         self.sensor4_port = kwargs.get('sensor4_port', 4004)
         self.sensor5_port = kwargs.get('sensor5_port', 4005)
-        self.generator_ip = kwargs.get('generator_ip', '10.6.1.98')
+        self.generator_ip = kwargs.get('generator_ip', '')
         self.generator_port = kwargs.get('generator_port', 8080)
         # ====================================================
 
