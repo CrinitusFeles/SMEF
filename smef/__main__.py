@@ -8,6 +8,7 @@ from qdarkstyle.dark.palette import DarkPalette
 from qdarkstyle.light.palette import LightPalette
 import pyqtgraph.exporters
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
+
 try:
     from .mainwindow import *
     from .Config import *
@@ -61,7 +62,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             os.mkdir(self.output_folder)
         else:
             logger.info('Output folder exists')
-        self.server_ip = '10.6.1.95'
+        self.server_ip = '127.0.0.1'
         self.sensors_port = [4001, 4002, 4003, 4004, 4005]
         self.sensors_amount = 0
         self.generator_ip = ''
@@ -71,7 +72,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.units_mode = 0
         self.units = 'В/м'
 
-        options = ([('Russian', ''), ('English', 'ru-eng'), ])
+        options = ([('Russian', ''), ('English', os.path.dirname(__file__) + '/ru-eng.qm')])
         self.current_locale = 'ru'
         self.trans = QtCore.QTranslator(self)
         for i, (text, lang) in enumerate(options):
@@ -810,7 +811,12 @@ def main():
     logger.info("Start application")
     global app
     app = QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon('smef/icon/engeneering.ico'))
+    app.setWindowIcon(QtGui.QIcon(os.path.dirname(__file__) + '/icon/engeneering.ico'))
+    # TODO: copy ru-eng.qm file from os.path.dirname(__file__) to os.cwd()
+    # if start_like_packet:
+    #     app.setWindowIcon(QtGui.QIcon('icon/engeneering.ico'))
+    # else:
+    #     app.setWindowIcon(QtGui.QIcon('smef/icon/engeneering.ico'))
     app.setStyleSheet(qdarkstyle.load_stylesheet(palette=LightPalette, qt_api='pyqt5'))
 
     w = MainWindow()

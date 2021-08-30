@@ -26,3 +26,18 @@ except Exception as ex:
     from Config import *
     from sensor_commands import *
     from app_logger import *
+
+# there is problem with version control: qdarkstyle requires python >3.6, but AstraLinux has only 3.5
+import pip
+import importlib.util
+
+def install(package):
+    if hasattr(pip, 'main'):
+        pip.main(['install', package])
+    else:
+        pip._internal.main(['install', package])
+
+spec = importlib.util.find_spec('qdarkstyle')
+if spec is None:
+    print("qdarkstyle is not installed")
+    install('qdarkstyle')
