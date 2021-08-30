@@ -812,11 +812,6 @@ def main():
     global app
     app = QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon(os.path.dirname(__file__) + '/icon/engeneering.ico'))
-    # TODO: copy ru-eng.qm file from os.path.dirname(__file__) to os.cwd()
-    # if start_like_packet:
-    #     app.setWindowIcon(QtGui.QIcon('icon/engeneering.ico'))
-    # else:
-    #     app.setWindowIcon(QtGui.QIcon('smef/icon/engeneering.ico'))
     app.setStyleSheet(qdarkstyle.load_stylesheet(palette=LightPalette, qt_api='pyqt5'))
 
     w = MainWindow()
@@ -827,10 +822,6 @@ def main():
 
 
 if __name__ == '__main__':
-    # if sys.version_info >= (3, 6):
-    #     print(f'python version ' + str(sys.version) + ' OK')
-    # else:
-    #     print('python version ' + str(sys.version) + ' is old')
     parser = argparse.ArgumentParser(description='SMEF client')
     parser.add_argument('-d', '--demo', help='start program with demo server',  action='store_true')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
@@ -839,7 +830,6 @@ if __name__ == '__main__':
         print('Starting demo server')
         server = DemoServer(debug_print=False)
         server.start_server()
-        time.sleep(2)
         main()
     else:
         print('Starting withot demo server')
