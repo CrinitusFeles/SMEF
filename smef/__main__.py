@@ -832,5 +832,5 @@ if __name__ == '__main__':
         server.start_server()
         main()
     else:
-        print('Starting withot demo server')
+        print('Starting without demo server')
         main()
