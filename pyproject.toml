@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "smef"
-version = "0.7.2"
+version = "0.7.3"
 description = "graphical interface for electric field monitoring system"
 authors = ["crinitusfeles <crinitusfeles@gmail.com>"]
 license = "MIT"

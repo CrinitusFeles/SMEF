@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.7.3 (2021-08-30)
+### Fix
+* Test stable release ([`3eaa44a`](https://github.com/CrinitusFeles/SMEF/commit/3eaa44a1901fd213789a0e34b9421f871962df2f))
+
 ## v0.7.2 (2021-08-27)
 ### Fix
 * Fix poetry ([`c5204c1`](https://github.com/CrinitusFeles/SMEF/commit/c5204c10c0679aee55298f41660a94c167e6d872))
