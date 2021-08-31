@@ -112,6 +112,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.connection_settings_button.pressed.connect(self.open_connections_settings)
         self.norma_checkbox.stateChanged.connect(self.norma_checked)
         self.dark_theme_checkbox.stateChanged.connect(self.change_theme)
+        self.slide_window_time_spinbox.setMaximum(999)
         self.slide_window_time_spinbox.valueChanged.connect(self.change_sliding_window_size)
         self.norma_val_spinbox.valueChanged.connect(self.norma_checked)
         self.copy_graph_button.pressed.connect(self.copy_image)
@@ -123,6 +124,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.copy_data_button.pressed.connect(self.copy_data)
         self.measure_interval_line_edit.valueChanged.connect(self.set_measure_interval)
 
+        self.groupBox_8.setVisible(False)
         self.s1_legend_checkbox.stateChanged.connect(self.hide_line_plot)
         self.s2_legend_checkbox.stateChanged.connect(self.hide_line_plot)
         self.s3_legend_checkbox.stateChanged.connect(self.hide_line_plot)
@@ -175,6 +177,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.update_units(self.units)
                     self.norma_val_spinbox.setValue(self.config_obj.norma_val)
                     self.norma_checkbox.setChecked(self.config_obj.norma)
+
+                    if self.config_obj.theme == 'dark':
+                        self.dark_theme_checkbox.setChecked(True)
+                        self.change_theme(state=True)
 
                     self.session_settings_widget = NewSession(path=self.config_obj.last_path,
                                                               name=self.config_obj.last_name,
@@ -793,18 +799,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def change_theme(self, state):
         if state:
+            theme = 'dark'
             app.setStyleSheet(qdarkstyle.load_stylesheet(palette=DarkPalette, qt_api='pyqt5'))
-            self.customplot.pgcustom.set_theme('dark')
+            self.customplot.pgcustom.set_theme(theme)
             if self.viewer is not None:
-                self.viewer.viewer_custom_plot.pgcustom.set_theme('dark')
+                self.viewer.viewer_custom_plot.pgcustom.set_theme(theme)
                 self.viewer.set_title()
         else:
+            theme = 'light'
             app.setStyleSheet(qdarkstyle.load_stylesheet(palette=LightPalette, qt_api='pyqt5'))
-            self.customplot.pgcustom.set_theme('light')
+            self.customplot.pgcustom.set_theme(theme)
             if self.viewer is not None:
-                self.viewer.viewer_custom_plot.pgcustom.set_theme('light')
+                self.viewer.viewer_custom_plot.pgcustom.set_theme(theme)
                 self.viewer.set_title()
         self.set_title()
+        with open('config.json') as f:
+            config = json.load(f, object_hook=lambda d: SimpleNamespace(**d))
+            config.theme = theme
+        with open('config.json', 'w') as f:
+            f.write(json.dumps(config, default=lambda o: o.__dict__, sort_keys=True, indent=4))
 
 
 def main():

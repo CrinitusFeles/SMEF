@@ -37,6 +37,7 @@ class SessionViewer(QWidget, Ui_session_viewer):
         self.units_rbutton2.clicked.connect(self.units_update)
         self.units_rbutton3.clicked.connect(self.units_update)
 
+        self.groupBox_3.setVisible(False)
         self.s1_legend_checkbox.stateChanged.connect(self.hide_line_plot)
         self.checkBos2_legend_checkbox.stateChanged.connect(self.hide_line_plot)
         self.s3_legend_checkbox.stateChanged.connect(self.hide_line_plot)

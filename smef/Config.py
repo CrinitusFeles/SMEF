@@ -16,6 +16,7 @@ class Config:
         self.norma = kwargs.get('norma', False)
         self.norma_val = kwargs.get('norma_val', 0)
         self.units = kwargs.get('units', 'В/м')
+        self.theme = kwargs.get('theme', 'light')
         # ===============================================
 
         # ============== Connection window ===================
