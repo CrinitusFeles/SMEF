@@ -6,12 +6,13 @@ authors = ["crinitusfeles <crinitusfeles@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.5"
-pandas = "*"
-PyQt5 = "^5.10"
-pyqtgraph = "*"
-numpy = "*"
-coloredlogs = "*"
+python = "^3.9"
+pandas = "^1.3"
+PyQt5 = "^5.15"
+pyqtgraph = "^0.12"
+numpy = "^1.21"
+coloredlogs = "^15.0"
+qdarkstyle = "^3.0"
 
 [tool.poetry.dev-dependencies]
 
