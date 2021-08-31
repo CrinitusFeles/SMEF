@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.7.5 (2021-08-31)
+### Fix
+* First stable release ([`ff9b187`](https://github.com/CrinitusFeles/SMEF/commit/ff9b1874bab50aa7379c4a9f88c0b9feea92bae1))
+
 ## v0.7.4 (2021-08-31)
 ### Fix
 * Test stable release ([`05a3ff8`](https://github.com/CrinitusFeles/SMEF/commit/05a3ff8d417e52e053f9bf42fb5dacf35f50cb8b))
