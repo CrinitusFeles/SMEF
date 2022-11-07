@@ -1,0 +1,23 @@
+Date of Calibration: Wednesday, January 20, 2021
+Date Printed: Wednesday, January 20, 2021
+Customer Name: AR, RF/Microwave Instrumentation
+Probe Manufacturer: AR
+Probe Model: FL7040
+Probe Serial No.: 0357218
+Temperature (Deg C): 21
+Humidity (%): 48
+Notes: 
+CAL CERT #:  210119-134548-d66206 
+
+
+				Linearity
+
+	Applied
+Freq	Field	Indicated Field V/m	Max Dev in dB
+MHz	V/m	X	Y	Z	X	Y	Z	
+10.00	5	4.81	4.75	4.79	0.34	0.45	0.37	
+10.00	15	14.55	14.35	14.40	0.26	0.38	0.35	
+10.00	50	49.30	48.67	48.89	0.12	0.23	0.19	
+10.00	150	146.40	144.70	145.10	0.21	0.31	0.29	
+10.00	300	284.10	279.90	281.10	0.47	0.60	0.57	
+

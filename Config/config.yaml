@@ -1,0 +1,62 @@
+name: config
+device_ip: 10.6.1.95
+ports:
+  - 4001
+  - 4002
+  - 4003
+  - 4004
+  - 4005
+connected_sensors:
+  - true
+  - true
+  - true
+  - true
+  - true
+alive_sensors:
+  - true
+  - true
+  - true
+  - true
+  - true
+dark_theme: false
+units: В/м
+norma_check: false
+norma_value: 0
+measure_period: 1
+plot_header: ''
+slide_window_time_h: 1
+last_output_path: /home/astraadmin/SMEP
+generator_ip: ''
+generator_port: 8080
+right_axis:
+left_axis:
+    label: Напряженность поля
+    units:
+    legend_label: ''
+bottom_axis:
+    label: Время
+    units:
+top_axis:
+    label: ''
+    units: ''
+anim_period: 1000
+theme: dark
+style:
+    dark:
+        plot_background_color: '#232323'
+        frame_background_color: '#353535'
+        legend_background: '14141420'
+        legend_boundary: k
+        axis_labels_color: '#AAAAAA'
+        crosshair_color: '#6bcd99'
+        norma_line_color: '#603f9f'
+    light:
+        plot_background_color: '#FFFFFF'
+        frame_background_color: '#EEEEEE'
+        legend_background: '#FFFFFF30'
+        legend_boundary: '#AAAAAA'
+        axis_labels_color: '#555555'
+        crosshair_color: '#6bcd99'
+        norma_line_color: '#603f9f'
+image_folder: ./Images/
+session_folder: ./Output/

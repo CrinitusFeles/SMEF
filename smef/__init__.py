@@ -1,29 +1,5 @@
 __version__ = '0.7.5'
 
-try:
-    from .mainwindow import Ui_MainWindow
-    from .app_logger import *
-    from .CustomPlot import *
-    from .double_range_slider import *
-    from .utils import *
-    from .ConnectionsSettings import *
-    from .GeneratorSettings import *
-    from .NewSession import *
-    from .Config import *
-    from .sensor_commands import *
-    from .app_logger import *
-except Exception as ex:
-    from mainwindow import Ui_MainWindow
-    from app_logger import *
-    from CustomPlot import *
-    from double_range_slider import *
-    from utils import *
-    from ConnectionsSettings import *
-    from GeneratorSettings import *
-    from NewSession import *
-    from Config import *
-    from sensor_commands import *
-    from app_logger import *
 
 # there is problem with version control: qdarkstyle requires python >3.6, but AstraLinux has only 3.5
 # UPDATE: have assembled python3.9 for AstraLinux

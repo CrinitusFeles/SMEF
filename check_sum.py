@@ -1,0 +1,10 @@
+import os
+from filehash import FileHash
+hasher = FileHash('sha1')
+hash = hasher.cathash_dir("./smef", "*.py")
+#hash = checksumdir.dirhash("./smef")
+print((hash))
+if str(hash) != 'b9d4c17ce8454eae0b134b0b196a33591daef7ce':
+    print("Hash sum is incorrect")
+else:
+    print("Hash sum OK")

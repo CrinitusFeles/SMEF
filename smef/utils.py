@@ -9,14 +9,14 @@ import numpy as np
 
 def create_json_file(config_obj, file_name):
     try:
-        with open(file_name, 'w') as write_file:
+        with open(file_name, 'w', encoding='utf-8') as write_file:
             write_file.write(config_obj.to_json())
     except Exception as error:
         print(error)
 
 
 def timestamp():
-    return int(time.mktime(datetime.datetime.now().timetuple()))
+    return round(time.time())
 
 
 class TimeAxisItem(pg.AxisItem):
@@ -37,6 +37,7 @@ class TimeAxisItem(pg.AxisItem):
 
 
 def converter(value, mode=0):
+    """mode = 0 - В/м, mode = 1 В/м -> дБмкВ/м, mode = 2 В/м -> Вт/м2"""
     if mode == 0:
         return value
     elif mode == 1:  # В/м -> дБмкВ/м
@@ -56,3 +57,5 @@ def reverse_convert(value, mode=1):
     else:
         raise Exception
 
+if __name__ == '__main__':
+    print(round(time.time() * 1000))
