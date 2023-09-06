@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 
 
 class CustomPlot(QWidget):
-    def __init__(self, config=None):
+    def __init__(self, config: dict | None = None):
         QWidget.__init__(self)
         loadUi(os.path.join(os.path.dirname(__file__), 'custom_plot.ui'), self)
         self.pw = pg.PlotWidget(axisItems={'bottom': TimeAxisItem(orientation='bottom')})

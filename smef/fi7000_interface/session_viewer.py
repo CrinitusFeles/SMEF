@@ -7,10 +7,11 @@ import pandas as pd
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGroupBox, QTextEdit
 from qtmodern.styles import dark, light
 from qtmodern.windows import ModernWindow
+from smef.fi7000_interface.backend import MainWindow
 
 
 class SessionViewer(MainWindow):
-    def __init__(self, config: dict = None, dataframe: pd.DataFrame = None):
+    def __init__(self, config: dict | None = None, dataframe: pd.DataFrame | None = None):
         super().__init__(config=config, dataframe=dataframe)
         self.setWindowTitle("Session Viewer")
         self.groupBox.hide()
@@ -41,7 +42,7 @@ class SessionViewer(MainWindow):
         self.side_layout.insertWidget(7, gr_description)
 
         self.dataframe = dataframe
-        if dataframe is not None:
+        if dataframe:
             # TODO: add traces
             labels = np.split(np.array([label.split(',')[0] for label in list(dataframe) if 'Датчик' in label]), 3)[0]
             [self.plotter.add_trace(label, 'left') for label in labels]

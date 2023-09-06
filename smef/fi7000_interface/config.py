@@ -8,7 +8,7 @@ from ruamel.yaml import YAML, round_trip_dump
 
 default_config = {
     'name': 'config',
-    'device_ip': '10.6.1.95',
+    'device_ip': 'localhost',
     'ports': [4001, 4002, 4003, 4004, 4005],
     'connected_sensors': [False, False, False, False, False],
     'alive_sensors': [False, False, False, False, False],
@@ -42,7 +42,7 @@ default_config = {
         'dark': {
             'plot_background_color': '#232323',
             'frame_background_color': '#353535',
-            'legend_background': '14141420',
+            'legend_background': '#14141420',
             'legend_boundary': 'k',
             'axis_labels_color': '#AAAAAA',
             'crosshair_color': '#6bcd99',

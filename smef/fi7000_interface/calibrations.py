@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from os import listdir
 from os.path import isfile
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 from numpy import ndarray
 np.set_printoptions(edgeitems=30, linewidth=300)
@@ -81,6 +81,8 @@ def load_calibration_by_id(id: int | str) -> Calibration:
     for calib in amplitude_calibrations:
         if calib[0] == str(id):
             ampl = calib
+    if freq is None or ampl is None:
+        raise ValueError('Calibration loading')
     return Calibration(freq, ampl)
 
 

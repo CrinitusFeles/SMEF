@@ -7,7 +7,6 @@ import time
 from threading import Thread
 import numpy as np
 import pandas as pd
-import qtmodern
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QGroupBox, QHBoxLayout, QVBoxLayout, QTextEdit
@@ -17,22 +16,23 @@ from qtmodern.windows import ModernWindow
 from qtpy.uic import loadUi
 from smef.connection_settings.ConnectionsSettings import ConnectionsSettings
 from smef.PlotterWidget.CustomPlot import CustomPlot
+
 from smef.custom_threading import ThreadWithReturnValue
 from smef.demo_server import DemoServer
 from smef.fi7000_interface.config import load_config, default_config, create_config, open_file_system
 from smef.fi7000_interface.fl7000_driver import FL7000
 from smef.fi7000_interface.pandasModel import DataFrameModel
 from smef.new_session.NewSession import NewSession
+from loguru import logger
 from PyQt5.QtWidgets import QApplication
 from smef.utils import converter, reverse_convert
-from smef.app_logger import get_logger
-logger = get_logger(__name__)
+
 
 
 class MainWindow(QMainWindow):
     def __init__(self, config=None, dataframe=None):
         super().__init__()
-        loadUi(os.path.join(os.path.dirname(__file__), '../main_window/mainwindow.ui'), self)
+        loadUi(os.path.join(os.path.dirname(__file__), 'mainwindow.ui'), self)
         self.setWindowTitle('СМЭП Клиент v2.0.0')
         if config is None:
             self.config = load_config('config', default_config)
@@ -42,18 +42,18 @@ class MainWindow(QMainWindow):
 
         # ----- Init interface -----
         #self.minmax_table_view.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        
+
         self.open_generator_button.hide()
         self.plotter_stop_button.setEnabled(False)
         self.plotter_start_button.setEnabled(False)
         self.plotter_interval_spin_box.setValue(self.config['anim_period'] / 1000)
         if self.config['theme'] == 'dark':
             self.dark_theme_checkbox.setChecked(True)
-            qtmodern.styles.dark(QApplication.instance())
+            dark(QApplication.instance())
         # self.calib_freq_spin_box.setMaximum(40000000000)
         # ----- Widgets -----
-        self.connections_settings_widget = None
-        self.session_widget = None
+        self.connections_settings_widget: ConnectionsSettings
+        self.session_widget: NewSession
         self.viewer = None
         self.plotter = CustomPlot(self.config)
         # ====================
@@ -233,9 +233,10 @@ class MainWindow(QMainWindow):
         self.plotter.set_sliding_window_size(val)
 
     def change_units(self):
-        if self.sender().text() != self.units:
+        if self.sender().__getattribute__('text') != self.units:
+        # if self.sender().text() != self.units:
             self._prev_units_state = self.units
-            self.units = self.sender().text()
+            self.units = self.sender().__getattribute__('text')
             self.update_norma_value()
             self.update_plotter()
 
@@ -320,9 +321,9 @@ class MainWindow(QMainWindow):
 
 
 class SessionViewer(MainWindow):
-    def __init__(self, config: dict = None, dataframe: pd.DataFrame = None):
+    def __init__(self, config: dict | None = None, dataframe: pd.DataFrame | None = None):
         super().__init__(config=config, dataframe=dataframe)
-        
+
         self.setWindowTitle("Просмотр сеанса")
         self.groupBox.hide()
         self.groupBox_3.hide()

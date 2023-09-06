@@ -1,5 +1,5 @@
 import os
-from filehash import FileHash
+from filehash.filehash import FileHash
 hasher = FileHash('sha1')
 hash = hasher.cathash_dir("/home/astraadmin/.local/lib/python3.9/site-packages/smef", "*.py")
 #hash = checksumdir.dirhash("./smef")

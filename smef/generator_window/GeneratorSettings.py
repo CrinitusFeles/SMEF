@@ -16,7 +16,7 @@ class GeneratorSettings(QWidget):
         super().__init__()
         loadUi(os.path.join(os.path.dirname(__file__), 'generator_window.ui'), self)
         self.setWindowTitle('Настройки генератора')
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
 
         self.accept_button.pressed.connect(self.accept_clicked)
         self.cancel_button.pressed.connect(self.cancel_clicked)

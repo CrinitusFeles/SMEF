@@ -6,22 +6,19 @@ from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtGui import QRegExpValidator
 from qtmodern.windows import ModernWindow
 from qtpy.uic import loadUi
-
-from smef.app_logger import get_logger
-
-logger = get_logger(__name__)
+from loguru import logger
 
 
 class ConnectionsSettings(QWidget):
     update_data_signal = QtCore.pyqtSignal(dict)
 
-    def __init__(self, config: dict = None):
+    def __init__(self, config: dict | None = None):
         super().__init__()
 
         loadUi(os.path.join(os.path.dirname(__file__), 'connections_settings.ui'), self)
         self.setWindowTitle('Настройки подключения')
         # self.setWindowFlags(Qt.WindowStaysOnTopHint)
-        self.groupBox.hide()      
+        self.groupBox.hide()
         self.setFixedSize(600, 400)
         self.accept_button.clicked.connect(self.accept_settings)
         self.cancel_button.clicked.connect(self.close)
@@ -62,12 +59,15 @@ class ConnectionsSettings(QWidget):
                 int(self.s5_port_line_edit.text())]
 
     def accept_settings(self):
-        self.config['device_ip'] = self.server_ip_line_edit.text()
-        self.config['ports'] = self.get_port_values()
-        self.config['alive_sensors'] = [True if label.text() == 'Подключен' else False for label in self.status_label_list]
-        self.config['generator_ip'] = self.generator_ip_line_edit.text() if self.generator_ip_line_edit.text() != '' else None
-        self.config['generator_port'] = int(self.generator_port_line_edit.text()) if self.generator_port_line_edit.text() != '' else None
-        self.update_data_signal.emit(self.config)
+        if self.config:
+            self.config['device_ip'] = self.server_ip_line_edit.text()
+            self.config['ports'] = self.get_port_values()
+            self.config['alive_sensors'] = [True if label.text() == 'Подключен' else False for label in self.status_label_list]
+            self.config['generator_ip'] = self.generator_ip_line_edit.text() if self.generator_ip_line_edit.text() != '' else None
+            self.config['generator_port'] = int(self.generator_port_line_edit.text()) if self.generator_port_line_edit.text() != '' else None
+            self.update_data_signal.emit(self.config)
+        else:
+            logger.error('config is None')
         self.close()
 
 

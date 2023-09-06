@@ -1,22 +1,19 @@
 import socket
-from typing import Optional
-
+import re
 import numpy as np
 from numpy import ndarray
-
-from smef.app_logger import get_logger
-import re
+from loguru import logger
 from smef.fi7000_interface.calibrations import load_calibration_by_id, Calibration
-logger = get_logger(__name__)
+
 
 
 class FL7000:
     def __init__(self, ip: str, port: int):
         self.ip = ip
         self.port = port
-        self.sock: Optional[socket.socket] = None
-        self.probe_id: Optional[int] = None
-        self.probe_calibration: Optional[Calibration] = None
+        self.sock: socket.socket
+        self.probe_id: int = -1
+        self.probe_calibration: Calibration
         self.connection_status = False
         self.label = ''
 
@@ -37,17 +34,20 @@ class FL7000:
                 self.sock.settimeout(1)
                 self.sock.connect((self.ip, self.port))
                 self.connection_status = True
+            except TimeoutError as tm:
+                logger.error(f'{tm}:\n{self.sock}')
             except OSError as ex:
-                logger.error('Error at %s', 'socket', exc_info=ex)
+                logger.error(f'Error at {self.sock}:\n{ex}')
                 logger.info('Probable reason: device already connected')
+
         else:
             logger.info(f'{self.ip}:{self.port} already connected')
-        if self.identify() is not None:
+        if self.identify():
             logger.info(f'{self.ip}:{self.port} connected')
 
-    def identify(self) -> Optional[int]:
+    def identify(self) -> int:
         self.probe_id = self.read_probe_id_zeroless()
-        if self.probe_id is not None:
+        if self.probe_id:
             self.probe_calibration = load_calibration_by_id(self.probe_id)
         return self.probe_id
 
@@ -57,16 +57,16 @@ class FL7000:
     def get_probe_calibration(self) -> Calibration:
         return self.probe_calibration
 
-    def calibrate_measure(self, freq: float) -> Optional[ndarray]:
+    def calibrate_measure(self, freq: float) -> ndarray:
         if self.probe_calibration is not None:
             uncalibrated_x_y_z = np.array([*self.read_probe_measure()[:3]])
             x_y_z_calib_params = self.probe_calibration.calibrate_value(freq, *uncalibrated_x_y_z)
             calibrated_measure = uncalibrated_x_y_z + x_y_z_calib_params
             return np.append(calibrated_measure, np.linalg.norm(calibrated_measure))  # x, y, z, norm
         else:
-            return None
+            return np.array([])
 
-    def cmd_process(self, cmd: str) -> Optional[str]:
+    def cmd_process(self, cmd: str) -> str | None:
         answer = ''
         if self.connection_status:
             try:
@@ -79,46 +79,47 @@ class FL7000:
                 return answer
             except Exception as ex:
                 self.connection_status = False
-                logger.error('Error at %s', 'socket', exc_info=ex)
+                logger.error(f'Error at {self.sock}:\n{ex}')
                 logger.info(f'Read {len(answer)} bytes: {answer}')
                 return None
         else:
             logger.error('Device not connected')
             return None
 
-    def read_probe_measure(self) -> Optional[tuple[float, float, float, float]]:
+    def read_probe_measure(self) -> tuple[float, ...] | None:
         answer = self.cmd_process('D\r')
         if answer is not None:
             x, y, z, s = [float(x) for x in re.findall(r'\d{2}\.\d{2}', answer)]
             return x, y, z, s
 
-    def read_device_info(self) -> Optional[list[str]]:
+    def read_device_info(self) -> list[str] | None:
         answer = self.cmd_process('*IDN?\r')
         if answer is not None:
             return answer.split(',')
 
-    def read_probe_info(self) -> Optional[list[str]]:
+    def read_probe_info(self) -> list[str] | None:
         answer = self.cmd_process('I\r')
         if answer is not None:
             return answer.split(',')[1:-1]
 
-    def read_probe_id(self) -> Optional[str]:
+    def read_probe_id(self) -> str | None:
         answer = self.read_probe_info()
         if answer is not None:
             return answer[1]
 
-    def read_probe_id_zeroless(self) -> Optional[int]:
+    def read_probe_id_zeroless(self) -> int | None:
         answer = self.read_probe_id()
         if answer is not None:
             return int(answer.lstrip("0"))
 
 
 if __name__ == '__main__':
-    devices = [FL7000('10.6.1.96', 4001),
-               FL7000('10.6.1.96', 4002),
-               FL7000('10.6.1.96', 4003),
-               FL7000('10.6.1.96', 4004),
-               FL7000('10.6.1.96', 4005)]
+    ip = 'localhost'
+    devices: list[FL7000] = [FL7000(ip, 4001),
+                             FL7000(ip, 4002),
+                             FL7000(ip, 4003),
+                             FL7000(ip, 4004),
+                             FL7000(ip, 4005)]
     devices[2].connect_device()
     devices[1].connect_device()
     # print(devices[0])

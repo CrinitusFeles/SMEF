@@ -25,8 +25,9 @@ class TimeAxisItem(pg.AxisItem):
         self.setLabel(text="<span style=\"color:black;font-size:20px\">" +
                            'Время' + "</span>", units=None)
         self.enableAutoSIPrefix(False)
-        self.setTextPen(QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        self.setPen(QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+        pen = QPen(Qt.GlobalColor.black, 1, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin)
+        self.setTextPen(pen)
+        self.setPen(pen)
         font = QtGui.QFont()
         font.setPixelSize(16)
         self.setTickFont(font)

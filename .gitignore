@@ -5,10 +5,11 @@ __pycache__/
 .idea
 # C extensions
 *.so
-
+Images
 # Distribution / packaging
 Config/
 .Python
+.venv
 build/
 output/
 event_log/

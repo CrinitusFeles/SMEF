@@ -14,11 +14,11 @@ class NewSession(QWidget):
     request_probe_list = QtCore.pyqtSignal()
     session_inited = QtCore.pyqtSignal(str)
 
-    def __init__(self, config: dict = None):
+    def __init__(self, config: dict | None = None):
         super().__init__()
         loadUi(os.path.join(os.path.dirname(__file__), 'new_session_window.ui'), self)
         self.setWindowTitle('Новый сеанс')
-        self.config = config
+        self.config = config or {}
         # self.setWindowFlags(Qt.WindowStaysOnTopHint)
         # ----- Connections -----
         self.path_tool_button.pressed.connect(self.path_tool_button_pressed)
@@ -26,7 +26,7 @@ class NewSession(QWidget):
         self.cancel_button.pressed.connect(self.cancel_clicked)
         self.generate_name_button.pressed.connect(self.generate_name)
         # =========================
-        self.path_line_edit.setText(self.config['last_output_path'])
+        self.path_line_edit.setText(self.config.get('last_output_path', os.getcwd()))
 
         self.check_box_list = [self.s1_checkbox, self.s2_checkbox, self.s3_checkbox, self.s4_checkbox, self.s5_checkbox]
         [checkbox.setChecked(self.config['connected_sensors'][i]) for i, checkbox in enumerate(self.check_box_list)]

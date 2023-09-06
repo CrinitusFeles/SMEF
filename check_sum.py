@@ -1,5 +1,5 @@
 import os
-from filehash import FileHash
+from filehash.filehash import FileHash
 hasher = FileHash('sha1')
 hash = hasher.cathash_dir("./smef", "*.py")
 #hash = checksumdir.dirhash("./smef")

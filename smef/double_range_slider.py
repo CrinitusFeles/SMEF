@@ -47,7 +47,7 @@ class Ui_Form(object):
         self._splitter = QtWidgets.QSplitter(Form)
         self._splitter.setMinimumSize(QtCore.QSize(0, 0))
         self._splitter.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        self._splitter.setOrientation(QtCore.Qt.Horizontal)
+        self._splitter.setOrientation(QtCore.Qt.Orientation.Horizontal)
         self._splitter.setObjectName("splitter")
         self._head = QtWidgets.QGroupBox(self._splitter)
         self._head.setTitle("")
@@ -73,7 +73,7 @@ class Element(QtWidgets.QGroupBox):
         self.main = main
 
     def setStyleSheet(self, style):
-        self.parent().setStyleSheet(style)
+        super().setStyleSheet(style)
 
     def textColor(self):
         return getattr(self, '__textColor', QtGui.QColor(125, 125, 125))
@@ -100,7 +100,7 @@ class Head(Element):
     def drawText(self, event, qp):
         qp.setPen(self.textColor())
         qp.setFont(QtGui.QFont('Arial', 10))
-        qp.drawText(event.rect(), QtCore.Qt.AlignLeft, str(self.main.min()))
+        qp.drawText(event.rect(), QtCore.Qt.AlignmentFlag.AlignLeft, str(self.main.min()))
 
 
 class Tail(Element):
@@ -110,7 +110,7 @@ class Tail(Element):
     def drawText(self, event, qp):
         qp.setPen(self.textColor())
         qp.setFont(QtGui.QFont('Arial', 10))
-        qp.drawText(event.rect(), QtCore.Qt.AlignRight, str(self.main.max()))
+        qp.drawText(event.rect(), QtCore.Qt.AlignmentFlag.AlignRight, str(self.main.max()))
 
 
 class Handle(Element):
@@ -120,8 +120,8 @@ class Handle(Element):
     def drawText(self, event, qp):
         qp.setPen(self.textColor())
         qp.setFont(QtGui.QFont('Arial', 10))
-        qp.drawText(event.rect(), QtCore.Qt.AlignLeft, str(self.main.start()))
-        qp.drawText(event.rect(), QtCore.Qt.AlignRight, str(self.main.end()))
+        qp.drawText(event.rect(), QtCore.Qt.AlignmentFlag.AlignLeft, str(self.main.start()))
+        qp.drawText(event.rect(), QtCore.Qt.AlignmentFlag.AlignRight, str(self.main.end()))
 
     def mouseMoveEvent(self, event):
         event.accept()
@@ -247,10 +247,10 @@ class QRangeSlider(QtWidgets.QWidget, Ui_Form):
 
     def keyPressEvent(self, event):
         key = event.key()
-        if key == QtCore.Qt.Key_Left:
+        if key == QtCore.Qt.Key.Key_Left:
             s = self.start()-1
             e = self.end()-1
-        elif key == QtCore.Qt.Key_Right:
+        elif key == QtCore.Qt.Key.Key_Right:
             s = self.start()+1
             e = self.end()+1
         else:
