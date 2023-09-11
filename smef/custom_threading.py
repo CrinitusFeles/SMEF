@@ -5,7 +5,7 @@ from typing import Any
 class ThreadWithReturnValue(Thread):
     def __init__(self, group=None, target=None, name=None,
                  args=(), kwargs: dict | None = None, Verbose=None):
-        super().__init__(self, group, target, name, args, kwargs)
+        Thread.__init__(self, group, target, name, args, kwargs)
         if kwargs is None:
             kwargs = {}
         self._args = args

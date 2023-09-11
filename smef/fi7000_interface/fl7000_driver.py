@@ -32,14 +32,15 @@ class FL7000:
         try:
             logger.info(f'{self.ip}:{self.port} connection attempt')
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.settimeout(1)
+            self.sock.settimeout(2)
             self.sock.connect((self.ip, self.port))
             self.connection_status = True
 
             self.device_model, self.probe_id, self.revision, self.date = self.read_probe_info()
             self.probe_calibration = load_calibration_by_id(self.calibration_path, self.probe_id)
+            logger.success(f'{self.ip}:{self.port} {self.probe_id} successfully connected')
             return True
-        except (TimeoutError, OSError) as err:
+        except (TimeoutError, OSError, ValueError) as err:
             logger.error(f'Error at {self.sock}:\n{err}')
         return False
 
@@ -51,32 +52,35 @@ class FL7000:
                 x_y_z_calib_params = self.probe_calibration.calibrate_value(freq, *uncalibrated_x_y_z)
                 calibrated_measure = uncalibrated_x_y_z + x_y_z_calib_params
                 return np.append(calibrated_measure, np.linalg.norm(calibrated_measure))  # x, y, z, norm
-        logger.error('Incorrect calibration!')
+        logger.error(f'Incorrect calibration! {self.port} {self.probe_id}')
         return np.array([])
 
     def cmd_process(self, cmd: bytes) -> str | None:
         data: bytes = b''
-        if self.connection_status:
-            try:
-                self.sock.send(cmd)
-                while True:
-                    data += self.sock.recv(1024)
-                    if data.endswith(b'\n\r'):
-                        break
-                return data.decode()
-            except TimeoutError as ex:
-                self.connection_status = False
-                logger.error(f'Error at {self.sock}:\n{ex}\nRead {len(data)} bytes: {data}')
-                return None
-        else:
-            logger.error('Device not connected')
+        if not self.connection_status:
+            logger.error(f'Device {self.port} {self.probe_id} not connected')
+        try:
+            self.sock.send(cmd)
+            while True:
+                data += self.sock.recv(1024)
+                if data.endswith(b'\n\r'):
+                    break
+            return data.decode()
+        except TimeoutError as ex:
+            self.connection_status = False
+            logger.error(f'Error at {self.sock}:\n{ex}\nRead {len(data)} bytes: {data}')
             return None
 
     def read_probe_measure(self) -> tuple[float, ...]:
         answer: str | None = self.cmd_process(b'D\r')
-        if answer is not None:
+        if not answer:
+            logger.debug('Trying to reconnect...')
+            if self.connect_device():
+                answer = self.cmd_process(b'D\r')
+        if answer:
             x, y, z, s = [float(x) for x in re.findall(r'\d{2}\.\d{2}', answer)]
             return x, y, z, s
+        logger.error('Failed to reconnect')
         return (0, 0, 0, 0)
 
     def read_device_info(self) -> list[str] | None:

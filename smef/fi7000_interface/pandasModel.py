@@ -20,12 +20,12 @@ class DataFrameModel(QtCore.QAbstractTableModel):
 
     @pyqtProperty(pd.DataFrame)
     def df(self):
-        return self._dataframe
+        return self._df
 
     @df.setter
     def setDataFrame(self, dataframe):
         self.beginResetModel()
-        self._dataframe = dataframe.copy()
+        self._df = dataframe.copy()
         self.endResetModel()
     # dataFrame = pyqtProperty(pd.DataFrame, fget=dataFrame, fset=setDataFrame)
 
@@ -33,29 +33,29 @@ class DataFrameModel(QtCore.QAbstractTableModel):
     def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = QtCore.Qt.ItemDataRole.DisplayRole):
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if orientation == QtCore.Qt.Orientation.Horizontal:
-                return self._dataframe.columns[section]
+                return self._df.columns[section]
             else:
-                return str(self._dataframe.index[section])
+                return str(self._df.index[section])
         return QtCore.QVariant()
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         if parent.isValid():
             return 0
-        return len(self._dataframe.index)
+        return len(self._df.index)
 
     def columnCount(self, parent=QtCore.QModelIndex()):
         if parent.isValid():
             return 0
-        return self._dataframe.columns.size
+        return self._df.columns.size
 
     def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         if not index.isValid() or not (0 <= index.row() < self.rowCount() and 0 <= index.column() < self.columnCount()):
             return QtCore.QVariant()
-        row = self._dataframe.index[index.row()]
-        col = self._dataframe.columns[index.column()]
-        dt = self._dataframe[col].dtype
+        row = self._df.index[index.row()]
+        col = self._df.columns[index.column()]
+        dt = self._df[col].dtype
 
-        val = self._dataframe.loc[row][col]
+        val = self._df.loc[row][col]
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             return str(f'{val:.2f}')
         elif role == DataFrameModel.ValueRole:

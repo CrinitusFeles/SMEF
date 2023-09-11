@@ -1,5 +1,5 @@
 name: config
-device_ip: localhost
+device_ip: 10.6.1.95
 ports:
   - 4001
   - 4002

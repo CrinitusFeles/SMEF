@@ -196,7 +196,7 @@ class MainWindow(QMainWindow):
             if None not in measurements:
                 df: pd.DataFrame = self.calculate_new_dataframe_row(measurements)
                 df.to_csv(self.session_data_file, mode='a', header=False, index=False, sep=';', decimal=',')
-                self.dataframe = self.dataframe.append(df, ignore_index=True)
+                self.dataframe = self.dataframe._append(df, ignore_index=True)
                 df_units = df.filter(regex=f' {self.units}')
                 plot_data = df_units.to_numpy()[0]
                 self.plotter.add_points(plot_data)
