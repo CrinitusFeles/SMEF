@@ -44,7 +44,8 @@ class SessionViewer(MainWindow):
         self.dataframe = dataframe
         if dataframe:
             # TODO: add traces
-            labels = np.split(np.array([label.split(',')[0] for label in list(dataframe) if 'Датчик' in label]), 3)[0]
+            labels = np.split(np.array([label.split(',')[0]
+                                        for label in list(dataframe.columns.values) if 'Датчик' in label]), 3)[0]
             [self.plotter.add_trace(label, 'left') for label in labels]
             self.update_plotter()
             [line.setData(self.plotter.data[0], self.plotter.data[i + 1]) for i, line in enumerate(self.plotter.data_line)]

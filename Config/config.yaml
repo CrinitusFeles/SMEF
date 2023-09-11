@@ -10,14 +10,14 @@ connected_sensors:
   - false
   - false
   - false
-  - false
-  - false
+  - true
+  - true
 alive_sensors:
   - false
   - false
   - false
-  - false
-  - false
+  - true
+  - true
 dark_theme: false
 units: В/м
 norma_check: false
@@ -25,7 +25,7 @@ norma_value: 0
 measure_period: 1
 plot_header: ''
 slide_window_time_h: 1
-last_output_path: ''
+last_output_path: X:/NextCloudStorage/ImportantData/PyQt_projects/SMEF/Output
 generator_ip: ''
 generator_port: 8080
 right_axis:

@@ -2,13 +2,11 @@ from __future__ import annotations
 import os
 from typing import Any, Optional
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QWidget
-from qtmodern.windows import ModernWindow
 from ruamel.yaml import YAML, round_trip_dump
 
 default_config = {
     'name': 'config',
-    'device_ip': 'localhost',
+    'device_ip': '10.6.1.95',
     'ports': [4001, 4002, 4003, 4004, 4005],
     'connected_sensors': [False, False, False, False, False],
     'alive_sensors': [False, False, False, False, False],

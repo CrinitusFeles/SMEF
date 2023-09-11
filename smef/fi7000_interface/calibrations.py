@@ -9,32 +9,30 @@ from numpy import ndarray
 np.set_printoptions(edgeitems=30, linewidth=300)
 
 
-def load_freq_calibrations() -> list[tuple[str, ndarray]]:
-    calib_path = ('/home/astraadmin/sensor_calibrations')
-    calib_files = [f for f in listdir(calib_path) if isfile(os.path.join(calib_path, f)) and f.endswith(".ar")]
-    calibrations: list[tuple] = []
+def load_freq_calibrations(path: str) -> list[tuple[str, ndarray]]:
+    calib_files: list[str] = [f for f in listdir(path) if isfile(os.path.join(path, f)) and f.endswith(".ar")]
+    calibrations: list[tuple[str, ndarray]] = []
     for file in calib_files:
-        with open(f'/home/astraadmin/sensor_calibrations/{file}') as calib_file:
-            file_lines = calib_file.read().replace('\t\t', '\t').replace('\t\n', '\n').split('\n')
-            sensor_id = file_lines[0].lstrip("0")
-            field_lists = np.array([np.array(line.split('\t')) for line in file_lines[1:] if line != ''])
-            freq = field_lists[:, 0].astype(float)
-            x_freq_points = field_lists[:, 1].astype(float)
-            y_freq_points = field_lists[:, 2].astype(float)
-            z_freq_points = field_lists[:, 3].astype(float)
+        with open(os.path.join(path, file)) as calib_file:
+            file_lines: list[str] = calib_file.read().replace('\t\t', '\t').replace('\t\n', '\n').split('\n')
+            sensor_id: str = file_lines[0].lstrip("0")
+            field_lists: ndarray = np.array([np.array(line.split('\t')) for line in file_lines[1:] if line != ''])
+            freq: ndarray = field_lists[:, 0].astype(float)
+            x_freq_points: ndarray = field_lists[:, 1].astype(float)
+            y_freq_points: ndarray = field_lists[:, 2].astype(float)
+            z_freq_points: ndarray = field_lists[:, 3].astype(float)
             calibrations.append((sensor_id, np.vstack((freq, x_freq_points, y_freq_points, z_freq_points))))
     return calibrations
 
 
-def load_amplitude_calibrations() -> list[tuple[str, ndarray]]:
-    calib_path = ('/home/astraadmin/sensor_calibrations')
-    calib_files = [f for f in listdir(calib_path) if isfile(os.path.join(calib_path, f)) and f.endswith(".txt")]
-    calibrations: list[tuple] = []
+def load_amplitude_calibrations(path: str) -> list[tuple[str, ndarray]]:
+    calib_files: list[str] = [f for f in listdir(path) if isfile(os.path.join(path, f)) and f.endswith(".txt")]
+    calibrations: list[tuple[str, ndarray]] = []
     for file in calib_files:
-        with open(f'/home/astraadmin/sensor_calibrations/{file}') as calib_file:
-            file_lines = calib_file.read().replace('\t\n', '\n').split('\n')
-            sensor_id = file_lines[5].split(':')[1].strip().lstrip("0")
-            data_lines = np.array([val.split('\t') for val in file_lines[-7:-2]])
+        with open(os.path.join(path, file)) as calib_file:
+            file_lines: list[str] = calib_file.read().replace('\t\n', '\n').split('\n')
+            sensor_id: str = file_lines[5].split(':')[1].strip().lstrip("0")
+            data_lines: ndarray = np.array([val.split('\t') for val in file_lines[-7:-2]])
             amplitude_list: ndarray = data_lines[:, 1].astype(int)
             x_correction: ndarray = amplitude_list / data_lines[:, 2].astype(float)
             y_correction: ndarray = amplitude_list / data_lines[:, 3].astype(float)
@@ -44,7 +42,7 @@ def load_amplitude_calibrations() -> list[tuple[str, ndarray]]:
 
 
 class Calibration:
-    def __init__(self, freq_calibration: tuple[str, ndarray], amplitude_calibration: tuple[str, ndarray]):
+    def __init__(self, freq_calibration: tuple[str, ndarray], amplitude_calibration: tuple[str, ndarray]) -> None:
         self.sensor_id = freq_calibration[0]
         self.freq_list = freq_calibration[1][0]
         self.x_freq_points = freq_calibration[1][1]
@@ -65,24 +63,25 @@ class Calibration:
         z_amp_param = np.interp(z, self.amplitude_list, self.z_amplitude_points)
         return np.array([x_freq_param * x_amp_param, y_freq_param * y_amp_param, z_freq_param * z_amp_param])
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'Probe ID: {self.sensor_id}\nFreq list: {self.freq_list}\nX param: {self.x_freq_points}\n' \
                f'Y param: {self.y_freq_points}\nZ param: {self.z_freq_points}'
 
 
-def load_calibration_by_id(id: int | str) -> Calibration:
-    freq_calibrations = load_freq_calibrations()
-    amplitude_calibrations = load_amplitude_calibrations()
-    freq = None
-    ampl = None
+def load_calibration_by_id(path: str, id: str) -> Calibration:
+    probe_id: str = id.lstrip('0')
+    freq_calibrations: list[tuple[str, ndarray]] = load_freq_calibrations(path)
+    amplitude_calibrations: list[tuple[str, ndarray]] = load_amplitude_calibrations(path)
+    freq: tuple[str, ndarray] | None = None
+    ampl: tuple[str, ndarray] | None = None
     for calib in freq_calibrations:
-        if calib[0] == str(id):
+        if calib[0] == probe_id:
             freq = calib
     for calib in amplitude_calibrations:
-        if calib[0] == str(id):
+        if calib[0] == probe_id:
             ampl = calib
     if freq is None or ampl is None:
-        raise ValueError('Calibration loading')
+        raise ValueError(f'Calibration loading error for {probe_id=}:\n{freq=};\n{ampl=}')
     return Calibration(freq, ampl)
 
 
@@ -99,7 +98,7 @@ def find_calibration_pairs(freq_calibrations: list[tuple[str, ndarray]],
 
 
 if __name__ == '__main__':
-    print(load_calibration_by_id(357218))
+    print(load_calibration_by_id('X:\\NextCloudStorage\\ImportantData\\PyQt_projects\\SMEF\\sensor_calibrations', '0357218'))
     # calibrations = find_calibration_pairs(load_freq_calibrations(), load_amplitude_calibrations())
     # freq_grid = np.linspace(0, 40000000000, 10000)
     # amp_grid = np.linspace(5, 300, 1000)

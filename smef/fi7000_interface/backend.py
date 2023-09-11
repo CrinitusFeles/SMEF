@@ -58,7 +58,7 @@ class MainWindow(QMainWindow):
         self.plotter = CustomPlot(self.config)
         # ====================
         self.plot_layout.addWidget(self.plotter)
-        self.ip = self.config['device_ip']
+        self.ip = '10.6.1.95' #№self.config['device_ip']
         self.port_list = self.config['ports']
         self.devices = [FL7000(self.ip, port) for port in self.port_list]
         self.alive_sensors = [False] * len(self.devices)  # sensors with TCP connection
@@ -146,16 +146,22 @@ class MainWindow(QMainWindow):
 
     def check_alive_probes(self) -> list[bool]:
         self.connect()
-        alive_probes = [device.connection_status_check() for device in self.devices]
+        alive_probes: list[bool] = [device.connection_status for device in self.devices]
         self.config['alive_sensors'] = alive_probes
         create_config(self.config['name'], self.config)
         return alive_probes
 
     def connect(self):
         threads = []
-        [threads.append(Thread(name=f'Port {device.port}', target=device.connect_device)) for device in self.devices]
+        [threads.append(Thread(name=f'Port {device.port}', target=self.connect_device, args=[device])) for device in self.devices]
         [thread.start() for thread in threads]
         [thread.join() for thread in threads]
+
+    def connect_device(self, device):
+        try:
+            device.connect_device()
+        except ValueError as err:
+            logger.error(err)
 
     def measure_routine(self) -> ndarray:
 
