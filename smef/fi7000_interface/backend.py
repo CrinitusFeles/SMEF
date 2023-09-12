@@ -58,7 +58,7 @@ class MainWindow(QMainWindow):
         self.plotter = CustomPlot(self.config)
         # ====================
         self.plot_layout.addWidget(self.plotter)
-        self.ip = '10.6.1.95' #№self.config['device_ip']
+        self.ip = 'localhost' #№self.config['device_ip']
         self.port_list = self.config['ports']
         self.devices = [FL7000(self.ip, port) for port in self.port_list]
         self.alive_sensors = [False] * len(self.devices)  # sensors with TCP connection
@@ -382,12 +382,12 @@ def main(*args):
     parser.add_argument('-d', '--demo', help='start program with demo server',  action='store_true')
     # parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
     args = parser.parse_args()
-    if args.demo:
-        print('Starting demo server')
-        server = DemoServer(debug_print=False)
-        server.start_server()
-    else:
-        print('Starting without demo server')
+    # if args.demo:
+    print('Starting demo server')
+    server = DemoServer(debug_print=False)
+    server.start_server()
+    # else:
+    #     print('Starting without demo server')
     app = QApplication([])
     main_window = MainWindow()
     mw = ModernWindow(main_window)

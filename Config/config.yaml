@@ -7,15 +7,15 @@ ports:
   - 4004
   - 4005
 connected_sensors:
-  - false
-  - false
-  - false
+  - true
+  - true
+  - true
   - true
   - true
 alive_sensors:
-  - false
-  - false
-  - false
+  - true
+  - true
+  - true
   - true
   - true
 dark_theme: false

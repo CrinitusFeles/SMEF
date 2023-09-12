@@ -7,7 +7,7 @@ import socket
 from datetime import datetime
 
 class DemoServer:
-    def __init__(self, **kwargs):
+    def __init__(self, daemon: bool = True, **kwargs):
         self.ports = [4001, 4002, 4003, 4004, 4005]
         self.threads = []
         self.debug_print_flag = kwargs.get('debug_print', True)
@@ -18,7 +18,7 @@ class DemoServer:
             sock.listen(1)
             # sock.settimeout(2)
             # sock.setblocking(False)
-            self.threads.append(Thread(name=f'{port} port socket', target=self.routine, args=[sock, i], daemon=False))
+            self.threads.append(Thread(name=f'{port} port socket', target=self.routine, args=[sock, i], daemon=daemon))
 
     def debug_print(self, *args):
         if self.debug_print_flag:
@@ -29,7 +29,7 @@ class DemoServer:
             thread.start()
 
     def send_sock(self, sock: socket.socket, i: int):
-        packet: bytes = b':D00.00.00.00.00.00.' + str.encode(f'{(random.uniform(-1.0, 1.0) + i * 2):.2f}') + b'\r\n'
+        packet: bytes = b':D00.0000.0000.000' + str.encode(f'{(random.uniform(-1.0, 1.0) + i * 2 + 1):.2f}') + b'S\n\r'
         self.debug_print(packet)
         sock.sendall(packet)
 
@@ -49,8 +49,10 @@ class DemoServer:
 
                     if decoded_data == '*IDN?\r':
                         connection.sendall(b'AR-WORLDWIDE,FI7000,REV3.10\r\n')
+                    elif decoded_data == 'I\r':
+                        connection.sendall(b':I,FL7040,00357221,_REV_1.80_,01/15/21,S\n\r')
                     elif decoded_data == 'D\r':
-                        self.send_sock(connection, i)
+                        self.send_sock(connection, i)  # b':D04.1402.0702.2505.14S\n\r'
             except TimeoutError as ex:
                 print(ex)
                 break
