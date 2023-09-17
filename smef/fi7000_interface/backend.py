@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import argparse
 import datetime
-import os
+from pathlib import Path
 import time
 from threading import Thread
 import numpy as np
 import pandas as pd
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QGroupBox, QHBoxLayout, QVBoxLayout, QTextEdit
 from numpy import ndarray
@@ -20,7 +20,7 @@ from smef.PlotterWidget.CustomPlot import CustomPlot
 from smef.custom_threading import ThreadWithReturnValue
 from smef.demo_server import DemoServer
 from smef.fi7000_interface.config import load_config, default_config, create_config, open_file_system
-from smef.fi7000_interface.fl7000_driver import FL7000
+from smef.fi7000_interface.fl7040_driver import FL7040_Probe
 from smef.fi7000_interface.pandasModel import DataFrameModel
 from smef.new_session.NewSession import NewSession
 from loguru import logger
@@ -32,13 +32,13 @@ from smef.utils import converter, reverse_convert
 class MainWindow(QMainWindow):
     def __init__(self, config=None, dataframe=None):
         super().__init__()
-        loadUi(os.path.join(os.path.dirname(__file__), 'mainwindow.ui'), self)
+        loadUi(Path(__file__).parent.joinpath('mainwindow.ui'), self)
         self.setWindowTitle('СМЭП Клиент v2.0.0')
         if config is None:
             self.config = load_config('config', default_config)
         else:
             self.config = config
-        [os.makedirs(folder, exist_ok=True) for folder in [self.config['image_folder'], self.config['session_folder']]]
+        # [os.makedirs(folder, exist_ok=True) for folder in [self.config['image_folder'], self.config['session_folder']]]
 
         # ----- Init interface -----
         #self.minmax_table_view.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
         self.plot_layout.addWidget(self.plotter)
         self.ip = 'localhost' #№self.config['device_ip']
         self.port_list = self.config['ports']
-        self.devices = [FL7000(self.ip, port) for port in self.port_list]
+        self.devices = [FL7040_Probe(self.ip, port) for port in self.port_list]
         self.alive_sensors = [False] * len(self.devices)  # sensors with TCP connection
         self.active_sensors = self.config['connected_sensors']  # checkbox status
         self.units = self.config['units']
@@ -102,7 +102,7 @@ class MainWindow(QMainWindow):
     def check_new_connection_parameters(self):
         self.ip = self.connections_settings_widget.server_ip_line_edit.text()
         self.port_list = self.connections_settings_widget.get_port_values()
-        self.devices = [FL7000(self.ip, port) for port in self.port_list]
+        self.devices = [FL7040_Probe(self.ip, port) for port in self.port_list]
         self.connections_settings_widget.set_connection_status_labels(self.check_alive_probes())
 
     def create_new_session_widget(self):
@@ -140,7 +140,7 @@ class MainWindow(QMainWindow):
         create_config(self.config['name'], self.config)
         self.ip = self.config['device_ip']
         self.port_list = self.config['ports']
-        self.devices = [FL7000(self.ip, port) for port in self.port_list]
+        self.devices = [FL7040_Probe(self.ip, port) for port in self.port_list]
         self.connect()
         self.alive_sensors = self.config['alive_sensors']
 
@@ -152,8 +152,8 @@ class MainWindow(QMainWindow):
         return alive_probes
 
     def connect(self):
-        threads = []
-        [threads.append(Thread(name=f'Port {device.port}', target=self.connect_device, args=[device])) for device in self.devices]
+        threads: list[Thread] = [Thread(name=f'Port {device.port}', target=self.connect_device, args=[device])
+                                 for device in self.devices]
         [thread.start() for thread in threads]
         [thread.join() for thread in threads]
 
@@ -168,13 +168,10 @@ class MainWindow(QMainWindow):
         threads: list[ThreadWithReturnValue] = []
         for i, device in enumerate(self.devices):
             if self.config['connected_sensors'][i]:
-                if self.calib_probs_check_box.isChecked():
-                    threads.append(ThreadWithReturnValue(target=device.calibrate_measure,
-                                                         args=[self.calib_freq_spin_box.value() * 1000],
-                                                         name='sensor ' + str(i) + ' thread'))
-                else:
-                    threads.append(ThreadWithReturnValue(target=device.read_probe_measure,
-                                                         name='sensor ' + str(i) + ' thread'))
+                threads.append(ThreadWithReturnValue(target=device.calibrate_measure,
+                                                        args=[self.calib_freq_spin_box.value() * 1000]
+                                                        if self.calib_probs_check_box.isChecked() else (),
+                                                        name='sensor ' + str(i) + ' thread'))
         [thread.start() for thread in threads]
         return np.array([thread.join()[3] for thread in threads])
 
@@ -391,6 +388,7 @@ def main(*args):
     app = QApplication([])
     main_window = MainWindow()
     mw = ModernWindow(main_window)
+    mw.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground, False)  # fix flickering on resize window
     mw.show()
     app.exec_()
 

@@ -3,13 +3,14 @@ from __future__ import annotations
 import os
 from os import listdir
 from os.path import isfile
+from pathlib import Path
 # import matplotlib.pyplot as plt
 import numpy as np
 from numpy import ndarray
 np.set_printoptions(edgeitems=30, linewidth=300)
 
 
-def load_freq_calibrations(path: str) -> list[tuple[str, ndarray]]:
+def load_freq_calibrations(path: str | Path) -> list[tuple[str, ndarray]]:
     calib_files: list[str] = [f for f in listdir(path) if isfile(os.path.join(path, f)) and f.endswith(".ar")]
     calibrations: list[tuple[str, ndarray]] = []
     for file in calib_files:
@@ -25,7 +26,7 @@ def load_freq_calibrations(path: str) -> list[tuple[str, ndarray]]:
     return calibrations
 
 
-def load_amplitude_calibrations(path: str) -> list[tuple[str, ndarray]]:
+def load_amplitude_calibrations(path: str | Path) -> list[tuple[str, ndarray]]:
     calib_files: list[str] = [f for f in listdir(path) if isfile(os.path.join(path, f)) and f.endswith(".txt")]
     calibrations: list[tuple[str, ndarray]] = []
     for file in calib_files:
@@ -68,7 +69,7 @@ class Calibration:
                f'Y param: {self.y_freq_points}\nZ param: {self.z_freq_points}'
 
 
-def load_calibration_by_id(path: str, id: str) -> Calibration:
+def load_calibration_by_id(path: str | Path, id: str) -> Calibration:
     probe_id: str = id.lstrip('0')
     freq_calibrations: list[tuple[str, ndarray]] = load_freq_calibrations(path)
     amplitude_calibrations: list[tuple[str, ndarray]] = load_amplitude_calibrations(path)

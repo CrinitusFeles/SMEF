@@ -1,8 +1,10 @@
-from __future__ import annotations
-import os
-from typing import Any, Optional
-from PyQt5 import QtWidgets
-from ruamel.yaml import YAML, round_trip_dump
+
+from pathlib import Path
+from dynaconf import Dynaconf
+from dynaconf import loaders
+from dynaconf.utils.boxing import DynaBox
+from dynaconf.utils import object_merge
+from dynaconf.vendor.ruamel import yaml
 
 default_config = {
     'name': 'config',
@@ -60,37 +62,72 @@ default_config = {
     'session_folder': './Output/',  # uses only at first start of application for creating session folder
 }
 
+# def open_file_system(directory=False) -> Optional[list[str] | str]:
+#     dialog = QtWidgets.QFileDialog()
+#     dialog.setWindowTitle('Choose Directories')
+#     dialog.setOption(QtWidgets.QFileDialog.DontUseNativeDialog, True)
+#     if directory:
+#         dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
+#     if dialog.exec_() == QtWidgets.QDialog.Accepted:
+#         return str(dialog.selectedFiles()[0])
 
-def load_config(name: str, default_config: Any):
-    config_folder_path = 'Config'
-    config_path = os.path.join(config_folder_path, f'{name}.yaml')
-    if not os.path.isdir(config_folder_path):
-        os.makedirs(config_folder_path, exist_ok=True)
-    if os.path.isfile(config_path):
-        with open(config_path, 'r', encoding="utf-8") as config_file:
-            config_obj = YAML().load(config_file)
-            if config_obj != {}:
-                return config_obj
-            else:
-                return create_config(name, default_config)
-    else:
-        return create_config(name, default_config)
+#     dialog.deleteLater()
 
 
-def create_config(name: str, config_obj: Any):
-    config_path = os.path.join('Config', f'{name}.yaml')
-    with open(config_path, 'w', encoding="utf-8") as ofp:
-        round_trip_dump(config_obj, ofp, indent=4, block_seq_indent=2)
-    return config_obj
 
 
-def open_file_system(directory=False) -> Optional[list[str] | str]:
-    dialog = QtWidgets.QFileDialog()
-    dialog.setWindowTitle('Choose Directories')
-    dialog.setOption(QtWidgets.QFileDialog.DontUseNativeDialog, True)
-    if directory:
-        dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
-    if dialog.exec_() == QtWidgets.QDialog.Accepted:
-        return str(dialog.selectedFiles()[0])
+def my_write(settings_path, settings_data, merge=True):
+    """Write data to a settings file.
 
-    dialog.deleteLater()
+    :param settings_path: the filepath
+    :param settings_data: a dictionary with data
+    :param merge: boolean if existing file should be merged with new data
+    :param stdout: boolean if should output to stdout instead of file
+    """
+    settings_path = Path(settings_path)
+    if settings_path.exists() and merge:  # pragma: no cover
+        with open(str(settings_path), encoding='utf-8') as open_file:
+            object_merge(yaml.safe_load(open_file), settings_data)
+
+    with open(str(settings_path), "w", encoding='utf-8') as open_file:
+        yaml.dump(
+            settings_data,
+            open_file,
+            explicit_start=True,
+            indent=4,
+            block_seq_indent=2,
+            allow_unicode=True,
+            default_flow_style=False,
+        )
+loaders.yaml_loader.write = my_write
+
+class FL7000_Config:
+    def __init__(self, root_path: str | Path = Path(__file__).parent) -> None:
+        self.config_path = root_path
+        self.settings = Dynaconf(
+            root_path=root_path,
+            envvar_prefix="DYNACONF",
+            encoding='utf-8',
+            settings_files=['settings.yaml', '*.yaml'],
+            ip='10.6.1.95',
+            calibration_path=Path(__file__).parent.joinpath('sensor_calibrations'),
+            ports=[4001, 4002, 4003, 4004, 4005],
+
+        )
+
+    def __call__(self) -> Dynaconf:
+        return self.settings
+
+    def write_config(self) -> None:
+        p = Path(self.config_path).joinpath('settings.yaml')
+        loaders.write(str(p),
+                      DynaBox(self.settings.as_dict()).to_dict(),
+                      merge=False)
+
+
+
+
+if __name__ == '__main__':
+    config = FL7000_Config()
+    config.write_config()
+    print(config.settings.devices)

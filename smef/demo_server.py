@@ -15,7 +15,7 @@ class DemoServer:
         for i, port in enumerate(self.ports):
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind(('localhost', port))
-            sock.listen(1)
+            sock.listen(5)
             # sock.settimeout(2)
             # sock.setblocking(False)
             self.threads.append(Thread(name=f'{port} port socket', target=self.routine, args=[sock, i], daemon=daemon))
@@ -35,17 +35,17 @@ class DemoServer:
 
     def routine(self, sock: socket.socket, i: int):
         while True:
-            self.debug_print(f'Socket {i} {sock} waiting connection...')
+            self.debug_print(f'Socket {i} waiting connection...')
             connection, client_address = sock.accept()
             self.connections.append(connection)
             try:
-                self.debug_print('Connected to: ' + str(client_address))
+                self.debug_print(f'Connected to: {client_address}\n')
                 while True:
                     data: bytes = connection.recv(16)
                     if not data:
                         break
                     decoded_data = data.decode()
-                    self.debug_print(f'Get: {decoded_data}')
+                    self.debug_print(f'Get: {decoded_data}\n')
 
                     if decoded_data == '*IDN?\r':
                         connection.sendall(b'AR-WORLDWIDE,FI7000,REV3.10\r\n')
@@ -53,85 +53,90 @@ class DemoServer:
                         connection.sendall(b':I,FL7040,00357221,_REV_1.80_,01/15/21,S\n\r')
                     elif decoded_data == 'D\r':
                         self.send_sock(connection, i)  # b':D04.1402.0702.2505.14S\n\r'
+            except ConnectionResetError as err:
+                print(err)
             except TimeoutError as ex:
                 print(ex)
                 break
             except KeyboardInterrupt:
-                print('Shutdonw...')
+                print('Shutdonw...\n')
             finally:
                 connection.close()
-                print('connection close')
+                print('connection close\n')
 
 
+    # def on_connect(self, sock: socket.socket, addr):
+    #     print("Connected by", addr)
 
+    # def on_disconnect(self, sock: socket.socket, addr):
+    #     print("Disconnected by", addr)
 
-    def on_connect(self, sock: socket.socket, addr):
-        print("Connected by", addr)
+    # def handle(self, sock: socket.socket, addr: str):
+    #     try:
+    #         data = sock.recv(1024)  # Should be ready
+    #     except ConnectionError:
+    #         print(f"Client suddenly closed while receiving")
+    #         return False
+    #     now = datetime.now().astimezone().strftime("%H:%M:%S %d-%m-%Y")
+    #     print(f"{now} > {list(data)} len: {len(data)} from: {addr}")
+    #     if not data:
+    #         print("Disconnected by", addr)
+    #         return False
+    #     sock.send(b'cmd')
+    #     if data[:4] == b'\xad\xde\xaf\xbe':
+    #         path = os.path.join(os.path.dirname(__file__), 'gsm_data.txt')
+    #         with open(path, 'a', encoding='utf-8') as file:
+    #             file.write(f"{now} > {list(data)}\n")
+    #     else:
+    #         sock.close()
+    #     # try:
+    #     #     sock.send(data)  # Hope it won't block
+    #     # except ConnectionError:
+    #     #     print(f"Client suddenly closed, cannot send")
+    #     #     return False
+    #     return True
 
-    def on_disconnect(self, sock: socket.socket, addr):
-        print("Disconnected by", addr)
+    # def run_server(self, host, port, on_connect, on_read, on_disconnect):
+    #     def on_accept_ready(sel, serv_sock, mask):
+    #         sock, addr = serv_sock.accept()  # Should be ready
 
-    def handle(self, sock: socket.socket, addr: str):
-        try:
-            data = sock.recv(1024)  # Should be ready
-        except ConnectionError:
-            print(f"Client suddenly closed while receiving")
-            return False
-        now = datetime.now().astimezone().strftime("%H:%M:%S %d-%m-%Y")
-        print(f"{now} > {list(data)} len: {len(data)} from: {addr}")
-        if not data:
-            print("Disconnected by", addr)
-            return False
-        sock.send(b'cmd')
-        if data[:4] == b'\xad\xde\xaf\xbe':
-            path = os.path.join(os.path.dirname(__file__), 'gsm_data.txt')
-            with open(path, 'a', encoding='utf-8') as file:
-                file.write(f"{now} > {list(data)}\n")
-        else:
-            sock.close()
-        # try:
-        #     sock.send(data)  # Hope it won't block
-        # except ConnectionError:
-        #     print(f"Client suddenly closed, cannot send")
-        #     return False
-        return True
+    #         # sock.setblocking(False)
+    #         sel.register(sock, selectors.EVENT_READ, on_read_ready)
+    #         if on_connect:
+    #             on_connect(sock, addr)
 
-    def run_server(self, host, port, on_connect, on_read, on_disconnect):
-        def on_accept_ready(sel, serv_sock, mask):
-            sock, addr = serv_sock.accept()  # Should be ready
+    #     def on_read_ready(sel, sock, mask):
+    #         addr = sock.getpeername()
+    #         if not on_read or not on_read(sock, addr):
+    #             if on_disconnect:
+    #                 on_disconnect(sock, addr)
+    #             sel.unregister(sock)
+    #             sock.close()
 
-            # sock.setblocking(False)
-            sel.register(sock, selectors.EVENT_READ, on_read_ready)
-            if on_connect:
-                on_connect(sock, addr)
-
-        def on_read_ready(sel, sock, mask):
-            addr = sock.getpeername()
-            if not on_read or not on_read(sock, addr):
-                if on_disconnect:
-                    on_disconnect(sock, addr)
-                sel.unregister(sock)
-                sock.close()
-
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as serv_sock:
-            serv_sock.bind((host, port))
-            # serv_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            serv_sock.listen(3)
-            serv_sock.setblocking(False)
-            sel = selectors.DefaultSelector()
-            sel.register(serv_sock, selectors.EVENT_READ, on_accept_ready)
-            try:
-                while True:
-                    print("Waiting for connections or data...")
-                    events = sel.select()
-                    for key, mask in events:
-                        callback = key.data
-                        callback(sel, key.fileobj, mask)
-            except (KeyboardInterrupt, SystemExit):
-                print('Shutdown')
+    #     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as serv_sock:
+    #         serv_sock.bind((host, port))
+    #         # serv_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    #         serv_sock.listen(3)
+    #         serv_sock.setblocking(False)
+    #         sel = selectors.DefaultSelector()
+    #         sel.register(serv_sock, selectors.EVENT_READ, on_accept_ready)
+    #         try:
+    #             while True:
+    #                 print("Waiting for connections or data...")
+    #                 events = sel.select()
+    #                 for key, mask in events:
+    #                     callback = key.data
+    #                     callback(sel, key.fileobj, mask)
+    #         except (KeyboardInterrupt, SystemExit):
+    #             print('Shutdown')
 
 
 
 if __name__ == '__main__':
     server = DemoServer()
     server.start_server()
+    try:
+        while True:
+            in_data = input('>')
+    except KeyboardInterrupt:
+        print('shutting down')
