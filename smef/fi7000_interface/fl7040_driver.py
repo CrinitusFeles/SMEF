@@ -18,11 +18,8 @@ class DataRaw:
     s: float
 
 @dataclass
-class DataCalib:
-    x: float
-    y: float
-    z: float
-    norm: float
+class DataCalib(DataRaw):
+    freq: float
 
 @dataclass
 class FieldResult:
@@ -86,9 +83,9 @@ class FL7040_Probe:
             uncalibrated = np.array([data.x, data.y, data.z])
             calib_params = self.probe_calibration.calibrate_value(freq, *uncalibrated)
             calibrated_measure = uncalibrated + calib_params
-            return DataCalib(*calibrated_measure, norm=np.linalg.norm(calibrated_measure).astype(float))
+            return DataCalib(*calibrated_measure, s=np.linalg.norm(calibrated_measure).astype(float), freq=freq)
         logger.error(f'Incorrect calibration! {self.port} {self.probe_id}')
-        return DataCalib(data.x, data.y, data.z, data.s)
+        return DataCalib(data.x, data.y, data.z, data.s, freq)
 
     def cmd_process(self, cmd: bytes) -> str | None:
         data: bytes = b''
@@ -136,10 +133,10 @@ class FL7040_Probe:
         while self.measuring_flag:
             with self.result_ready:
                 measure_time: datetime = datetime.now()
-                if not self.calibration_freq:
-                    result = self.read_probe_measure()
-                else:
-                    result = self.calibrate_measure(self.calibration_freq)
+                # if not self.calibration_freq:
+                result = self.read_probe_measure()
+                # else:
+                #     result = self.calibrate_measure(self.calibration_freq)
                 self.measured_data.put_nowait(FieldResult(measure_time, result))
                 self.result_ready.notify_all()
             time.sleep(self.measure_period_ms / 1000)

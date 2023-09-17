@@ -3,6 +3,9 @@
 from datetime import datetime
 from threading import Thread
 import time
+
+import pandas as pd
+from pandas import DataFrame
 from smef.fi7000_interface.config import FL7000_Config
 from smef.fi7000_interface.fl7040_driver import FL7040_Probe, FieldResult
 
@@ -16,13 +19,25 @@ class FL7000_Interface:
         self._thread: Thread
         self.calibrate_freq: float | None = None
         self.connection_status: bool = False
+        self.df = DataFrame()
 
     def _collect_data(self):
         while True:
-            result: list[FieldResult] = [probe.measured_data.get(timeout=probe.measure_period_ms) for probe in self.probes]
+            results: list[FieldResult] = [probe.measured_data.get(timeout=probe.measure_period_ms)
+                                         for probe in self.probes]
+            for result, probe in zip(results, self.probes):
+                # f'{probe.probe_id} {probe.port}'
+                self.df = pd.concat([self.df, DataFrame({'Timestamp': })], ignore_index=True)
+            # self.storage.append(result)
+
             print(result)
             time.sleep(1)
-        #     probe.result_ready.
+            # for data in result:
+            #     value[value == 0] = 0.001
+            #         return 20 * np.log10(value * 10**6)
+            #     elif mode == 2:  # В/м -> Вт/м2
+            #         return value / 377
+
 
     def set_measuring_period(self, period_ms: int) -> None:
         [probe.set_measure_period(period_ms) for probe in self.probes]
