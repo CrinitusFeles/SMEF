@@ -3,12 +3,15 @@
 from datetime import datetime
 from threading import Thread
 import time
-
+from functools import reduce
 import pandas as pd
 from pandas import DataFrame
 from smef.fi7000_interface.config import FL7000_Config
 from smef.fi7000_interface.fl7040_driver import FL7040_Probe, FieldResult
 
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
+pd.set_option('display.width', 370)
 
 class FL7000_Interface:
     def __init__(self) -> None:
@@ -25,18 +28,12 @@ class FL7000_Interface:
         while True:
             results: list[FieldResult] = [probe.measured_data.get(timeout=probe.measure_period_ms)
                                          for probe in self.probes]
-            for result, probe in zip(results, self.probes):
-                # f'{probe.probe_id} {probe.port}'
-                self.df = pd.concat([self.df, DataFrame({'Timestamp': })], ignore_index=True)
-            # self.storage.append(result)
-
-            print(result)
+            # df = DataFrame({'Timestamp': []})
+            df: DataFrame = reduce(lambda left, right: pd.merge(left, right, on=['Timestamp']),
+                                   [result.dataframe() for result in results])
+            self.df =  pd.concat([self.df, df], ignore_index=True)
+            # print(self.df)
             time.sleep(1)
-            # for data in result:
-            #     value[value == 0] = 0.001
-            #         return 20 * np.log10(value * 10**6)
-            #     elif mode == 2:  # В/м -> Вт/м2
-            #         return value / 377
 
 
     def set_measuring_period(self, period_ms: int) -> None:
@@ -69,7 +66,7 @@ class FL7000_Interface:
 
 if __name__ == '__main__':
     device = FL7000_Interface()
-    print(device.connect('localhost', [4001, 4002]))
+    print(device.connect('localhost', [4001, 4002, 4004]))
 
     try:
         while True:

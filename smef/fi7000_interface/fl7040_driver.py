@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 from datetime import datetime
+# from datetime import datetime
 from queue import Queue
 import socket
 from pathlib import Path
 import re
 from threading import Condition, Thread
 import time
+import pandas as pd
 import numpy as np
 from loguru import logger
 from smef.fi7000_interface.calibrations import load_calibration_by_id, Calibration
@@ -15,7 +17,10 @@ class DataRaw:
     x: float
     y: float
     z: float
-    s: float
+    s: float  # V/m
+    s_log: float  # дБмкВ/м
+    s_w: float  # Вт/м2
+
 
 @dataclass
 class DataCalib(DataRaw):
@@ -23,8 +28,18 @@ class DataCalib(DataRaw):
 
 @dataclass
 class FieldResult:
+    probe_id: str
     timestamp: datetime
     data: DataCalib | DataRaw
+
+    def dataframe(self) -> pd.DataFrame:
+        return pd.DataFrame({'Timestamp': [pd.Timestamp(self.timestamp).ceil('S')],
+                             f'{self.probe_id} x': [self.data.x],
+                             f'{self.probe_id} y': [self.data.y],
+                             f'{self.probe_id} z': [self.data.z],
+                             f'{self.probe_id} s_v': [self.data.s],
+                             f'{self.probe_id} s_dBm': [self.data.s_log],
+                             f'{self.probe_id} s_w': [self.data.s_w]})
 
 class FL7040_Probe:
     sock: socket.socket
@@ -83,9 +98,14 @@ class FL7040_Probe:
             uncalibrated = np.array([data.x, data.y, data.z])
             calib_params = self.probe_calibration.calibrate_value(freq, *uncalibrated)
             calibrated_measure = uncalibrated + calib_params
-            return DataCalib(*calibrated_measure, s=np.linalg.norm(calibrated_measure).astype(float), freq=freq)
+            s = np.linalg.norm(calibrated_measure).astype(float)
+            if s == 0:
+                s_log =  20 * np.log10(0.001 * 10**6)
+            s_log =  20 * np.log10(s * 10**6)
+            s_w = s / 377
+            return DataCalib(*calibrated_measure, s=s, s_log=s_log, s_w=s_w, freq=freq)
         logger.error(f'Incorrect calibration! {self.port} {self.probe_id}')
-        return DataCalib(data.x, data.y, data.z, data.s, freq)
+        return DataCalib(data.x, data.y, data.z, data.s, data.s_log, data.s_w, freq)
 
     def cmd_process(self, cmd: bytes) -> str | None:
         data: bytes = b''
@@ -111,10 +131,16 @@ class FL7040_Probe:
             if self.connect_device():
                 answer = self.cmd_process(b'D\r')
         if answer:
-            point = DataRaw(*[float(x) for x in re.findall(r'\d{2}\.\d{2}', answer)])
+            x, y, z, s = [float(x) for x in re.findall(r'\d{2}\.\d{2}', answer)]
+            if s == 0:
+                s_log =  20 * np.log10(0.001 * 10**6)
+            else:
+                s_log =  20 * np.log10(s * 10**6)
+            s_w = s / 377
+            point = DataRaw(s, y, z, s, s_log, s_w)
             return point
         logger.error('Failed to reconnect')
-        return DataRaw(0, 0, 0, 0)
+        return DataRaw(0, 0, 0, 0, 0, 0)
 
     def read_device_info(self) -> list[str] | None:
         answer: str | None = self.cmd_process(b'*IDN?\r')
@@ -137,7 +163,7 @@ class FL7040_Probe:
                 result = self.read_probe_measure()
                 # else:
                 #     result = self.calibrate_measure(self.calibration_freq)
-                self.measured_data.put_nowait(FieldResult(measure_time, result))
+                self.measured_data.put_nowait(FieldResult(self.probe_id, measure_time, result))
                 self.result_ready.notify_all()
             time.sleep(self.measure_period_ms / 1000)
 
