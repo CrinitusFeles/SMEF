@@ -5,7 +5,7 @@ from queue import Queue
 import socket
 from pathlib import Path
 import re
-from threading import Condition, Thread
+from threading import Thread
 import time
 import pandas as pd
 import numpy as np
@@ -59,7 +59,8 @@ class FL7040_Probe:
         self.measuring_flag: bool = False
         self.measured_data: Queue[FieldResult] = Queue(1000)
         self.measure_period_ms: int = 1000
-        self.result_ready: Condition = Condition()
+        self.result_ready: bool = False
+        self.measure_permission: bool = True
 
     def __str__(self) -> str:
         return f'FL7000 Description\nAddress: {self.ip}:{self.port}\n' \
@@ -155,21 +156,34 @@ class FL7040_Probe:
                 return result[1:-1]
         raise ValueError(f'Reading probe id error! Answer: {answer}')
 
-    def _measure_routine(self) -> None:
+    def permit_measure(self):
+        self.measure_permission = True
+
+    def _single_measure_routine(self) -> None:
         while self.measuring_flag:
-            with self.result_ready:
-                measure_time: datetime = datetime.now()
-                # if not self.calibration_freq:
-                result = self.read_probe_measure()
-                # else:
-                #     result = self.calibrate_measure(self.calibration_freq)
-                self.measured_data.put_nowait(FieldResult(self.probe_id, measure_time, result))
-                self.result_ready.notify_all()
+            while not self.measure_permission:
+                pass
+            self.measured_data.put_nowait(FieldResult(self.probe_id, datetime.now(), self.read_probe_measure()))
+            self.result_ready = True
+            self.measure_permission = False
+
+    def _stream_measure_routine(self) -> None:
+        while self.measuring_flag:
+            self.measured_data.put_nowait(FieldResult(self.probe_id, datetime.now(), self.read_probe_measure()))
+            self.result_ready = True
             time.sleep(self.measure_period_ms / 1000)
+
+    def wait_result(self) -> None:
+        while not self.result_ready:
+            pass
+
+    def get_measured_data(self) -> FieldResult:
+        self.result_ready = False
+        return self.measured_data.get_nowait()
 
     def start_measuring(self):
         if not self.measuring_flag:
-            self._thread = Thread(name=f'Probe {self.port} thread', target=self._measure_routine, daemon=True)
+            self._thread = Thread(name=f'Probe {self.port} thread', target=self._single_measure_routine, daemon=True)
             self.measuring_flag = True
             self._thread.start()
         else:

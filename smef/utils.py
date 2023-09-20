@@ -1,7 +1,7 @@
 import pyqtgraph as pg
 import datetime
 import time
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPen
 import numpy as np
@@ -36,6 +36,16 @@ class TimeAxisItem(pg.AxisItem):
         return [datetime.datetime.fromtimestamp(value).strftime("%d.%m.%Y\n %H:%M:%S") for value in values if
                 value > 100000000]
 
+def open_file_system(directory=False) -> str | None:
+    dialog = QtWidgets.QFileDialog()
+    dialog.setWindowTitle('Choose Directories')
+    dialog.setOption(QtWidgets.QFileDialog.DontUseNativeDialog, True)
+    if directory:
+        dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
+    if dialog.exec_() == QtWidgets.QDialog.Accepted:
+        return str(dialog.selectedFiles()[0])
+
+    dialog.deleteLater()
 
 def converter(value, mode=0):
     """mode = 0 - В/м, mode = 1 В/м -> дБмкВ/м, mode = 2 В/м -> Вт/м2"""

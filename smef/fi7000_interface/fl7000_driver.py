@@ -23,20 +23,31 @@ class FL7000_Interface:
         self.calibrate_freq: float | None = None
         self.connection_status: bool = False
         self.df = DataFrame()
+        self.measure_period_ms: int = 1000
+        self._running_flag: bool = False
 
-    def _collect_data(self):
-        while True:
-            results: list[FieldResult] = [probe.measured_data.get(timeout=probe.measure_period_ms)
-                                         for probe in self.probes]
-            # df = DataFrame({'Timestamp': []})
-            df: DataFrame = reduce(lambda left, right: pd.merge(left, right, on=['Timestamp']),
+    def _collect_data(self) -> None:
+        while self._running_flag:
+            start_time: float = time.time()
+
+            [probe.wait_result() for probe in self.probes]
+
+            results: list[FieldResult] = [probe.get_measured_data() for probe in self.probes]
+            [probe.permit_measure() for probe in self.probes]
+            df: DataFrame = reduce(lambda left, right: pd.merge_asof(left, right, on='Timestamp',
+                                                                     tolerance=pd.Timedelta('5000ms')),
                                    [result.dataframe() for result in results])
-            self.df =  pd.concat([self.df, df], ignore_index=True)
-            # print(self.df)
-            time.sleep(1)
+            self.df: DataFrame =  pd.concat([self.df, df], ignore_index=True)
+            print(self.df)
+            # print(df)
+            delta: float = time.time() - start_time
+            if delta < (self.measure_period_ms / 1000):
+                time.sleep(self.measure_period_ms / 1000 - delta)
+
 
 
     def set_measuring_period(self, period_ms: int) -> None:
+        self.measure_period_ms = period_ms
         [probe.set_measure_period(period_ms) for probe in self.probes]
 
     @staticmethod
@@ -57,17 +68,19 @@ class FL7000_Interface:
             return True
         self.probes = [FL7040_Probe(ip, port) for port in ports]
         self._fast_connect(self.probes)
+        self.connection_status = True
         calib_path: str = 'X:\\NextCloudStorage\\ImportantData\\PyQt_projects\\SMEF\\sensor_calibrations' #self.config.settings.calibration_path
         [probe.calibrate_probe(calib_path) for probe in self.probes if probe.connection_status]
         [probe.start_measuring() for probe in self.probes if probe.connection_status]
         self._thread = Thread(name='Collecting data', target=self._collect_data, daemon=True)
+        self._running_flag = True
         self._thread.start()
         return all([probe.connection_status for probe in self.probes])
 
 if __name__ == '__main__':
     device = FL7000_Interface()
     print(device.connect('localhost', [4001, 4002, 4004]))
-
+    device.set_measuring_period(100)
     try:
         while True:
             in_data = input('>')

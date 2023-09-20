@@ -62,18 +62,6 @@ default_config = {
     'session_folder': './Output/',  # uses only at first start of application for creating session folder
 }
 
-# def open_file_system(directory=False) -> Optional[list[str] | str]:
-#     dialog = QtWidgets.QFileDialog()
-#     dialog.setWindowTitle('Choose Directories')
-#     dialog.setOption(QtWidgets.QFileDialog.DontUseNativeDialog, True)
-#     if directory:
-#         dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
-#     if dialog.exec_() == QtWidgets.QDialog.Accepted:
-#         return str(dialog.selectedFiles()[0])
-
-#     dialog.deleteLater()
-
-
 
 
 def my_write(settings_path, settings_data, merge=True):
@@ -110,8 +98,9 @@ class FL7000_Config:
             encoding='utf-8',
             settings_files=['settings.yaml', '*.yaml'],
             ip='10.6.1.95',
-            calibration_path=Path(__file__).parent.joinpath('sensor_calibrations'),
+            calibration_path=str(Path(__file__).parent.joinpath('sensor_calibrations')),
             ports=[4001, 4002, 4003, 4004, 4005],
+            last_output_path=f'{Path(__file__).parent}'
 
         )
 
