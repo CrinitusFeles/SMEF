@@ -98,9 +98,16 @@ class FL7000_Config:
             encoding='utf-8',
             settings_files=['settings.yaml', '*.yaml'],
             ip='10.6.1.95',
-            calibration_path=str(Path(__file__).parent.joinpath('sensor_calibrations')),
+            generator_ip='10.6.1.95',
+            generator_port='8080',
+            plotter_title='',
+            norma_color='purple',
+            alive_sensors=[False]*5,
+            images_folder=str(Path(__file__).parent.joinpath('ImagesOutput')),
+            calibration_path=str(Path(__file__).parent.parent.joinpath('sensor_calibrations')),
             ports=[4001, 4002, 4003, 4004, 4005],
-            last_output_path=f'{Path(__file__).parent}'
+            last_output_path=f'{Path(__file__).parent}',
+            dark_theme=True,
 
         )
 

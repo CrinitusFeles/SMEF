@@ -33,7 +33,7 @@ class FieldResult:
     data: DataCalib | DataRaw
 
     def dataframe(self) -> pd.DataFrame:
-        return pd.DataFrame({'Timestamp': [pd.Timestamp(self.timestamp).ceil('S')],
+        return pd.DataFrame({'Timestamp': [pd.Timestamp(self.timestamp)],
                              f'{self.probe_id} x': [self.data.x],
                              f'{self.probe_id} y': [self.data.y],
                              f'{self.probe_id} z': [self.data.z],
@@ -54,11 +54,12 @@ class FL7040_Probe:
         # self.calibration_path: Path = Path(__file__).parent.joinpath('sensor_calibrations')
         self.connection_status = False
         self.label: str = ''
+        self.connectable: bool = False
         self._thread: Thread
         self.calibration_freq: float | None = None
         self.measuring_flag: bool = False
         self.measured_data: Queue[FieldResult] = Queue(1000)
-        self.measure_period_ms: int = 1000
+        self.measure_period_sec: float = 1.0
         self.result_ready: bool = False
         self.measure_permission: bool = True
 
@@ -74,22 +75,28 @@ class FL7040_Probe:
         try:
             logger.info(f'{self.ip}:{self.port} connection attempt')
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.settimeout(2)
+            self.sock.settimeout(0.5)
             self.sock.connect((self.ip, self.port))
             self.connection_status = True
             self.device_model, self.probe_id, self.revision, self.date = self.read_probe_info()
+            self.connectable = True
             logger.success(f'{self.ip}:{self.port} {self.probe_id} successfully connected')
             return True
         except (TimeoutError, OSError, ValueError) as err:
             logger.error(f'Error at {self.sock}:\n{err}')
         return False
 
-    def calibrate_probe(self, path: str | Path) -> None:
+    def calibrate_probe(self, path: Path) -> None:
         self.probe_calibration = load_calibration_by_id(path, self.probe_id)
 
     def disconnect(self) -> None:
         if self.connection_status:
+            self.measuring_flag = False
+            if hasattr(self, '_thread'):
+                self._thread.join(1)
             self.sock.close()
+            self.connection_status = False
+            logger.debug(f'Probe {self.port} disconnected')
         else:
             logger.error(f'Probe {self.port} was not connected')
 
@@ -162,7 +169,7 @@ class FL7040_Probe:
     def _single_measure_routine(self) -> None:
         while self.measuring_flag:
             while not self.measure_permission:
-                pass
+                time.sleep(0.001)
             self.measured_data.put_nowait(FieldResult(self.probe_id, datetime.now(), self.read_probe_measure()))
             self.result_ready = True
             self.measure_permission = False
@@ -171,7 +178,7 @@ class FL7040_Probe:
         while self.measuring_flag:
             self.measured_data.put_nowait(FieldResult(self.probe_id, datetime.now(), self.read_probe_measure()))
             self.result_ready = True
-            time.sleep(self.measure_period_ms / 1000)
+            time.sleep(self.measure_period_sec / 1000)
 
     def wait_result(self) -> None:
         while not self.result_ready:
@@ -189,8 +196,8 @@ class FL7040_Probe:
         else:
             logger.error(f'Probe {self.port} already in measuring process')
 
-    def set_measure_period(self, period_ms: int) -> None:
-        self.measure_period_ms = period_ms
+    def set_measure_period(self, period_sec: float) -> None:
+        self.measure_period_sec = period_sec
 
 if __name__ == '__main__':
     ip = '10.6.1.95'

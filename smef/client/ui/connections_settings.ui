@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>349</width>
-    <height>340</height>
+    <width>260</width>
+    <height>332</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,14 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QLineEdit" name="server_ip_line_edit"/>
+           <widget class="QLineEdit" name="server_ip_line_edit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QLabel" name="label">
@@ -37,7 +44,7 @@
           <item>
            <widget class="QLabel" name="label_16">
             <property name="text">
-             <string>      </string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -55,7 +62,7 @@
           <item row="0" column="0">
            <widget class="QLineEdit" name="s1_port_line_edit">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -87,7 +94,7 @@
           <item row="0" column="2">
            <widget class="QLabel" name="label_15">
             <property name="text">
-             <string>      </string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -100,6 +107,12 @@
           </item>
           <item row="1" column="0">
            <widget class="QLineEdit" name="s2_port_line_edit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="maximumSize">
              <size>
               <width>100</width>
@@ -127,6 +140,12 @@
           </item>
           <item row="2" column="0">
            <widget class="QLineEdit" name="s3_port_line_edit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="maximumSize">
              <size>
               <width>100</width>
@@ -154,6 +173,12 @@
           </item>
           <item row="3" column="0">
            <widget class="QLineEdit" name="s4_port_line_edit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="maximumSize">
              <size>
               <width>100</width>
@@ -181,6 +206,12 @@
           </item>
           <item row="4" column="0">
            <widget class="QLineEdit" name="s5_port_line_edit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="maximumSize">
              <size>
               <width>100</width>

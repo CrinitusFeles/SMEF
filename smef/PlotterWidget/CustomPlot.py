@@ -297,7 +297,7 @@ class CustomPlot(QWidget):
                         if np.abs(self.data[0][index] - mouse_point.x()) > 1:
                             index = None
                         if index is not None:
-                            marker_text += f'Д{name[-1]}: {data[index]:.2f}\n'
+                            marker_text += f'Д{name[-8]}: {data[index]:.2f}\n'
                 marker_text = marker_text[:-1]
                 self.marker_label.setText(marker_text)
                 self.marker_label.setPos(mouse_point)

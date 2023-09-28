@@ -9,25 +9,25 @@ from loguru import logger
 from smef.utils import open_file_system
 
 class NewSession(QWidget):
-    request_probe_list = QtCore.pyqtSignal()
     session_inited = QtCore.pyqtSignal(str)
 
-    s1_checkbox: QtWidgets.QCheckBox
-    s2_checkbox: QtWidgets.QCheckBox
-    s3_checkbox: QtWidgets.QCheckBox
-    s4_checkbox: QtWidgets.QCheckBox
-    s5_checkbox: QtWidgets.QCheckBox
-    updtade_sensors_button: QtWidgets.QPushButton
+    updade_sensors_button: QtWidgets.QPushButton
     generate_name_button: QtWidgets.QPushButton
+    calibrations_check_btn: QtWidgets.QPushButton
     path_tool_button: QtWidgets.QToolButton
+    calibrations_path_tool_button: QtWidgets.QToolButton
     accept_button: QtWidgets.QPushButton
     cancel_button: QtWidgets.QPushButton
     session_comment_editor: QtWidgets.QTextBrowser
     path_line_edit: QtWidgets.QLineEdit
     filename_line_edit: QtWidgets.QLineEdit
-    def __init__(self, config: FL7000_Config | None = None, alive_sensors: list[bool] | None = None):
+    calibrations_path_line_edit: QtWidgets.QLineEdit
+    sensors_scroll_area: QtWidgets.QScrollArea
+    scroll_layout: QtWidgets.QVBoxLayout
+
+    def __init__(self, config: FL7000_Config | None = None) -> None:
         super().__init__()
-        loadUi(Path(__file__).parent.joinpath('new_session_window.ui'), self)
+        loadUi(Path(__file__).parent.joinpath('ui', 'new_session_window.ui'), self)
         self.setWindowTitle('Новый сеанс')
         self.config: FL7000_Config = config or FL7000_Config()
         # self.setWindowFlags(Qt.WindowStaysOnTopHint)
@@ -38,16 +38,16 @@ class NewSession(QWidget):
         self.generate_name_button.pressed.connect(self.generate_name)
         # =========================
         self.path_line_edit.setText(str(self.config.settings.last_output_path))
+        self.calibrations_path_line_edit.setText(str(self.config.settings.calibration_path))
 
-        self.check_boxes: list[QtWidgets.QCheckBox] = [self.s1_checkbox, self.s2_checkbox, self.s3_checkbox,
-                                                       self.s4_checkbox, self.s5_checkbox]
+        self.check_boxes: list[QtWidgets.QCheckBox] = []
         # [checkbox.setChecked(self.config['connected_sensors'][i]) for i, checkbox in enumerate(self.check_box_list)]
-        _alive_sensors: list[bool] = alive_sensors or [False] * 5
-        self.set_checkbox_enabled(_alive_sensors)
+        self.set_checkbox_enabled(self.config.settings.alive_sensors)
 
         self.generate_name()
 
         self.inited_session_flag = False
+        self.center()
 
     def set_checkbox_enabled(self, alive_sensors: list[bool]):
         for i, checkbox in enumerate(self.check_boxes):
@@ -60,15 +60,18 @@ class NewSession(QWidget):
     def get_checkbox_values(self) -> list[bool]:
         return [checkbox.isChecked() for checkbox in self.check_boxes]
 
+    def get_checked_text(self):
+        return [checkbox.text() for checkbox in self.check_boxes if checkbox.isChecked()]
+
     def accept_clicked(self) -> None:
         if self.path_line_edit.text() != '':
             if not Path(self.path_line_edit.text()).is_dir():
-                logger.info('Create new output folder ' + self.path_line_edit.text())
+                logger.info('Creating new output folder ' + self.path_line_edit.text())
                 Path(self.path_line_edit.text()).mkdir(exist_ok=True)
             if self.filename_line_edit.text() != '':
                 if any(self.get_checkbox_values()):
                     self.inited_session_flag = True
-                    self.session_inited.emit(self.path_line_edit.text() + '/' + self.filename_line_edit.text() + '.csv')
+                    self.session_inited.emit(str(Path(self.path_line_edit.text()).joinpath(f'{self.filename_line_edit.text()}.csv')))
                     self.close()
                 else:
                     QMessageBox.warning(self, 'Warning', "Хотя бы один из датчиков должен быть подключен.",
@@ -85,6 +88,19 @@ class NewSession(QWidget):
             self.config.settings.last_output_path = self.path_line_edit.text()
             self.config.write_config()
 
+    def add_sensors(self, sensor_id: str):
+        checkbox = QtWidgets.QCheckBox()
+        checkbox.setText(sensor_id)
+        self.check_boxes.append(checkbox)
+        self.scroll_layout.addWidget(checkbox)
+
+    def calibrations_path_tool_button_pressed(self) -> None:
+        path: str | None = open_file_system(directory=True)
+        if path:
+            self.calibrations_path_line_edit.setText(path)
+            self.config.settings.calibration_path = self.calibrations_path_line_edit.text()
+            self.config.write_config()
+
     def cancel_clicked(self) -> None:
         logger.info('Cancel button clicked')
         self.close()
@@ -92,9 +108,16 @@ class NewSession(QWidget):
     def generate_name(self) -> None:
         self.filename_line_edit.setText(time.strftime("%Y-%m-%d_%H.%M", time.localtime()))
 
+    def center(self):
+        frameGm = self.frameGeometry()
+        screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
+        centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()
+        frameGm.moveCenter(centerPoint)
+        self.move(frameGm.topLeft())
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
     window = NewSession()
+    [window.add_sensors('i') for _ in range(20)]
     window.show()
     app.exec_()

@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import os
-from os import listdir
-from os.path import isfile
 from pathlib import Path
 # import matplotlib.pyplot as plt
 import numpy as np
@@ -10,11 +7,11 @@ from numpy import ndarray
 np.set_printoptions(edgeitems=30, linewidth=300)
 
 
-def load_freq_calibrations(path: str | Path) -> list[tuple[str, ndarray]]:
-    calib_files: list[str] = [f for f in listdir(path) if isfile(os.path.join(path, f)) and f.endswith(".ar")]
+def load_freq_calibrations(path: Path) -> list[tuple[str, ndarray]]:
+    calib_files: list[Path] = [f for f in path.iterdir() if path.joinpath(f).is_file() and f.suffix == ".ar"]
     calibrations: list[tuple[str, ndarray]] = []
     for file in calib_files:
-        with open(os.path.join(path, file)) as calib_file:
+        with open(path.joinpath(file)) as calib_file:
             file_lines: list[str] = calib_file.read().replace('\t\t', '\t').replace('\t\n', '\n').split('\n')
             sensor_id: str = file_lines[0].lstrip("0")
             field_lists: ndarray = np.array([np.array(line.split('\t')) for line in file_lines[1:] if line != ''])
@@ -26,11 +23,11 @@ def load_freq_calibrations(path: str | Path) -> list[tuple[str, ndarray]]:
     return calibrations
 
 
-def load_amplitude_calibrations(path: str | Path) -> list[tuple[str, ndarray]]:
-    calib_files: list[str] = [f for f in listdir(path) if isfile(os.path.join(path, f)) and f.endswith(".txt")]
+def load_amplitude_calibrations(path: Path) -> list[tuple[str, ndarray]]:
+    calib_files: list[Path] = [f for f in path.iterdir() if path.joinpath(f).is_file() and f.suffix == ".txt"]
     calibrations: list[tuple[str, ndarray]] = []
     for file in calib_files:
-        with open(os.path.join(path, file)) as calib_file:
+        with open(path.joinpath(file)) as calib_file:
             file_lines: list[str] = calib_file.read().replace('\t\n', '\n').split('\n')
             sensor_id: str = file_lines[5].split(':')[1].strip().lstrip("0")
             data_lines: ndarray = np.array([val.split('\t') for val in file_lines[-7:-2]])
@@ -69,7 +66,7 @@ class Calibration:
                f'Y param: {self.y_freq_points}\nZ param: {self.z_freq_points}'
 
 
-def load_calibration_by_id(path: str | Path, id: str) -> Calibration:
+def load_calibration_by_id(path: Path, id: str) -> Calibration:
     probe_id: str = id.lstrip('0')
     freq_calibrations: list[tuple[str, ndarray]] = load_freq_calibrations(path)
     amplitude_calibrations: list[tuple[str, ndarray]] = load_amplitude_calibrations(path)
@@ -99,11 +96,13 @@ def find_calibration_pairs(freq_calibrations: list[tuple[str, ndarray]],
 
 
 if __name__ == '__main__':
-    print(load_calibration_by_id('X:\\NextCloudStorage\\ImportantData\\PyQt_projects\\SMEF\\sensor_calibrations', '0357218'))
+    print(load_calibration_by_id(Path('X:\\NextCloudStorage\\ImportantData\\PyQt_projects\\SMEF\\sensor_calibrations'),
+                                 '0357218'))
     # calibrations = find_calibration_pairs(load_freq_calibrations(), load_amplitude_calibrations())
     # freq_grid = np.linspace(0, 40000000000, 10000)
     # amp_grid = np.linspace(5, 300, 1000)
-    # print(calibrations[0].calibrate_value(10000000, np.array([15.44, 15.44]), np.array([15.03, 15.44]), np.array([12.02, 15.44])))
+    # print(calibrations[0].calibrate_value(10000000, np.array([15.44, 15.44]), np.array([15.03, 15.44]),
+    # np.array([12.02, 15.44])))
     # for i, calib in enumerate(calibrations):
     #     plt.subplot(4, 5, i + 1)
     #     plt.plot(calib.freq_list, calib.x_freq_points, '-o', label=f'x')

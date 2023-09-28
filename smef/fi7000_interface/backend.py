@@ -14,15 +14,14 @@ from numpy import ndarray
 from qtmodern.styles import dark, light
 from qtmodern.windows import ModernWindow
 from qtpy.uic import loadUi
-from smef.connection_settings.ConnectionsSettings import ConnectionsSettings
+from smef.client.settings_widget import ConnectionsSettings
 from smef.PlotterWidget.CustomPlot import CustomPlot
 
-from smef.custom_threading import ThreadWithReturnValue
 from smef.demo_server import DemoServer
-from smef.fi7000_interface.config import load_config, default_config, create_config, open_file_system
+from smef.fi7000_interface.config import FL7000_Config
 from smef.fi7000_interface.fl7040_driver import FL7040_Probe
 from smef.fi7000_interface.pandasModel import DataFrameModel
-from smef.new_session.NewSession import NewSession
+from smef.client.new_session import NewSession
 from loguru import logger
 from PyQt5.QtWidgets import QApplication
 from smef.utils import converter, reverse_convert
@@ -34,10 +33,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         loadUi(Path(__file__).parent.joinpath('mainwindow.ui'), self)
         self.setWindowTitle('СМЭП Клиент v2.0.0')
-        if config is None:
-            self.config = load_config('config', default_config)
-        else:
-            self.config = config
+        self.config = FL7000_Config()
+        self.config.write_config()
         # [os.makedirs(folder, exist_ok=True) for folder in [self.config['image_folder'], self.config['session_folder']]]
 
         # ----- Init interface -----
@@ -109,7 +106,7 @@ class MainWindow(QMainWindow):
         self.session_widget = NewSession(self.config)
         mw = ModernWindow(self.session_widget)
         self.session_widget.session_inited.connect(self.create_new_session)
-        self.session_widget.updtade_sensors_button.clicked.connect(
+        self.session_widget.updade_sensors_button.clicked.connect(
             lambda: self.session_widget.set_checkbox_enabled(self.check_alive_probes()))
         mw.show()
 

@@ -33,7 +33,7 @@ class TimeAxisItem(pg.AxisItem):
         self.setTickFont(font)
 
     def tickStrings(self, values, scale, spacing):
-        return [datetime.datetime.fromtimestamp(value).strftime("%d.%m.%Y\n %H:%M:%S") for value in values if
+        return [datetime.datetime.fromtimestamp(value).strftime("%d.%m.%y\n%H:%M:%S") for value in values if
                 value > 100000000]
 
 def open_file_system(directory=False) -> str | None:
@@ -43,7 +43,7 @@ def open_file_system(directory=False) -> str | None:
     if directory:
         dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
     if dialog.exec_() == QtWidgets.QDialog.Accepted:
-        return str(dialog.selectedFiles()[0])
+        return dialog.selectedFiles()[0]
 
     dialog.deleteLater()
 

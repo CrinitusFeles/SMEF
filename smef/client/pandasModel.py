@@ -30,7 +30,8 @@ class DataFrameModel(QtCore.QAbstractTableModel):
     # dataFrame = pyqtProperty(pd.DataFrame, fget=dataFrame, fset=setDataFrame)
 
     @QtCore.pyqtSlot(int, QtCore.Qt.Orientation)
-    def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = QtCore.Qt.ItemDataRole.DisplayRole):
+    def headerData(self, section: int, orientation: QtCore.Qt.Orientation,
+                   role: int = QtCore.Qt.ItemDataRole.DisplayRole):
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if orientation == QtCore.Qt.Orientation.Horizontal:
                 return self._df.columns[section]
