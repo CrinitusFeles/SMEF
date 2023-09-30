@@ -39,7 +39,7 @@ def load_amplitude_calibrations(path: Path) -> list[tuple[str, ndarray]]:
     return calibrations
 
 
-class Calibration:
+class Calibrator:
     def __init__(self, freq_calibration: tuple[str, ndarray], amplitude_calibration: tuple[str, ndarray]) -> None:
         self.sensor_id = freq_calibration[0]
         self.freq_list = freq_calibration[1][0]
@@ -66,7 +66,7 @@ class Calibration:
                f'Y param: {self.y_freq_points}\nZ param: {self.z_freq_points}'
 
 
-def load_calibration_by_id(path: Path, id: str) -> Calibration:
+def load_calibration_by_id(path: Path, id: str) -> Calibrator:
     probe_id: str = id.lstrip('0')
     freq_calibrations: list[tuple[str, ndarray]] = load_freq_calibrations(path)
     amplitude_calibrations: list[tuple[str, ndarray]] = load_amplitude_calibrations(path)
@@ -80,16 +80,16 @@ def load_calibration_by_id(path: Path, id: str) -> Calibration:
             ampl = calib
     if freq is None or ampl is None:
         raise ValueError(f'Calibration loading error for {probe_id=}:\n{freq=};\n{ampl=}')
-    return Calibration(freq, ampl)
+    return Calibrator(freq, ampl)
 
 
 def find_calibration_pairs(freq_calibrations: list[tuple[str, ndarray]],
-                           amplitude_calibrations: list[tuple[str, ndarray]]) -> list[Calibration]:
+                           amplitude_calibrations: list[tuple[str, ndarray]]) -> list[Calibrator]:
     calibrations = []
     for freq_calib in freq_calibrations:
         for amplitude_calib in amplitude_calibrations:
             if freq_calib[0] == amplitude_calib[0]:
-                calibrations.append(Calibration(freq_calib, amplitude_calib))
+                calibrations.append(Calibrator(freq_calib, amplitude_calib))
     if len(calibrations) != len(freq_calibrations) or len(calibrations) != len(amplitude_calibrations):
         raise Exception("Some calibrations are missing")
     return calibrations
