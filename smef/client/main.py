@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from qtmodern.windows import ModernWindow
 from qtpy.uic import loadUi
 from smef.client.settings_widget import ConnectionsSettings
@@ -87,6 +87,10 @@ class MainWindow(QMainWindow):
         self.timer.stop()
         self.main_widget.to_finish_state()
         self.device.clear_data()
+        sesssions_folder = Path(self.new_session_widget.path_line_edit.text())
+        str_path = str(sesssions_folder.joinpath(self.new_session_widget.filename_line_edit.text()))
+        QMessageBox.information(self, 'Сеанс завершен', f"Данные по этому сеансу находятся в папке\n{str_path}",
+                                QMessageBox.Ok, QMessageBox.Ok)
         print('session finished')
 
     def check_connection(self) -> None:
