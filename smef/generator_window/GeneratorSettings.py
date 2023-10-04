@@ -1,28 +1,21 @@
-import os
+from pathlib import Path
 
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import Qt
 from qtpy.uic import loadUi
 
-try:
-    from smef.generator_window import *
-except Exception as ex:
-    from generator_window import *
-
-
-
 class GeneratorSettings(QWidget):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        loadUi(os.path.join(os.path.dirname(__file__), 'generator_window.ui'), self)
+        loadUi(Path(__file__).parent.joinpath('ui', 'generator_window.ui'), self)
         self.setWindowTitle('Настройки генератора')
         self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
 
         self.accept_button.pressed.connect(self.accept_clicked)
         self.cancel_button.pressed.connect(self.cancel_clicked)
 
-    def accept_clicked(self):
+    def accept_clicked(self) -> None:
         self.close()
 
-    def cancel_clicked(self):
+    def cancel_clicked(self) -> None:
         self.close()

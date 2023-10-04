@@ -76,41 +76,6 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_5">
-        <item>
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Калибровки</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="calibrations_path_line_edit"/>
-        </item>
-        <item>
-         <widget class="QToolButton" name="calibrations_path_tool_button">
-          <property name="text">
-           <string>...</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="calibrations_check_btn">
-          <property name="text">
-           <string>Проверка</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Список доступных</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
          <widget class="QScrollArea" name="sensors_scroll_area">
@@ -123,7 +88,7 @@
              <x>0</x>
              <y>0</y>
              <width>492</width>
-             <height>149</height>
+             <height>199</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">

@@ -1,6 +1,7 @@
 import random
 import socket
 from threading import Thread
+import time
 
 class DemoServer:
     def __init__(self, daemon: bool = True, **kwargs):
@@ -14,7 +15,8 @@ class DemoServer:
             sock.listen(5)
             # sock.settimeout(2)
             # sock.setblocking(False)
-            self.threads.append(Thread(name=f'{port} port socket', target=self.routine, args=[sock, i, probe_id], daemon=daemon))
+            self.threads.append(Thread(name=f'{port} port socket', target=self.routine, args=[sock, i, probe_id],
+                                       daemon=daemon))
 
     def debug_print(self, *args):
         if self.debug_print_flag:
@@ -37,7 +39,7 @@ class DemoServer:
             try:
                 self.debug_print(f'Connected to: {client_address}\n')
                 while True:
-                    data: bytes = connection.recv(16)
+                    data: bytes = connection.recv(1024)
                     if not data:
                         break
                     decoded_data = data.decode()
@@ -49,6 +51,7 @@ class DemoServer:
                         connection.sendall(f':I,FL7040,00{probe_id},_REV_1.80_,01/15/21,S\n\r'.encode('utf-8'))
                     elif decoded_data == 'D\r':
                         self.send_sock(connection, i)  # b':D04.1402.0702.2505.14S\n\r'
+                    time.sleep(0.001)
             except ConnectionResetError as err:
                 print(err)
             except TimeoutError as ex:

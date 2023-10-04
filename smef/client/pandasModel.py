@@ -4,9 +4,6 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QTableView
 from PyQt5.QtCore import pyqtProperty  #type: ignore
 
-df = pd.DataFrame({'a': ['Mary', 'Jim', 'John'],
-                   'b': [100, 200, 300],
-                   'c': ['a', 'b', 'c']})
 
 
 class DataFrameModel(QtCore.QAbstractTableModel):
@@ -75,6 +72,10 @@ class DataFrameModel(QtCore.QAbstractTableModel):
 
 
 if __name__ == '__main__':
+
+    df = pd.DataFrame({'a': ['Mary', 'Jim', 'John'],
+                    'b': [100, 200, 300],
+                    'c': ['a', 'b', 'c']})
     app = QApplication(sys.argv)
     model = DataFrameModel(df)
     view = QTableView()

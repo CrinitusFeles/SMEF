@@ -16,7 +16,12 @@
 #     else:
 #         print('Starting without demo server')
 #         main()
-from smef.fi7000_interface.backend import main
+# from smef.fi7000_interface.backend import main
+
+# if __name__ == '__main__':
+#     main()
+
+from smef.client.main import main
 
 if __name__ == '__main__':
     main()

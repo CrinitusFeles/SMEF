@@ -106,8 +106,9 @@ class FL7000_Config:
             images_folder=str(Path(__file__).parent.joinpath('ImagesOutput')),
             calibration_path=str(Path(__file__).parent.parent.joinpath('sensor_calibrations')),
             ports=[4001, 4002, 4003, 4004, 4005],
-            last_output_path=f'{Path(__file__).parent}',
+            output_path=f'{Path(__file__).parent}',
             dark_theme=True,
+            line_colors=['red', 'blue', 'orange', 'brown', 'gray'],
 
         )
 

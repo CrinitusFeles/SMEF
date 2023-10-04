@@ -1,16 +1,18 @@
 from dataclasses import dataclass
 from datetime import datetime
 # from datetime import datetime
-from queue import Queue
 import socket
 from pathlib import Path
 import re
 from threading import Thread
 import time
-import pandas as pd
+
 import numpy as np
+
+import pandas as pd
 from loguru import logger
-from smef.fi7000_interface.calibrations import load_calibration_by_id, Calibrator
+from smef.fi7000_interface.calibrations import ProbeCalibrator
+
 
 @dataclass
 class DataRaw:
@@ -33,13 +35,14 @@ class FieldResult:
     data: DataCalib | DataRaw
 
     def dataframe(self) -> pd.DataFrame:
-        return pd.DataFrame({'Timestamp': [pd.Timestamp(self.timestamp)],
-                             f'{self.probe_id} x': [self.data.x],
-                             f'{self.probe_id} y': [self.data.y],
-                             f'{self.probe_id} z': [self.data.z],
-                             f'{self.probe_id} s_v': [self.data.s],
-                             f'{self.probe_id} s_dBm': [self.data.s_log],
-                             f'{self.probe_id} s_w': [self.data.s_w]})
+        suffix: str = str(self.data.freq) if isinstance(self.data, DataCalib) else ''
+        return pd.DataFrame({'Timestamp': [time.time()],
+                             f'{self.probe_id} x {suffix}': [self.data.x],
+                             f'{self.probe_id} y {suffix}': [self.data.y],
+                             f'{self.probe_id} z {suffix}': [self.data.z],
+                             f'{self.probe_id} В/м {suffix}': [self.data.s],
+                             f'{self.probe_id} дБмкВ/м {suffix}': [self.data.s_log],
+                             f'{self.probe_id} Вт/м² {suffix}': [self.data.s_w]})
 
 class FL7040_Probe:
     sock: socket.socket
@@ -50,7 +53,7 @@ class FL7040_Probe:
         self.device_model: str = ''
         self.revision: str = ''
         self.date: str = ''
-        self.calibrator: Calibrator | None = None
+        self.calibrator: ProbeCalibrator | None = None
         # self.calibration_path: Path = Path(__file__).parent.joinpath('sensor_calibrations')
         self.connection_status = False
         self.label: str = ''
@@ -58,16 +61,20 @@ class FL7040_Probe:
         self._thread: Thread
         self.calibration_freq: float | None = None
         self.measuring_flag: bool = False
-        self.measured_data: Queue[FieldResult] = Queue(1000)
         self.df: pd.DataFrame = pd.DataFrame()
+        self.df_calib: pd.DataFrame = pd.DataFrame()
         self.measure_period_sec: float = 1.0
         self.result_ready: bool = False
         self.measure_permission: bool = True
+        self.output_path: Path = Path(__file__).parent
 
     def __str__(self) -> str:
         return f'FL7000 Description\nAddress: {self.ip}:{self.port}\n' \
                f'Connection status: {self.connection_status}\n' \
                f'Probe ID: {self.probe_id}\nCalibration: {self.calibrator}'
+
+    def set_output_path(self, path: Path) -> None:
+        self.output_path = path
 
     def connect_device(self) -> bool:
         if self.connection_status:
@@ -80,6 +87,7 @@ class FL7040_Probe:
             self.sock.connect((self.ip, self.port))
             self.connection_status = True
             self.device_model, self.probe_id, self.revision, self.date = self.read_probe_info()
+            self.probe_id = self.probe_id.lstrip('0')
             self.connectable = True
             logger.success(f'{self.ip}:{self.port} {self.probe_id} successfully connected')
             return True
@@ -87,8 +95,8 @@ class FL7040_Probe:
             logger.error(f'Error at {self.sock}:\n{err}')
         return False
 
-    def calibrate_probe(self, path: Path) -> None:
-        self.calibrator = load_calibration_by_id(path, self.probe_id)
+    def calibrate_probe(self, calibrator: ProbeCalibrator) -> None:
+        self.calibrator = calibrator
 
     def disconnect(self) -> None:
         if self.connection_status:
@@ -101,11 +109,13 @@ class FL7040_Probe:
         else:
             logger.error(f'Probe {self.port} was not connected')
 
-    def calibrate_measure(self, freq: float) -> DataCalib:
-        data: DataRaw = self.read_probe_measure()
+    def get_df_data(self, freq: float | None = None) -> pd.DataFrame:
+        return self.df_calib if freq else self.df
+
+    def calibrate_measure(self, data: DataRaw, freq: float) -> DataCalib:
         if self.calibrator:
             uncalibrated = np.array([data.x, data.y, data.z])
-            calib_params = self.calibrator.calibrate_value(freq, *uncalibrated)
+            calib_params = self.calibrator.calibrate_value(uncalibrated, freq)
             calibrated_measure = uncalibrated + calib_params
             s = np.linalg.norm(calibrated_measure).astype(float)
             if s == 0:
@@ -169,28 +179,29 @@ class FL7040_Probe:
 
     def _single_measure_routine(self) -> None:
         while self.measuring_flag:
-            while not self.measure_permission:
+            start_time: float = time.time()
+            raw_result: DataRaw = self.read_probe_measure()
+            if self.calibration_freq:
+                result = FieldResult(self.probe_id, datetime.now(), self.calibrate_measure(raw_result,
+                                                                                           self.calibration_freq))
+                df_data = result.dataframe()
+                self.df_calib = pd.concat([self.df_calib, df_data], ignore_index=True)
+            self.df = pd.concat([self.df, FieldResult(self.probe_id, datetime.now(), raw_result).dataframe()],
+                                ignore_index=True)
+            filepath: Path = self.output_path.joinpath(self.probe_id + '.csv')
+            self.df.tail(1).to_csv(filepath, '\t', mode='a', encoding='utf-8', header=not Path.exists(filepath),
+                           index=False, decimal=',')
+            delta: float = time.time() - start_time
+            if self.measure_period_sec - delta > 0:
+                time.sleep(self.measure_period_sec - delta)
+            else:
                 time.sleep(0.001)
-            result = FieldResult(self.probe_id, datetime.now(), self.read_probe_measure())
-            self.measured_data.put_nowait(result)
-            self.df.join(result.dataframe())
-            self.result_ready = True
-            self.measure_permission = False
-            time.sleep(0.001)
 
     def _stream_measure_routine(self) -> None:
         while self.measuring_flag:
-            self.measured_data.put_nowait(FieldResult(self.probe_id, datetime.now(), self.read_probe_measure()))
+            self.df.join(FieldResult(self.probe_id, datetime.now(), self.read_probe_measure()).dataframe())
             self.result_ready = True
             time.sleep(self.measure_period_sec / 1000)
-
-    def wait_result(self) -> None:
-        while not self.result_ready:
-            time.sleep(0.001)
-
-    def get_measured_data(self) -> FieldResult:
-        self.result_ready = False
-        return self.measured_data.get_nowait()
 
     def start_measuring(self):
         if not self.measuring_flag:
@@ -202,6 +213,10 @@ class FL7040_Probe:
 
     def set_measure_period(self, period_sec: float) -> None:
         self.measure_period_sec = period_sec
+
+    def clear_data(self) -> None:
+        self.df_calib = pd.DataFrame()
+        self.df = pd.DataFrame()
 
 if __name__ == '__main__':
     ip = '10.6.1.95'

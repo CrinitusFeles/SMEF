@@ -29,6 +29,7 @@ class PlotterLabels:
 class PlotterStyle:
     def __init__(self, widget: PlotWidget, config: FL7000_Config) -> None:
         self.config: FL7000_Config = config
+        self.restart_generator()
         self.dark_palette = PlotterPalette('#121212',Qt.GlobalColor.white,'#00000020','w','#FFFFFF','white')
         self.light_palette = PlotterPalette('#FFFFFF',Qt.GlobalColor.black,'#08080805','k','#000000','black')
         self.palette: PlotterPalette = self.dark_palette
@@ -120,3 +121,6 @@ class PlotterStyle:
         # for i in range(5):
         #     if self.data_line[i] is not None:
         #         self.legend.addItem(self.data_line[i], self.labels.legend + str(i + 1))
+
+    def restart_generator(self):
+        self.colors = (color for color in self.config.settings.line_colors)

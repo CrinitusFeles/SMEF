@@ -24,11 +24,13 @@ class MainWidget(Viewer):
 
     slide_window_time_spinbox: QtWidgets.QSpinBox
     plotter_interval_spin_box: QtWidgets.QSpinBox
+    sliding_window_groupbox: QtWidgets.QGroupBox
     def __init__(self, config: FL7000_Config) -> None:
         super().__init__(config, 'mainwidget.ui')
         self.dark_theme_checkbox.stateChanged.connect(self.change_theme)
         self.plotter_start_button.pressed.connect(self.start_measuring)
         self.plotter_stop_button.pressed.connect(self.stop_measuring)
+        self.sliding_window_groupbox.setVisible(False)
         self.slide_window_time_spinbox.valueChanged.connect(
             lambda size: self.plotter.set_sliding_window_size(size * 3600))
 
@@ -50,6 +52,17 @@ class MainWidget(Viewer):
         super().change_theme(state)
         self.dark_theme_checkbox.setChecked(state)
 
+    def to_initial_state(self, labels: list[str]):
+        self.plotter.delete_all_data()
+        self.plotter_start_button.setEnabled(True)
+        self.new_session_button.setEnabled(False)
+        [self.plotter.add_data_line(f'Датчик {label}') for label in labels]
+        self.plotter.auto_scale()
+
+    def to_finish_state(self):
+        self.new_session_button.setEnabled(True)
+        self.plotter_start_button.setEnabled(False)
+        self.plotter_stop_button.setEnabled(False)
 
 if __name__ == '__main__':
     app = QApplication([])

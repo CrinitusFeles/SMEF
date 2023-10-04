@@ -1,12 +1,12 @@
 
 from pathlib import Path
 from threading import Thread
-import time
 from typing import Literal
 import pandas as pd
 from pandas import DataFrame
+from smef.fi7000_interface.calibrations import Calibrator
 from smef.fi7000_interface.config import FL7000_Config
-from smef.fi7000_interface.fl7040_driver import FL7040_Probe, FieldResult
+from smef.fi7000_interface.fl7040_driver import FL7040_Probe
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
@@ -17,49 +17,39 @@ class FL7000_Interface:
         self.config: FL7000_Config = config
         self.probes: list[FL7040_Probe] = [FL7040_Probe(self.config.settings.ip, port)
                                            for port in self.config.settings.ports]
-        self._thread: Thread
-        self.calibrate_freq: float | None = None
+        self.calibrator: Calibrator = Calibrator(Path(self.config.settings.calibration_path))
         self.connection_status: bool = False
-        self.df = DataFrame()
-        self.measure_period_sec: float = 1.0
-        self._running_flag: bool = False
-        self.units: list[Literal['В/м', 'дБмкВ/м', 'Вт/м²']] = ['В/м', 'дБмкВ/м', 'Вт/м²']
-        self.current_units: Literal['В/м', 'дБмкВ/м', 'Вт/м²'] = 'В/м'
+        self._measure_period_sec: float = 1.0
+        self._units: list[Literal['В/м', 'дБмкВ/м', 'Вт/м²']] = ['В/м', 'дБмкВ/м', 'Вт/м²']
+        self._current_units: Literal['В/м', 'дБмкВ/м', 'Вт/м²'] = 'В/м'
 
     def get_connected_probes(self) -> list[FL7040_Probe]:
         return [probe for probe in self.probes if probe.connection_status]
 
-    def _collect_data(self) -> None:
-        while self._running_flag:
-            start_time: float = time.time()
+    def set_output_path(self, path: Path) -> None:
+        [probe.set_output_path(path) for probe in self.probes]
 
-            [probe.wait_result() for probe in self.probes if probe.connection_status]
+    def get_probe(self, probe_id: str) -> FL7040_Probe | None:
+        probe: list[FL7040_Probe] = [probe for probe in self.probes if probe.probe_id == probe_id]
+        return probe[0] if len(probe) else None
 
-            results: list[FieldResult] = [probe.get_measured_data() for probe in self.get_connected_probes()]
-            [probe.permit_measure() for probe in self.probes]  # pd.Timestamp(datetime.now())
-            df: DataFrame = pd.concat([pd.DataFrame({'Timestamp': [time.time()]}),
-                                       *[result.dataframe().iloc[:, 1:] for result in results]], axis=1)
-            self.df: DataFrame =  pd.concat([self.df, df], ignore_index=True)
-            # print(self.df.iloc[:, [0, 4, 10]].to_numpy().transpose())
-            # print(df)
-            delta: float = time.time() - start_time
-            if delta < self.measure_period_sec:
-                time.sleep(self.measure_period_sec - delta)
+    def get_data(self, units: int, freq: float | None = None) -> list[DataFrame]:
+        self._current_units = self._units[units]
+        dataframes: list[DataFrame] = [probe.get_df_data(freq) for probe in self.get_connected_probes()]
+        return [df.iloc[:, [0, 4 + units]] for df in dataframes]
 
-    def calibrate_dataframe(self, freq: int):
-        pass
+    def get_dataframes(self, freq: float | None = None) -> list[DataFrame]:
+        return [probe.get_df_data(freq) for probe in self.get_connected_probes()]
 
-    def clear_data(self):
-        self.df = DataFrame()
-
-    def get_data(self, units: int):
-        self.current_units = self.units[units]
-        column_nums: list[int] = [val for val in range(4 + units, 6 * len(self.get_connected_probes()) + 1, 6)]
-        print(self.df.iloc[:, [0, *column_nums]])
-        return self.df.iloc[:, [0, *column_nums]].to_numpy().transpose()
+    def recalibrate_df(self, freq: float) -> None:
+        for probe in self.get_connected_probes():
+            if probe.calibrator:
+                probe.calibration_freq = freq
+                df = probe.calibrator.calibrate_dataframe(freq, probe.df)
+                probe.df_calib = df
 
     def set_measuring_period(self, period_sec: float) -> None:
-        self.measure_period_sec = period_sec
+        self._measure_period_sec = period_sec
         [probe.set_measure_period(period_sec) for probe in self.probes]
 
     @staticmethod
@@ -81,19 +71,16 @@ class FL7000_Interface:
         self.probes.extend([FL7040_Probe(ip, port) for port in unchecked_ports])
         self._fast_connect([probe for probe in self.probes if probe.port in ports])
         self.connection_status = True
-        calib_path: Path = Path(self.config.settings.calibration_path)
-        [probe.calibrate_probe(calib_path) for probe in self.get_connected_probes()]
+        [probe.calibrate_probe(self.calibrator(probe.probe_id)) for probe in self.get_connected_probes()]
         [probe.start_measuring() for probe in self.get_connected_probes()]
-        self._thread = Thread(name='Collecting data', target=self._collect_data, daemon=True)
-        self._running_flag = True
-        self._thread.start()
         return all([probe.connection_status for probe in self.probes])
 
     def disconnect(self):
         [probe.disconnect() for probe in self.get_connected_probes()]
-        self._running_flag = False
-        self._thread.join(1)
         self.connection_status = False
+
+    def clear_data(self):
+        [probe.clear_data() for probe in self.probes]
 
 if __name__ == '__main__':
     device = FL7000_Interface(FL7000_Config())

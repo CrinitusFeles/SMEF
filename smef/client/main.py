@@ -1,6 +1,5 @@
 
 from __future__ import annotations
-
 from pathlib import Path
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QTimer
@@ -38,51 +37,56 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self._plot_process)
 
         self.main_widget.new_session_button.pressed.connect(self.new_session_widget.show)
+        self.main_widget.new_session_button.pressed.connect(self.new_session_widget.generate_name)
         self.main_widget.open_session_viewer_button.pressed.connect(self.open_viewer)
         self.main_widget.connection_settings_button.pressed.connect(self.settings_widget.show)
         self.main_widget.plotter_interval_spin_box.valueChanged.connect(self.device.set_measuring_period)
+        self.main_widget.calib_probs_check_box.stateChanged.connect(self.calibrate_measures)
         self.main_widget.units_changed.connect(self._plot_process)
         self.main_widget.plotter_interval_spin_box.valueChanged.connect(
             lambda period: self.timer.setInterval(int(period * 1000)))
         self.main_widget.start_pressed.connect(self.start_measuring)
         self.main_widget.pause_pressed.connect(self.timer.stop)
         self.main_widget.stop_pressed.connect(self.finish_session)
+        self.viewer.units_changed.connect(self.viewer.update_plotter)
+        self.viewer.calib_probs_check_box.stateChanged.connect(self.viewer.update_plotter)
+        self.viewer.calib_freq_spin_box.valueChanged.connect(self.viewer.update_plotter)
         self.new_session_widget.updade_sensors_button.pressed.connect(self.check_connection)
         self.new_session_widget.session_inited.connect(self.init_new_session)
-        self.new_session_widget.calibrations_check_btn.pressed.connect(self.check_calibrations)
         self.center()
 
         self.device_ports: list[int] = []
 
     def open_viewer(self) -> None:
-        if result_path := open_file_system():
-            self.viewer.plotter.read_file(result_path)
+        if result_path := open_file_system(True):
             self.viewer.show()
+            self.viewer.load_session(Path(result_path), self.device.calibrator)
+
+    def calibrate_measures(self, state: bool) -> None:
+        if state:
+            self.device.recalibrate_df(self.main_widget.calib_freq_spin_box.value())
 
     def init_new_session(self, output_path: str) -> None:
         logger.info(f'Session output: {output_path}')
-        labels: list[str] = self.new_session_widget.get_checked_text()
-        self.main_widget.plotter.delete_all_data()
-        self.main_widget.plotter_start_button.setEnabled(True)
-        self.main_widget.new_session_button.setEnabled(False)
-        # self.main_widget.plotter_stop_button.setEnabled(True)
-        colors: list[str] = ['red', 'blue', 'orange', 'brown', 'gray']
-        for i, label in enumerate(labels):
-            self.main_widget.plotter.add_data_line(f'Датчик {label}', colors[i])
+        labels: list[str] = self.new_session_widget.checked_text()
+        self.main_widget.to_initial_state(labels)
+        description: str = self.new_session_widget.session_comment_editor.toPlainText()
+        Path.mkdir(Path(output_path), exist_ok=True)
+        with open(Path(output_path).joinpath('description.txt'), 'w', encoding='utf-8') as file:
+            file.write(description)
+        self.device.set_output_path(Path(output_path))
 
     def start_measuring(self):
         if not self.device.connection_status:
             self.device.connect(self.config.settings.ip, [probe.port for probe in self.device.probes
-                                                          if probe.probe_id in self.new_session_widget.get_checked_text()])
+                                                          if probe.probe_id in self.new_session_widget.checked_text()])
         self.timer.start(int(self.main_widget.plotter_interval_spin_box.value() * 1000))
 
     def finish_session(self) -> None:
         self.device.disconnect()
-        self.device.clear_data()
         self.timer.stop()
-        self.main_widget.new_session_button.setEnabled(True)
-        self.main_widget.plotter_start_button.setEnabled(False)
-        self.main_widget.plotter_stop_button.setEnabled(False)
+        self.main_widget.to_finish_state()
+        self.device.clear_data()
         print('session finished')
 
     def check_connection(self) -> None:
@@ -92,6 +96,9 @@ class MainWindow(QMainWindow):
 
     def close(self):
         super().close()
+        self.viewer.close()
+        self.new_session_widget.close()
+        self.settings_widget.close()
         print('close')
 
     def center(self):
@@ -102,21 +109,25 @@ class MainWindow(QMainWindow):
         self.move(frameGm.topLeft())
 
     def _plot_process(self) -> None:
-        if self.device.df.size:
-            self.main_widget.plotter.dataframe = self.device.df
-            self.main_widget.plotter.plot_df(self.device.get_data(self.main_widget.current_units))
+        if not self.device.connection_status:
+            logger.debug('device not connected')
+            return
+        calib_flag: bool = self.main_widget.calib_probs_check_box.isChecked()
+        freq: int | None = self.main_widget.calib_freq_spin_box.value() if calib_flag else None
+        if calib_flag:
+            self.main_widget.calib_dataframes = self.device.get_dataframes(freq)
+        else:
+            self.main_widget.dataframes = self.device.get_dataframes(freq)
+        self.main_widget.plotter.plot_df(self.device.get_data(self.main_widget.current_units, freq))
+        self.main_widget.update_minmax_table()
 
-            # self.main_widget.plotter.update_plot_data(np.array([random.random() * 5 + 50, random.random() + 1,
-            #                                         random.random() * 2 + 3]))
-            self.main_widget.update_minmax_table()
-
-    def check_calibrations(self):
-        status_list = self.new_session_widget.get_checkbox_values()
-
-if __name__ == '__main__':
+def main():
     app = QApplication([])
     main_window = MainWindow()
     mw = ModernWindow(main_window)
     mw.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground, False)  # fix flickering on resize window
     mw.show()
     app.exec_()
+
+if __name__ == '__main__':
+    main()
