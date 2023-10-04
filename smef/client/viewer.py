@@ -95,11 +95,6 @@ class Viewer(QtWidgets.QWidget):
     def check_norma(self, state: int):
         self.plotter.plotter_style.norma_line.setVisible(bool(state))
 
-
-        # (t_start, t_stop), (idx_start, idx_stop) = self.plotter.get_visible_time_interval()
-        # frame_slice = self.plotter.dataframe[idx_start:idx_stop]
-        # frame_slice.to_clipboard(index=False, decimal=',')
-
     def copy_image(self) -> None:
         data = self.plotter.copy_image(Path(self.config.settings.images_folder))
         QtWidgets.QApplication.clipboard().setMimeData(data)
