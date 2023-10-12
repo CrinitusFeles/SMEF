@@ -2,7 +2,7 @@ from pathlib import Path
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QRegExp
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QLabel, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QLabel, QPushButton, QGroupBox
 from PyQt5.QtGui import QRegExpValidator
 from qtpy.uic import loadUi
 from smef.fi7000_interface.config import FL7000_Config
@@ -29,13 +29,13 @@ class ConnectionsSettings(QWidget):
     generator_status_label: QLabel
     generator_port_line_edit: QLineEdit
     generator_ip_line_edit: QLineEdit
+    generator_groupbox: QGroupBox
     def __init__(self, config: FL7000_Config) -> None:
         super().__init__()
 
         loadUi(Path(__file__).parent.joinpath('ui', 'connections_settings.ui'), self)
         self.setWindowTitle('Настройки подключения')
         # self.setWindowFlags(Qt.WindowStaysOnTopHint)
-        self.groupBox.hide()
         # self.setFixedSize(600, 400)
         self.accept_button.clicked.connect(self.accept_settings)
         self.cancel_button.clicked.connect(self.cancel_btn_slot)
@@ -51,6 +51,8 @@ class ConnectionsSettings(QWidget):
 
         self.status_label_list: list[QLabel] = [self.s1_status_label, self.s2_status_label, self.s3_status_label,
                                                 self.s4_status_label, self.s5_status_label]
+        [label.setVisible(False) for label in self.status_label_list]
+        self.generator_groupbox.setVisible(False)
         [label.setText('Отключен') for label in self.status_label_list]
         self.generator_status_label.setText('Отключен')
 

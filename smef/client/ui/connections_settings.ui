@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>260</width>
+    <width>334</width>
     <height>332</height>
    </rect>
   </property>
@@ -59,6 +59,20 @@
         </item>
         <item>
          <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Sensor1 port</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Sensor5 port</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="0">
            <widget class="QLineEdit" name="s1_port_line_edit">
             <property name="sizePolicy">
@@ -84,10 +98,41 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>Sensor1 port</string>
+          <item row="1" column="0">
+           <widget class="QLineEdit" name="s2_port_line_edit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="inputMethodHints">
+             <set>Qt::ImhDigitsOnly</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLineEdit" name="s5_port_line_edit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="inputMethodHints">
+             <set>Qt::ImhDigitsOnly</set>
             </property>
            </widget>
           </item>
@@ -98,15 +143,15 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="3">
-           <widget class="QLabel" name="s1_status_label">
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_4">
             <property name="text">
-             <string>Статус: ОК</string>
+             <string>Sensor3 port</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QLineEdit" name="s2_port_line_edit">
+          <item row="3" column="0">
+           <widget class="QLineEdit" name="s4_port_line_edit">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -131,48 +176,8 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="3">
-           <widget class="QLabel" name="s2_status_label">
-            <property name="text">
-             <string>Статус: ОК</string>
-            </property>
-           </widget>
-          </item>
           <item row="2" column="0">
            <widget class="QLineEdit" name="s3_port_line_edit">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="inputMethodHints">
-             <set>Qt::ImhDigitsOnly</set>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Sensor3 port</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="3">
-           <widget class="QLabel" name="s3_status_label">
-            <property name="text">
-             <string>Статус: ОК</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLineEdit" name="s4_port_line_edit">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -197,6 +202,13 @@
             </property>
            </widget>
           </item>
+          <item row="4" column="3">
+           <widget class="QLabel" name="s5_status_label">
+            <property name="text">
+             <string>Статус: ОК</string>
+            </property>
+           </widget>
+          </item>
           <item row="3" column="3">
            <widget class="QLabel" name="s4_status_label">
             <property name="text">
@@ -204,34 +216,22 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QLineEdit" name="s5_port_line_edit">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="inputMethodHints">
-             <set>Qt::ImhDigitsOnly</set>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLabel" name="label_6">
+          <item row="2" column="3">
+           <widget class="QLabel" name="s3_status_label">
             <property name="text">
-             <string>Sensor5 port</string>
+             <string>Статус: ОК</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="3">
-           <widget class="QLabel" name="s5_status_label">
+          <item row="1" column="3">
+           <widget class="QLabel" name="s2_status_label">
+            <property name="text">
+             <string>Статус: ОК</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QLabel" name="s1_status_label">
             <property name="text">
              <string>Статус: ОК</string>
             </property>
@@ -245,7 +245,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="generator_groupbox">
      <property name="title">
       <string>Настройки генератора</string>
      </property>
