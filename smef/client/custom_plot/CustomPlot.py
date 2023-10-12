@@ -92,7 +92,7 @@ class CustomPlot(QWidget):
             if ticks is not None and data is not None:
                 index = np.where(ticks.astype(int) == int(mouse_point.x()))[0]
                 if len(index) > 0:
-                    label: str = data_line.name().split()[-1]
+                    label: str = data_line.name()#.split()[-1]
                     marker_text += f'{self.plotter_style.labels.marker}{label}: {data[index[0]]:.2f}\n'
         marker_text = marker_text[:-1]
         self.plotter_style.marker_label.setText(marker_text)

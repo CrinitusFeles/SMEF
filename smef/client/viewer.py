@@ -13,6 +13,7 @@ from smef.client.custom_plot.CustomPlot import CustomPlot
 from smef.fi7000_interface.calibrations import Calibrator, ProbeCalibrator
 from smef.fi7000_interface.config import FL7000_Config
 from smef.client.pandasModel import DataFrameModel
+from smef.utils import get_label
 
 @dataclass
 class ProbeData:
@@ -105,7 +106,7 @@ class Viewer(QtWidgets.QWidget):
         self.sensors_data = [ProbeData(file.stem, calibrator(file.stem),
                                        pd.read_csv(path.joinpath(file.name), sep='\t', decimal=',', encoding='utf-8'))
                              for file in path.glob("*.csv")]
-        [self.plotter.add_data_line(sensor.probe_id) for sensor in self.sensors_data]
+        [self.plotter.add_data_line(f'{get_label(sensor.probe_id)}({sensor.probe_id})') for sensor in self.sensors_data]
         if not len(self.sensors_data):
             logger.error(f'No session data in folder {path}')
             return

@@ -60,7 +60,7 @@ class NewSession(QWidget):
         return [checkbox.isChecked() for checkbox in self.check_boxes]
 
     def checked_text(self) -> list[str]:
-        return [checkbox.text() for checkbox in self.check_boxes if checkbox.isChecked()]
+        return [checkbox.text().split(' ')[-1] for checkbox in self.check_boxes if checkbox.isChecked()]
 
     def accept_clicked(self) -> None:
         if self.path_line_edit.text() != '':

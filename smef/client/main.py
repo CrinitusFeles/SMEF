@@ -16,7 +16,7 @@ from smef.client.viewer import Viewer
 from smef.client.new_session import NewSession
 from loguru import logger
 from PyQt5.QtWidgets import QApplication
-from smef.utils import open_file_system
+from smef.utils import get_label, open_file_system
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
     def check_connection(self) -> None:
         probes = self.device.get_connected()
         self.config.settings.alive_sensors = [probe.probe_id for probe in probes]
-        [self.new_session_widget.add_sensors(probe.probe_id) for probe in probes]
+        [self.new_session_widget.add_sensors(f'{probe.probe_id}: {get_label(probe.probe_id)}') for probe in probes]
 
     def close(self) -> None:
         super().close()

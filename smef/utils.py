@@ -19,6 +19,11 @@ def timestamp():
     return round(time.time())
 
 
+def get_label(probe_id: str) -> str:
+    labels: dict[str, str] = {str(key): f'Д{value}' for key, value in zip(range(357217, 3572122), range(1, 6))}
+    return labels.get(probe_id, '')
+
+
 class TimeAxisItem(pg.AxisItem):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
