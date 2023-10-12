@@ -1,5 +1,6 @@
 
 from __future__ import annotations
+from datetime import datetime
 from pathlib import Path
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QTimer
@@ -57,6 +58,8 @@ class MainWindow(QMainWindow):
 
         self.device_ports: list[int] = []
 
+        self.session_start_datetime: datetime = datetime.now()
+
     def open_viewer(self) -> None:
         if result_path := open_file_system(True):
             self.viewer.show()
@@ -75,8 +78,10 @@ class MainWindow(QMainWindow):
         with open(Path(output_path).joinpath('description.txt'), 'w', encoding='utf-8') as file:
             file.write(description)
         self.device.set_output_path(Path(output_path))
+        self.session_start_datetime = datetime.now()
+        self.statusBar().showMessage(f'Начало сеанса {self.session_start_datetime}')
 
-    def start_measuring(self):
+    def start_measuring(self) -> None:
         if not self.device.connection_status:
             self.device.connect(self.config.settings.ip, [probe.port for probe in self.device.probes
                                                           if probe.probe_id in self.new_session_widget.checked_text()])
@@ -91,21 +96,24 @@ class MainWindow(QMainWindow):
         str_path = str(sesssions_folder.joinpath(self.new_session_widget.filename_line_edit.text()))
         QMessageBox.information(self, 'Сеанс завершен', f"Данные по этому сеансу находятся в папке\n{str_path}",
                                 QMessageBox.Ok, QMessageBox.Ok)
+        self.statusBar().showMessage(f'Начало сеанса: {self.session_start_datetime.isoformat(" ", "seconds")}; '\
+                                     f'Конец сеанса: {datetime.now().isoformat(" ", "seconds")}')
         print('session finished')
+
 
     def check_connection(self) -> None:
         probes = self.device.get_connected()
         self.config.settings.alive_sensors = [probe.probe_id for probe in probes]
         [self.new_session_widget.add_sensors(probe.probe_id) for probe in probes]
 
-    def close(self):
+    def close(self) -> None:
         super().close()
         self.viewer.close()
         self.new_session_widget.close()
         self.settings_widget.close()
         print('close')
 
-    def center(self):
+    def center(self) -> None:
         frameGm = self.frameGeometry()
         screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
         centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()
@@ -125,7 +133,7 @@ class MainWindow(QMainWindow):
         self.main_widget.plotter.plot_df(self.device.get_data(self.main_widget.current_units, freq))
         self.main_widget.update_minmax_table()
 
-def main():
+def main() -> None:
     app = QApplication([])
     main_window = MainWindow()
     mw = ModernWindow(main_window)
