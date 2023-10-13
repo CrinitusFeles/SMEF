@@ -1,5 +1,6 @@
 
 from dataclasses import dataclass
+import datetime
 from functools import reduce
 from pathlib import Path
 from loguru import logger
@@ -113,6 +114,8 @@ class Viewer(QtWidgets.QWidget):
         dataframes = [sensor.data.iloc[:, [0, 4]] for sensor in self.sensors_data]
         ts_start: float = dataframes[0].iat[0, 0]
         ts_stop: float = dataframes[0].iat[-1, 0]
+        self.setWindowTitle(f'Результаты сеанса {datetime.datetime.fromtimestamp(ts_start).isoformat(" ", "seconds")}'\
+                            f' : {datetime.datetime.fromtimestamp(ts_stop).isoformat(" ", "seconds")}')
         self.plotter.canvas.setLimits(yMin=-10000, yMax=10000, xMin=ts_start - 5000, xMax=ts_stop + 5000)
         self.update_plotter()
         with open(path.joinpath('description.txt')) as file:

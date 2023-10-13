@@ -93,6 +93,10 @@ class NewSession(QWidget):
         self.check_boxes.append(checkbox)
         self.scroll_layout.addWidget(checkbox)
 
+    def clear_checbox_list(self):
+        [checkbox.deleteLater() for checkbox in self.check_boxes]
+        self.check_boxes.clear()
+
     def cancel_clicked(self) -> None:
         logger.info('Cancel button clicked')
         self.close()

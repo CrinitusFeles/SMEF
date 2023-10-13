@@ -104,7 +104,8 @@ class MainWindow(QMainWindow):
     def check_connection(self) -> None:
         probes = self.device.get_connected()
         self.config.settings.alive_sensors = [probe.probe_id for probe in probes]
-        [self.new_session_widget.add_sensors(f'{probe.probe_id}: {get_label(probe.probe_id)}') for probe in probes]
+        self.new_session_widget.clear_checbox_list()
+        [self.new_session_widget.add_sensors(f'{get_label(probe.probe_id)}: {probe.probe_id}') for probe in probes]
 
     def close(self) -> None:
         super().close()
