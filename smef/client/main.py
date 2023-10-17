@@ -88,6 +88,7 @@ class MainWindow(QMainWindow):
         self.timer.start(int(self.main_widget.plotter_interval_spin_box.value() * 1000))
 
     def finish_session(self) -> None:
+        finish_time = datetime.now()
         self.device.disconnect()
         self.timer.stop()
         self.main_widget.to_finish_state()
@@ -97,7 +98,7 @@ class MainWindow(QMainWindow):
         QMessageBox.information(self, 'Сеанс завершен', f"Данные по этому сеансу находятся в папке\n{str_path}",
                                 QMessageBox.Ok, QMessageBox.Ok)
         self.statusBar().showMessage(f'Начало сеанса: {self.session_start_datetime.isoformat(" ", "seconds")}; '\
-                                     f'Конец сеанса: {datetime.now().isoformat(" ", "seconds")}')
+                                     f'Конец сеанса: {finish_time.isoformat(" ", "seconds")}')
         print('session finished')
 
 
