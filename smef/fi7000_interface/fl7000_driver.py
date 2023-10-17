@@ -71,7 +71,7 @@ class FL7000_Interface:
         self.probes.extend([FL7040_Probe(ip, port) for port in unchecked_ports])
         self._fast_connect([probe for probe in self.probes if probe.port in ports])
         self.connection_status = True
-        [probe.calibrate_probe(self.calibrator(probe.probe_id)) for probe in self.get_connected_probes()]
+        [probe.calibrate_probe(self.calibrator(probe.probe_id.split(' ')[-1])) for probe in self.get_connected_probes()]
         [probe.start_measuring() for probe in self.get_connected_probes()]
         return all([probe.connection_status for probe in self.probes])
 

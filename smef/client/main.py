@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
             file.write(description)
         self.device.set_output_path(Path(output_path))
         self.session_start_datetime = datetime.now()
-        self.statusBar().showMessage(f'Начало сеанса {self.session_start_datetime}')
+        self.statusBar().showMessage(f'Начало сеанса {self.session_start_datetime.isoformat(" ", "seconds")}')
 
     def start_measuring(self) -> None:
         if not self.device.connection_status:
@@ -105,7 +105,8 @@ class MainWindow(QMainWindow):
         probes = self.device.get_connected()
         self.config.settings.alive_sensors = [probe.probe_id for probe in probes]
         self.new_session_widget.clear_checbox_list()
-        [self.new_session_widget.add_sensors(f'{get_label(probe.probe_id)}: {probe.probe_id}') for probe in probes]
+        # [self.new_session_widget.add_sensors(f'{get_label(probe.probe_id)}: {probe.probe_id}') for probe in probes]
+        [self.new_session_widget.add_sensors(probe.probe_id) for probe in probes]
 
     def close(self) -> None:
         super().close()

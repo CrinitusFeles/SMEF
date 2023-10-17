@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 from smef.fi7000_interface.calibrations import ProbeCalibrator
+from smef.utils import get_label
 
 
 @dataclass
@@ -88,6 +89,7 @@ class FL7040_Probe:
             self.connection_status = True
             self.device_model, self.probe_id, self.revision, self.date = self.read_probe_info()
             self.probe_id = self.probe_id.lstrip('0')
+            self.probe_id = f'{get_label(self.probe_id)}: {self.probe_id}'
             self.connectable = True
             logger.success(f'{self.ip}:{self.port} {self.probe_id} successfully connected')
             return True

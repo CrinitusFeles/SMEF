@@ -56,7 +56,8 @@ class MainWidget(Viewer):
         self.plotter.delete_all_data()
         self.plotter_start_button.setEnabled(True)
         self.new_session_button.setEnabled(False)
-        [self.plotter.add_data_line(f'Датчик {label}') for label in labels]
+        # [self.plotter.add_data_line(f'Датчик {label}') for label in labels]
+        [self.plotter.add_data_line(label) for label in labels]
         self.plotter.auto_scale()
 
     def to_finish_state(self):
