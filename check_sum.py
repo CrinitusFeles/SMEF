@@ -18,5 +18,5 @@ def calculate_folder_code_hash(path: Path, target_hash_string: str):
 
 
 if __name__ == '__main__':
-    calculate_folder_code_hash(Path('./smef'), '0x62f891ac777c6f26747956ca0149548e8d5823b2')
+    calculate_folder_code_hash(Path('./smef'), '0xd34051373f97709f65f35db1ccc75853d7e4f83a')
     input()
