@@ -87,14 +87,19 @@ class CustomPlot(QWidget):
         self.last_mouse_position = pos
         mouse_point: QPointF = self.canvas.vb.mapSceneToView(pos)
         marker_text: str = ''
-        for data_line in self.data_lines:
+        for i, data_line in enumerate(self.data_lines):
             ticks, data = data_line.getData()
             if ticks is not None and data is not None:
                 index = np.where(ticks.astype(int) == int(mouse_point.x()))[0]
+                if i == 0:
+                    tick_delta = ticks[index] - ticks[index - 1]
+                    marker_text += f'Δt: {tick_delta[0] if len(tick_delta) else 0:.2f}\n'
                 if len(index) > 0:
                     label: str = data_line.name()#.split()[-1]
                     # marker_text += f'{self.plotter_style.labels.marker}{label}: {data[index[0]]:.2f}\n'
                     marker_text += f'{label}: {data[index[0]]:.2f}\n'
+
+
         marker_text = marker_text[:-1]
         self.plotter_style.marker_label.setText(marker_text)
         self.plotter_style.marker_label.setPos(mouse_point)
