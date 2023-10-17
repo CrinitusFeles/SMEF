@@ -67,7 +67,7 @@ class MainWindow(QMainWindow):
 
     def calibrate_measures(self, state: bool) -> None:
         if state:
-            self.device.recalibrate_df(self.main_widget.calib_freq_spin_box.value())
+            self.device.recalibrate_df(self.main_widget.calib_freq_spin_box.value() * 1000)
 
     def init_new_session(self, output_path: str) -> None:
         logger.info(f'Session output: {output_path}')
@@ -127,7 +127,7 @@ class MainWindow(QMainWindow):
             logger.debug('device not connected')
             return
         calib_flag: bool = self.main_widget.calib_probs_check_box.isChecked()
-        freq: int | None = self.main_widget.calib_freq_spin_box.value() if calib_flag else None
+        freq: int | None = self.main_widget.calib_freq_spin_box.value() * 1000 if calib_flag else None
         if calib_flag:
             self.main_widget.calib_dataframes = self.device.get_dataframes(freq)
         else:

@@ -14,7 +14,6 @@ from smef.client.custom_plot.CustomPlot import CustomPlot
 from smef.fi7000_interface.calibrations import Calibrator, ProbeCalibrator
 from smef.fi7000_interface.config import FL7000_Config
 from smef.client.pandasModel import DataFrameModel
-from smef.utils import get_label
 
 @dataclass
 class ProbeData:
@@ -125,7 +124,7 @@ class Viewer(QtWidgets.QWidget):
 
     def update_plotter(self) -> None:
         if self.calib_probs_check_box.isChecked():
-            self.calib_dataframes = [sensor.calibrator.calibrate_dataframe(self.calib_freq_spin_box.value(),
+            self.calib_dataframes = [sensor.calibrator.calibrate_dataframe(self.calib_freq_spin_box.value() * 1000,
                                                                 sensor.data) for sensor in self.sensors_data]
             df_calib: list[DataFrame] = [df.iloc[:, [0, 4 + self.current_units]] for df in self.calib_dataframes]
             self.plotter.plot_df(df_calib)
