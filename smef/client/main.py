@@ -38,6 +38,7 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self._plot_process)
 
         self.main_widget.new_session_button.pressed.connect(self.new_session_widget.show)
+        self.main_widget.dark_theme_checkbox.stateChanged.connect(self.viewer.change_theme)
         self.main_widget.new_session_button.pressed.connect(self.new_session_widget.generate_name)
         self.main_widget.open_session_viewer_button.pressed.connect(self.open_viewer)
         self.main_widget.connection_settings_button.pressed.connect(self.settings_widget.show)
