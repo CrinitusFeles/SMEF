@@ -16,7 +16,7 @@ from smef.client.viewer import Viewer
 from smef.client.new_session import NewSession
 from loguru import logger
 from PyQt5.QtWidgets import QApplication
-from smef.utils import get_label, open_file_system
+from smef.utils import open_file_system
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:

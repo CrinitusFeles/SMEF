@@ -8,6 +8,8 @@ import numpy.typing as npt
 from numpy import ndarray
 import pandas as pd
 from loguru import logger
+
+from smef.utils import get_label
 np.set_printoptions(edgeitems=30, linewidth=300)
 
 DType = TypeVar("DType", bound=np.generic)
@@ -85,12 +87,18 @@ class ProbeCalibrator:
         v_m: ArrayNx1 = np.apply_along_axis(np.linalg.norm, 1, xyz + calib_xyz)
         w_m2: ArrayNx1 = np.apply_along_axis(lambda x: x / 377, 0, v_m)
         dBuV_m: ArrayNx1 = np.apply_along_axis(lambda x: 20 * np.log10(x * 10**6, where=x > 0), 0, v_m)
-        dataframe = pd.DataFrame({f'{self.sensor_id} x {freq}': calib_xyz.T[0],
-                                  f'{self.sensor_id} y {freq}': calib_xyz.T[1],
-                                  f'{self.sensor_id} z {freq}': calib_xyz.T[2],
-                                  f'{self.sensor_id} В/м {freq}': v_m.T,
-                                  f'{self.sensor_id} дБмкВ/м {freq}': dBuV_m.T,
-                                  f'{self.sensor_id} Вт/м² {freq}': w_m2.T})
+        # dataframe = pd.DataFrame({f'{self.sensor_id} x {freq}': calib_xyz.T[0],
+        #                           f'{self.sensor_id} y {freq}': calib_xyz.T[1],
+        #                           f'{self.sensor_id} z {freq}': calib_xyz.T[2],
+        #                           f'{self.sensor_id} В/м {freq}': v_m.T,
+        #                           f'{self.sensor_id} дБмкВ/м {freq}': dBuV_m.T,
+        #                           f'{self.sensor_id} Вт/м² {freq}': w_m2.T})
+        dataframe = pd.DataFrame({f'{get_label(self.sensor_id)}({self.sensor_id}) x {freq}': calib_xyz.T[0],
+                                  f'{get_label(self.sensor_id)}({self.sensor_id}) y {freq}': calib_xyz.T[1],
+                                  f'{get_label(self.sensor_id)}({self.sensor_id}) z {freq}': calib_xyz.T[2],
+                                  f'{get_label(self.sensor_id)}({self.sensor_id}) В/м {freq}': v_m.T,
+                                  f'{get_label(self.sensor_id)}({self.sensor_id}) дБмкВ/м {freq}': dBuV_m.T,
+                                  f'{get_label(self.sensor_id)}({self.sensor_id}) Вт/м² {freq}': w_m2.T})
         timestamps = pd.DataFrame(df.iloc[:, 0])
         return pd.concat([timestamps, dataframe], axis=1)
 

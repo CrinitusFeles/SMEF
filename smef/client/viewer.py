@@ -104,7 +104,7 @@ class Viewer(QtWidgets.QWidget):
     def load_session(self, path: Path, calibrator: Calibrator):
         self.setWindowTitle(f'Результаты сеанса {path.stem}')
         self.plotter.delete_all_data()
-        self.sensors_data = [ProbeData(file.stem, calibrator(file.stem),
+        self.sensors_data = [ProbeData(file.stem, calibrator(file.stem[3:-1]),
                                        pd.read_csv(path.joinpath(file.name), sep='\t', decimal=',', encoding='utf-8'))
                              for file in path.glob("*.csv")]
         # [self.plotter.add_data_line(f'{get_label(sensor.probe_id)}({sensor.probe_id})') for sensor in self.sensors_data]

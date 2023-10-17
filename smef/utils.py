@@ -7,14 +7,6 @@ from PyQt5.QtGui import QPen
 import numpy as np
 
 
-def create_json_file(config_obj, file_name):
-    try:
-        with open(file_name, 'w', encoding='utf-8') as write_file:
-            write_file.write(config_obj.to_json())
-    except Exception as error:
-        print(error)
-
-
 def timestamp():
     return round(time.time())
 

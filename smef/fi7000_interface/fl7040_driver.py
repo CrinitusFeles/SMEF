@@ -89,7 +89,7 @@ class FL7040_Probe:
             self.connection_status = True
             self.device_model, self.probe_id, self.revision, self.date = self.read_probe_info()
             self.probe_id = self.probe_id.lstrip('0')
-            self.probe_id = f'{get_label(self.probe_id)}: {self.probe_id}'
+            self.probe_id = f'{get_label(self.probe_id)}({self.probe_id})'
             self.connectable = True
             logger.success(f'{self.ip}:{self.port} {self.probe_id} successfully connected')
             return True
@@ -191,19 +191,13 @@ class FL7040_Probe:
             self.df = pd.concat([self.df, FieldResult(self.probe_id, datetime.now(), raw_result).dataframe()],
                                 ignore_index=True)
             filepath: Path = self.output_path.joinpath(self.probe_id + '.csv')
-            self.df.tail(1).to_csv(filepath, '\t', mode='a', encoding='utf-8', header=not Path.exists(filepath),
+            self.df.tail(1).to_csv(filepath, sep='\t', mode='a', encoding='utf-8', header=not Path.exists(filepath),
                            index=False, decimal=',')
             delta: float = time.time() - start_time
             if self.measure_period_sec - delta > 0:
                 time.sleep(self.measure_period_sec - delta)
             else:
                 time.sleep(0.001)
-
-    def _stream_measure_routine(self) -> None:
-        while self.measuring_flag:
-            self.df.join(FieldResult(self.probe_id, datetime.now(), self.read_probe_measure()).dataframe())
-            self.result_ready = True
-            time.sleep(self.measure_period_sec / 1000)
 
     def start_measuring(self):
         if not self.measuring_flag:
