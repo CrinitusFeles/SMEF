@@ -72,13 +72,13 @@ class ProbeCalibrator:
         self.y_amplitude_points = amplitude_calibration[1][2]
         self.z_amplitude_points = amplitude_calibration[1][3]
 
-    def calibrate_value(self, array: ndarray, freq: float) -> ndarray:
+    def calibrate_value(self, xyz: Array3, freq: float) -> ndarray:
         x_freq_param = np.interp(freq, self.freq_list, self.x_freq_points)
         y_freq_param = np.interp(freq, self.freq_list, self.y_freq_points)
         z_freq_param = np.interp(freq, self.freq_list, self.z_freq_points)
-        x_amp_param = np.interp(array[0], self.amplitude_list, self.x_amplitude_points)
-        y_amp_param = np.interp(array[1], self.amplitude_list, self.y_amplitude_points)
-        z_amp_param = np.interp(array[2], self.amplitude_list, self.z_amplitude_points)
+        x_amp_param = np.interp(xyz[0], self.amplitude_list, self.x_amplitude_points)
+        y_amp_param = np.interp(xyz[1], self.amplitude_list, self.y_amplitude_points)
+        z_amp_param = np.interp(xyz[2], self.amplitude_list, self.z_amplitude_points)
         return np.array([x_freq_param * x_amp_param, y_freq_param * y_amp_param, z_freq_param * z_amp_param])
 
     def calibrate_dataframe(self, freq: float, df: pd.DataFrame) -> pd.DataFrame:
@@ -151,16 +151,16 @@ if __name__ == '__main__':
     #print(load_calibration_by_id(Path('X:\\NextCloudStorage\\ImportantData\\PyQt_projects\\SMEF\\sensor_calibrations'),
     #                              '0357218'))
     from matplotlib import pyplot as plt
-    calib = Calibrator(Path('X:\\NextCloudStorage\\ImportantData\\PyQt_projects\\SMEF\\smef\\sensor_calibrations'))
+    calib = Calibrator(Path('X:\\NextCloudStorage\\ImportantData\\VSCode_projects\\SMEF\\smef\\sensor_calibrations'))
     print(calib('357218'))
 
     # calibrations = find_calibration_pairs(load_freq_calibrations(), load_amplitude_calibrations())
-    freq_grid = np.linspace(0, 40000000000, 10000)
+    freq_grid = np.linspace(0, 40e9, 10000)
     amp_grid = np.linspace(5, 300, 1000)
     print(calib.probes['357218'].calibrate_value(np.array([15.44, 5.44, 12.23]), 10000000))
     for i, calib in enumerate(calib.probes.values()):
         plt.subplot(4, 5, i + 1)
-        plt.subplots_adjust(wspace=0.6, top=0.9, bottom=0.1, hspace=0.6)
+        plt.subplots_adjust(wspace=0.6, top=0.9, bottom=0.1, hspace=0.6, left=0.1, right=0.9)
         plt.plot(calib.freq_list, calib.x_freq_points, '-o', label=f'x')
         plt.plot(calib.freq_list, calib.y_freq_points, '-o', label=f'y')
         plt.plot(calib.freq_list, calib.z_freq_points, '-o', label=f'z')
