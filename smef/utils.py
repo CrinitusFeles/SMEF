@@ -1,4 +1,3 @@
-from pathlib import Path
 import pyqtgraph as pg
 import datetime
 import time

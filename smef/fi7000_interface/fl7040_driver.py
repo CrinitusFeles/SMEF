@@ -6,7 +6,6 @@ from pathlib import Path
 import re
 from threading import Thread
 import time
-from matplotlib.pylab import f
 
 import numpy as np
 
