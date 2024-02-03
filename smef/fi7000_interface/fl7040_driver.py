@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 from threading import Thread
 import time
+from matplotlib.pylab import f
 
 import numpy as np
 
@@ -36,14 +37,14 @@ class FieldResult:
     data: DataCalib | DataRaw
 
     def dataframe(self) -> pd.DataFrame:
-        suffix: str = str(self.data.freq) if isinstance(self.data, DataCalib) else ''
+        suffix: str = f'{self.data.freq / 1e6:.2f} МГц' if isinstance(self.data, DataCalib) else ''
         return pd.DataFrame({'Timestamp': [time.time()],
-                             f'{self.probe_id} x {suffix}': [self.data.x],
-                             f'{self.probe_id} y {suffix}': [self.data.y],
-                             f'{self.probe_id} z {suffix}': [self.data.z],
-                             f'{self.probe_id} В/м {suffix}': [self.data.s],
-                             f'{self.probe_id} дБмкВ/м {suffix}': [self.data.s_log],
-                             f'{self.probe_id} Вт/м² {suffix}': [self.data.s_w]})
+                             f'{self.probe_id} x\n{suffix}': [self.data.x],
+                             f'{self.probe_id} y\n{suffix}': [self.data.y],
+                             f'{self.probe_id} z\n{suffix}': [self.data.z],
+                             f'{self.probe_id} В/м\n{suffix}': [self.data.s],
+                             f'{self.probe_id} дБмкВ/м\n{suffix}': [self.data.s_log],
+                             f'{self.probe_id} Вт/м²\n{suffix}': [self.data.s_w]})
 
 class FL7040_Probe:
     sock: socket.socket
@@ -184,11 +185,15 @@ class FL7040_Probe:
             start_time: float = time.time()
             raw_result: DataRaw = self.read_probe_measure()
             if self.calibration_freq:
-                result = FieldResult(self.probe_id, datetime.now(), self.calibrate_measure(raw_result,
-                                                                                           self.calibration_freq))
+                result = FieldResult(self.probe_id, datetime.now(),
+                                     self.calibrate_measure(raw_result, self.calibration_freq))
                 df_data = result.dataframe()
-                self.df_calib = pd.concat([self.df_calib, df_data], ignore_index=True)
-            self.df = pd.concat([self.df, FieldResult(self.probe_id, datetime.now(), raw_result).dataframe()],
+                concat_list = [self.df_calib, df_data]
+                self.df_calib = pd.concat(concat_list, axis=0,
+                                          ignore_index=True)
+            result_df = FieldResult(self.probe_id, datetime.now(),
+                                    raw_result).dataframe()
+            self.df = pd.concat([self.df, result_df], axis=0,
                                 ignore_index=True)
             filepath: Path = self.output_path.joinpath(self.probe_id + '.csv')
             self.df.tail(1).to_csv(filepath, sep='\t', mode='a', encoding='utf-8', header=not Path.exists(filepath),

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1144</width>
-    <height>897</height>
+    <width>1611</width>
+    <height>768</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,13 +19,25 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_4">
+  <layout class="QHBoxLayout" name="horizontalLayout_6">
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_7">
+     <property name="spacing">
+      <number>0</number>
+     </property>
      <item>
       <layout class="QVBoxLayout" name="plot_layout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <property name="bottomMargin">
-        <number>9</number>
+        <number>0</number>
        </property>
       </layout>
      </item>
@@ -82,6 +94,12 @@
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QLabel" name="label">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>Заголовок графика</string>
             </property>
@@ -90,14 +108,14 @@
           <item>
            <widget class="QLineEdit" name="tittle_line_edit">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="minimumSize">
              <size>
-              <width>200</width>
+              <width>150</width>
               <height>0</height>
              </size>
             </property>
@@ -230,36 +248,42 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
-             <widget class="QSpinBox" name="calib_freq_spin_box">
+             <widget class="QCheckBox" name="calib_probs_check_box">
+              <property name="text">
+               <string>Калибровать данные</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="calib_freq_spin_box">
               <property name="minimum">
-               <number>1</number>
+               <double>0.000000000000000</double>
               </property>
               <property name="maximum">
-               <number>40000001</number>
+               <double>40000.000000000000000</double>
               </property>
               <property name="singleStep">
-               <number>100</number>
+               <double>1.000000000000000</double>
               </property>
               <property name="value">
-               <number>100000</number>
+               <double>1000.000000000000000</double>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QLabel" name="label_3">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
-               <string>Частота, кГц</string>
+               <string>Частота, МГц</string>
               </property>
              </widget>
             </item>
            </layout>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="calib_probs_check_box">
-            <property name="text">
-             <string>Калибровать данные</string>
-            </property>
-           </widget>
           </item>
          </layout>
         </item>
@@ -269,7 +293,7 @@
      <item>
       <widget class="QGroupBox" name="groupBox_5">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -290,7 +314,7 @@
           <item>
            <widget class="QDoubleSpinBox" name="norma_val_spinbox">
             <property name="decimals">
-             <number>4</number>
+             <number>2</number>
             </property>
             <property name="minimum">
              <double>-1000.000000000000000</double>

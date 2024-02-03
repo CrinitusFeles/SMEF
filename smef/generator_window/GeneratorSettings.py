@@ -1,10 +1,12 @@
 from pathlib import Path
 
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore import Qt
+from PyQt6.QtWidgets import QWidget, QPushButton
+from PyQt6.QtCore import Qt
 from qtpy.uic import loadUi
 
 class GeneratorSettings(QWidget):
+    accept_button: QPushButton
+    cancel_button: QPushButton
     def __init__(self) -> None:
         super().__init__()
         loadUi(Path(__file__).parent.joinpath('ui', 'generator_window.ui'), self)

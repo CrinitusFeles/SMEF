@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 import time
 from typing import Literal
-from PyQt5.QtCore import Qt
-from PyQt5 import QtGui
-from PyQt5.QtGui import QPen
+from PyQt6.QtCore import Qt
+from PyQt6 import QtGui
+from PyQt6.QtGui import QPen
 from pyqtgraph import PlotItem, PlotWidget, AxisItem, TextItem, LabelItem, InfiniteLine, mkPen
 from pyqtgraph.graphicsItems.LegendItem import LegendItem
 from smef.fi7000_interface.config import FL7000_Config
@@ -66,7 +66,7 @@ class PlotterStyle:
 
         self.marker_label = TextItem()
         self.marker_label.setPos(time.time() + 60, 1)
-        self.marker_label.setFont(QtGui.QFont('Times', 10, QtGui.QFont.Bold))
+        self.marker_label.setFont(QtGui.QFont('Times', 10, QtGui.QFont.Weight.Bold))
         self.marker_label.setColor(self.palette.label_color)
 
         self.legend: LegendItem = self.plot_item.addLegend(brush='#08080805', pen='k', colCount=1, labelTextColor='k',

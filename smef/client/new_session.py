@@ -1,9 +1,9 @@
 from pathlib import Path
 import time
-from PyQt5 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore
 from qtpy.uic import loadUi
 
-from PyQt5.QtWidgets import QWidget, QMessageBox
+from PyQt6.QtWidgets import QWidget, QMessageBox
 from smef.fi7000_interface.config import FL7000_Config
 from loguru import logger
 from smef.utils import open_file_system
@@ -64,22 +64,26 @@ class NewSession(QWidget):
         return [checkbox.text() for checkbox in self.check_boxes if checkbox.isChecked()]
 
     def accept_clicked(self) -> None:
+        ok_btn = QMessageBox.StandardButton.Ok
         if self.path_line_edit.text() != '':
+            session_path: Path = Path(self.path_line_edit.text()).joinpath(self.filename_line_edit.text())
             if not Path(self.path_line_edit.text()).is_dir():
-                logger.info('Creating new output folder ' + self.path_line_edit.text())
+                logger.info(f'Creating new output folder {self.path_line_edit.text()}')
                 Path(self.path_line_edit.text()).mkdir(exist_ok=True)
             if self.filename_line_edit.text() != '':
                 if any(self.get_checkbox_values()):
                     self.inited_session_flag = True
-                    self.session_inited.emit(str(Path(self.path_line_edit.text()).joinpath(self.filename_line_edit.text())))
+                    self.session_inited.emit(str(session_path))
                     self.close()
                 else:
-                    QMessageBox.warning(self, 'Warning', "Хотя бы один из датчиков должен быть подключен.",
-                                        QMessageBox.Ok, QMessageBox.Ok)
+                    msg: str = "Хотя бы один из датчиков должен быть подключен."
+                    QMessageBox.warning(self, 'Warning', msg, ok_btn, ok_btn)
             else:
-                QMessageBox.warning(self, 'Warning', "Укажите название сеанса.", QMessageBox.Ok, QMessageBox.Ok)
+                msg = "Укажите название сеанса."
+                QMessageBox.warning(self, 'Warning', msg, ok_btn, ok_btn)
         else:
-            QMessageBox.warning(self, 'Warning', "Укажите путь к папке с сессией.", QMessageBox.Ok, QMessageBox.Ok)
+            msg = "Укажите путь к папке с сессией."
+            QMessageBox.warning(self, 'Warning', msg, ok_btn, ok_btn)
 
     def path_tool_button_pressed(self) -> None:
         path: str | None = open_file_system(directory=True)
@@ -103,18 +107,20 @@ class NewSession(QWidget):
         self.close()
 
     def generate_name(self) -> None:
-        self.filename_line_edit.setText(time.strftime("%Y-%m-%d_%H.%M", time.localtime()))
+        self.filename_line_edit.setText(time.strftime("%Y-%m-%d_%H.%M",
+                                                      time.localtime()))
 
     def center(self) -> None:
         frameGm = self.frameGeometry()
-        screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
-        centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()
-        frameGm.moveCenter(centerPoint)
-        self.move(frameGm.topLeft())
+        screen = QtWidgets.QApplication.primaryScreen()
+        if screen:
+            center_point = screen.geometry().center()
+            frameGm.moveCenter(center_point)
+            self.move(frameGm.topLeft())
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
     window = NewSession()
     [window.add_sensors('i') for _ in range(20)]
     window.show()
-    app.exec_()
+    app.exec()

@@ -1,8 +1,8 @@
 import sys
 import pandas as pd
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication, QTableView
-from PyQt5.QtCore import pyqtProperty  #type: ignore
+from PyQt6 import QtCore
+from PyQt6.QtWidgets import QApplication, QTableView
+from PyQt6.QtCore import pyqtProperty  #type: ignore
 
 
 
@@ -82,4 +82,4 @@ if __name__ == '__main__':
     view.setModel(model)
     view.resize(800, 600)
     view.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

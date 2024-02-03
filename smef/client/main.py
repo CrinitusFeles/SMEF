@@ -2,9 +2,9 @@
 from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from PyQt6 import QtWidgets, QtCore
+from PyQt6.QtCore import QTimer
+from PyQt6.QtWidgets import QMainWindow, QMessageBox
 from qtmodern.windows import ModernWindow
 from qtpy.uic import loadUi
 from smef.client.settings_widget import ConnectionsSettings
@@ -15,14 +15,15 @@ from smef.client.main_widget import MainWidget
 from smef.client.viewer import Viewer
 from smef.client.new_session import NewSession
 from loguru import logger
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 from smef.utils import open_file_system
 
 class MainWindow(QMainWindow):
+    main_layout: QtWidgets.QVBoxLayout
     def __init__(self) -> None:
         super().__init__()
         loadUi(Path(__file__).parent.joinpath('ui', 'main.ui'), self)
-        self.setWindowTitle('СМЭП Клиент v2.1.0')
+        self.setWindowTitle('СМЭП Клиент v2.2.0')
         self.config = FL7000_Config()
         self.device = FL7000_Interface(self.config)
         self.main_widget = MainWidget(self.config)
@@ -50,6 +51,7 @@ class MainWindow(QMainWindow):
         self.main_widget.start_pressed.connect(self.start_measuring)
         self.main_widget.pause_pressed.connect(self.timer.stop)
         self.main_widget.stop_pressed.connect(self.finish_session)
+        self.main_widget.update_calib_pressed.connect(self.update_calibs)
         self.viewer.units_changed.connect(self.viewer.update_plotter)
         self.viewer.calib_probs_check_box.stateChanged.connect(self.viewer.update_plotter)
         self.viewer.calib_freq_spin_box.valueChanged.connect(self.viewer.update_plotter)
@@ -68,7 +70,28 @@ class MainWindow(QMainWindow):
 
     def calibrate_measures(self, state: bool) -> None:
         if state:
-            self.device.recalibrate_df(self.main_widget.calib_freq_spin_box.value() * 1000)
+            self.device.recalibrate_df(self.main_widget.calib_freq_spin_box.value() * 1e6)
+        else:
+            self.device.recalibrate_df(None)
+
+    def update_calibs(self) -> None:
+        try:
+            calib_path = Path(self.main_widget.calib_path_line_edit.text())
+            self.device.update_calibrator(calib_path)
+            self.viewer.update_calibrator(self.device.calibrator)
+            self.config.settings.calibration_path = calib_path
+            self.config.write_config()
+            QMessageBox.information(self, 'Обновление калибровок',
+                                    'Калибровки успешно обновлены',
+                                    QMessageBox.StandardButton.Ok,
+                                    QMessageBox.StandardButton.Ok)
+        except (KeyError, ValueError, OSError) as err:
+            QMessageBox.critical(self, 'Обновление калибровок',
+                        'Не удалось обновить калибровки\n'\
+                        'Возможно, указан неправильный путь',
+                        QMessageBox.StandardButton.Ok,
+                        QMessageBox.StandardButton.Ok)
+            logger.error(err)
 
     def init_new_session(self, output_path: str) -> None:
         logger.info(f'Session output: {output_path}')
@@ -76,38 +99,47 @@ class MainWindow(QMainWindow):
         self.main_widget.to_initial_state(labels)
         description: str = self.new_session_widget.session_comment_editor.toPlainText()
         Path.mkdir(Path(output_path), exist_ok=True)
-        with open(Path(output_path).joinpath('description.txt'), 'w', encoding='utf-8') as file:
+        file_path: Path = Path(output_path).joinpath('description.txt')
+        with open(file_path, 'w', encoding='utf-8') as file:
             file.write(description)
         self.device.set_output_path(Path(output_path))
         self.session_start_datetime = datetime.now()
-        self.statusBar().showMessage(f'Начало сеанса {self.session_start_datetime.isoformat(" ", "seconds")}')
+        status_bar: QtWidgets.QStatusBar | None = self.statusBar()
+        timestamp: str = self.session_start_datetime.isoformat(" ", "seconds")
+        if status_bar:
+            status_bar.showMessage(f'Начало сеанса {timestamp}')
 
     def start_measuring(self) -> None:
         if not self.device.connection_status:
-            self.device.connect(self.config.settings.ip, [probe.port for probe in self.device.probes
-                                                          if probe.probe_id in self.new_session_widget.checked_text()])
+            ports: list[int] = [probe.port for probe in self.device.probes
+                                if probe.probe_id in self.new_session_widget.checked_text()]
+            self.device.connect(self.config.settings.ip, ports)
         self.timer.start(int(self.main_widget.plotter_interval_spin_box.value() * 1000))
 
     def finish_session(self) -> None:
-        finish_time = datetime.now()
+        finish_time = datetime.now().isoformat(" ", "seconds")
         self.device.disconnect()
         self.timer.stop()
         self.main_widget.to_finish_state()
         self.device.clear_data()
         sesssions_folder = Path(self.new_session_widget.path_line_edit.text())
-        str_path = str(sesssions_folder.joinpath(self.new_session_widget.filename_line_edit.text()))
-        QMessageBox.information(self, 'Сеанс завершен', f"Данные по этому сеансу находятся в папке\n{str_path}",
-                                QMessageBox.Ok, QMessageBox.Ok)
-        self.statusBar().showMessage(f'Начало сеанса: {self.session_start_datetime.isoformat(" ", "seconds")}; '\
-                                     f'Конец сеанса: {finish_time.isoformat(" ", "seconds")}')
+        filename: str = self.new_session_widget.filename_line_edit.text()
+        str_path = str(sesssions_folder.joinpath(filename))
+        msg: str = f"Данные по этому сеансу находятся в папке\n{str_path}"
+        QMessageBox.information(self, 'Сеанс завершен', msg,
+                                QMessageBox.StandardButton.Ok,
+                                QMessageBox.StandardButton.Ok)
+        status_bar: QtWidgets.QStatusBar | None = self.statusBar()
+        timestamp: str = self.session_start_datetime.isoformat(" ", "seconds")
+        if status_bar:
+            status_bar.showMessage(f'Начало сеанса: {timestamp}; '\
+                                   f'Конец сеанса: {finish_time}')
         print('session finished')
-
 
     def check_connection(self) -> None:
         probes = self.device.get_connected()
         self.config.settings.alive_sensors = [probe.probe_id for probe in probes]
         self.new_session_widget.clear_checbox_list()
-        # [self.new_session_widget.add_sensors(f'{get_label(probe.probe_id)}: {probe.probe_id}') for probe in probes]
         [self.new_session_widget.add_sensors(probe.probe_id) for probe in probes]
 
     def close(self) -> None:
@@ -119,23 +151,26 @@ class MainWindow(QMainWindow):
 
     def center(self) -> None:
         frameGm = self.frameGeometry()
-        screen = QtWidgets.QApplication.desktop().screenNumber(QtWidgets.QApplication.desktop().cursor().pos())
-        centerPoint = QtWidgets.QApplication.desktop().screenGeometry(screen).center()
-        frameGm.moveCenter(centerPoint)
-        self.move(frameGm.topLeft())
+        screen = QtWidgets.QApplication.primaryScreen()
+        if screen:
+            center_point = screen.geometry().center()
+            frameGm.moveCenter(center_point)
+            self.move(frameGm.topLeft())
 
     def _plot_process(self) -> None:
         if not self.device.connection_status:
             logger.debug('device not connected')
             return
         calib_flag: bool = self.main_widget.calib_probs_check_box.isChecked()
-        freq: int | None = self.main_widget.calib_freq_spin_box.value() * 1000 if calib_flag else None
+        freq: float | None = self.main_widget.calib_freq_spin_box.value() * 1e6 if calib_flag else None
         if calib_flag:
             self.main_widget.calib_dataframes = self.device.get_dataframes(freq)
         else:
             self.main_widget.dataframes = self.device.get_dataframes(freq)
-        self.main_widget.plotter.plot_df(self.device.get_data(self.main_widget.current_units, freq))
+        dataframes = self.device.get_data(self.main_widget.current_units, freq)
+        self.main_widget.plotter.plot_df(dataframes)
         self.main_widget.update_minmax_table()
+
 
 def main() -> None:
     app = QApplication([])
@@ -143,7 +178,8 @@ def main() -> None:
     mw = ModernWindow(main_window)
     mw.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground, False)  # fix flickering on resize window
     mw.show()
-    app.exec_()
+    app.exec()
+
 
 if __name__ == '__main__':
     main()

@@ -4,9 +4,9 @@ from functools import reduce
 from pathlib import Path
 import sys
 import pandas as pd
-from PyQt5.QtCore import QPointF, QMimeData, QUrl, QRectF
+from PyQt6.QtCore import QPointF, QMimeData, QUrl, QRectF
 from pyqtgraph.exporters import ImageExporter
-from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QApplication, QVBoxLayout, QSizePolicy
 import pyqtgraph as pg
 from pyqtgraph import PlotItem, PlotWidget
 from pyqtgraph.graphicsItems.LegendItem import PlotDataItem
@@ -20,7 +20,7 @@ class CustomPlot(QWidget):
     def __init__(self, config: FL7000_Config) -> None:
         QWidget.__init__(self)
         self.plotter_layout = QVBoxLayout()
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.setMinimumWidth(300)
         self.setLayout(self.plotter_layout)
 
@@ -31,14 +31,18 @@ class CustomPlot(QWidget):
         self.plotter_layout.addWidget(self.pw)
         self.sliding_window_size = 3600
 
-        self.pw.setXRange(timestamp() - self.sliding_window_size / 2, timestamp() + self.sliding_window_size / 2)
+        self.pw.setXRange(timestamp() - self.sliding_window_size / 2,
+                          timestamp() + self.sliding_window_size / 2)
         self.minmax: pd.DataFrame = pd.DataFrame()
 
-        self.canvas.setLimits(yMin=-10000, yMax=10000, xMin=timestamp(), xMax=timestamp() + 50000000)
+        self.canvas.setLimits(yMin=-10000, yMax=10000, xMin=timestamp(),
+                              xMax=timestamp() + 50000000)
 
         # cross hair
-        self.cursor_vLine = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen('g', width=2))
-        self.cursor_hLine = pg.InfiniteLine(angle=0, movable=False, pen=pg.mkPen('g', width=2))
+        self.cursor_vLine = pg.InfiniteLine(angle=90, movable=False,
+                                            pen=pg.mkPen('g', width=2))
+        self.cursor_hLine = pg.InfiniteLine(angle=0, movable=False,
+                                            pen=pg.mkPen('g', width=2))
         self.canvas.addItem(self.plotter_style.marker_label, ignoreBounds=True)
         self.canvas.addItem(self.cursor_vLine, ignoreBounds=True)
         self.canvas.addItem(self.cursor_hLine, ignoreBounds=True)
@@ -51,7 +55,8 @@ class CustomPlot(QWidget):
         self.data_lines: list[PlotDataItem] = []
         self.data: list[pd.DataFrame] = []
 
-        self.proxy = pg.SignalProxy(self.canvas.scene().sigMouseMoved, rateLimit=100, slot=self.mouse_moved)
+        self.proxy = pg.SignalProxy(self.canvas.scene().sigMouseMoved,
+                                    rateLimit=100, slot=self.mouse_moved)
 
     def set_visible_crosshair(self, state: bool) -> None:
         self.visible_crosshair = state
@@ -117,7 +122,8 @@ class CustomPlot(QWidget):
             np_data = df.to_numpy().T
             data_line.setData(np_data[0], np_data[1])
         sensor_data = pd.concat([df.iloc[:, [1]] for df in data], axis=1)
-        self.minmax = pd.concat([sensor_data.min(), sensor_data.mean(), sensor_data.max()], axis=1)
+        self.minmax = pd.concat([sensor_data.min(), sensor_data.mean(),
+                                 sensor_data.max()], axis=1)
         self.minmax.columns = ['Мин.', 'Средн.', 'Макс.']
 
     def set_sliding_window_size(self, window_size_sec: int) -> None:
@@ -165,4 +171,4 @@ if __name__ == '__main__':
     app = QApplication([])
     window = CustomPlot(FL7000_Config())
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

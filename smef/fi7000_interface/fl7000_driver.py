@@ -2,6 +2,7 @@
 from pathlib import Path
 from threading import Thread
 from typing import Literal
+from loguru import logger
 import pandas as pd
 from pandas import DataFrame
 from smef.fi7000_interface.calibrations import Calibrator
@@ -17,11 +18,19 @@ class FL7000_Interface:
         self.config: FL7000_Config = config
         self.probes: list[FL7040_Probe] = [FL7040_Probe(self.config.settings.ip, port)
                                            for port in self.config.settings.ports]
-        self.calibrator: Calibrator = Calibrator(Path(self.config.settings.calibration_path))
+        try:
+            calib_path = Path(self.config.settings.calibration_path)
+            self.calibrator: Calibrator = Calibrator(calib_path)
+        except OSError as err:
+            logger.error(err)
         self.connection_status: bool = False
         self._measure_period_sec: float = 1.0
         self._units: list[Literal['В/м', 'дБмкВ/м', 'Вт/м²']] = ['В/м', 'дБмкВ/м', 'Вт/м²']
         self._current_units: Literal['В/м', 'дБмкВ/м', 'Вт/м²'] = 'В/м'
+
+    def update_calibrator(self, calib_path: Path):
+        self.calibrator.update(calib_path)
+        [probe.calibrate_probe(self.calibrator(probe.probe_id[3:-1])) for probe in self.get_connected_probes()]
 
     def get_connected_probes(self) -> list[FL7040_Probe]:
         return [probe for probe in self.probes if probe.connection_status]
@@ -41,10 +50,10 @@ class FL7000_Interface:
     def get_dataframes(self, freq: float | None = None) -> list[DataFrame]:
         return [probe.get_df_data(freq) for probe in self.get_connected_probes()]
 
-    def recalibrate_df(self, freq: float) -> None:
+    def recalibrate_df(self, freq: float | None) -> None:
         for probe in self.get_connected_probes():
-            if probe.calibrator:
-                probe.calibration_freq = freq
+            probe.calibration_freq = freq
+            if probe.calibrator and freq:
                 df = probe.calibrator.calibrate_dataframe(freq, probe.df)
                 probe.df_calib = df
 

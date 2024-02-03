@@ -1,9 +1,7 @@
 from pathlib import Path
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import QRegExp
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QLabel, QPushButton, QGroupBox
-from PyQt5.QtGui import QRegExpValidator
+from PyQt6 import QtCore, QtWidgets
+from PyQt6.QtWidgets import QApplication, QWidget, QLineEdit, QLabel, QPushButton, QGroupBox
 from qtpy.uic import loadUi
 from smef.fi7000_interface.config import FL7000_Config
 
@@ -56,11 +54,11 @@ class ConnectionsSettings(QWidget):
         [label.setText('Отключен') for label in self.status_label_list]
         self.generator_status_label.setText('Отключен')
 
-        ip_range = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"  # Part of the regular expression
-        ip_regex = QRegExp("^" + ip_range + "\\." + ip_range + "\\." + ip_range + "\\." + ip_range + "$")
-        ip_validator = QRegExpValidator(ip_regex, self)
-        self.server_ip_line_edit.setValidator(ip_validator)
-        self.generator_ip_line_edit.setValidator(ip_validator)
+        # ip_range = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"  # Part of the regular expression
+        # ip_regex = QRegExp("^" + ip_range + "\\." + ip_range + "\\." + ip_range + "\\." + ip_range + "$")
+        # ip_validator = QRegExpValidator(ip_regex, self)
+        # self.server_ip_line_edit.setValidator(ip_validator)
+        # self.generator_ip_line_edit.setValidator(ip_validator)
         self.center()
 
     def set_connection_status_labels(self, status_list: list[bool]) -> None:
@@ -84,15 +82,16 @@ class ConnectionsSettings(QWidget):
     def cancel_btn_slot(self) -> None:
         self.close()
 
-    def center(self):
+    def center(self) -> None:
         frameGm = self.frameGeometry()
-        screen = QApplication.desktop().screenNumber(QApplication.desktop().cursor().pos())
-        centerPoint = QApplication.desktop().screenGeometry(screen).center()
-        frameGm.moveCenter(centerPoint)
-        self.move(frameGm.topLeft())
+        screen = QtWidgets.QApplication.primaryScreen()
+        if screen:
+            center_point = screen.geometry().center()
+            frameGm.moveCenter(center_point)
+            self.move(frameGm.topLeft())
 
 if __name__ == '__main__':
     app = QApplication([])
     window = ConnectionsSettings(FL7000_Config())
     window.show()
-    app.exec_()
+    app.exec()
