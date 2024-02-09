@@ -15,8 +15,9 @@ from smef.client.viewer import Viewer
 
 
 def execFile(file: Path) -> None:
-    if sys.platform == 'linux2':
-        subprocess.call(["xdg-exec", file])
+    print(sys.platform)
+    if sys.platform == 'linux':
+        subprocess.call(["xdg-open", file])
     else:
         os.startfile(file)
 
