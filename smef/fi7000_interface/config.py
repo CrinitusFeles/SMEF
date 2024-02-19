@@ -109,8 +109,11 @@ class FL7000_Config:
             ports=[4001, 4002, 4003, 4004, 4005],
             output_path=str(Path.cwd().joinpath('sessions')),
             dark_theme=True,
-            line_colors=['red', 'blue', 'orange', 'brown', 'gray'],
-
+            line_colors={'357217': 'red',
+                         '357218': 'blue',
+                         '357219': 'orange',
+                         '357220': 'brown',
+                         '357221': 'gray'},
         )
 
     def __call__(self) -> Dynaconf:

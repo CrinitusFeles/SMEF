@@ -2,7 +2,9 @@
 from datetime import datetime
 from functools import reduce
 from pathlib import Path
+import re
 import sys
+from loguru import logger
 import pandas as pd
 from PyQt5.QtCore import QPointF, QMimeData, QUrl, QRectF
 from pyqtgraph.exporters import ImageExporter
@@ -15,6 +17,13 @@ from smef.client.custom_plot.plotter_style import PlotterStyle
 from smef.fi7000_interface.config import FL7000_Config
 from smef.utils import TimeAxisItem, timestamp
 
+
+def extract_id(data: str) -> str:
+    result = re.search('\\(([^)]+)', data)
+    if result:
+        return result.group(1)
+    logger.warning(f'Can not extract sensor id from string: {data}')
+    return data
 
 class CustomPlot(QWidget):
     def __init__(self, config: FL7000_Config) -> None:
@@ -65,7 +74,8 @@ class CustomPlot(QWidget):
         self.cursor_hLine.setVisible(state)
 
     def add_data_line(self, name: str, color: str | None = None):
-        line_color: str = color or next(self.plotter_style.colors)
+
+        line_color: str = color or self.plotter_style.line_colors[name]
         dataline: PlotDataItem = self.canvas.plot(name=name, pen={'color': line_color, 'width': 1})
         dataline.setDownsampling(auto=True)
         self.data_lines.append(dataline)
@@ -142,7 +152,6 @@ class CustomPlot(QWidget):
         self.canvas.addItem(self.cursor_vLine, ignoreBounds=True)
         self.canvas.addItem(self.cursor_hLine, ignoreBounds=True)
         self.plotter_style.recreate_norma_line()
-        self.plotter_style.restart_generator()
 
     def copy_image(self, folder_path: Path) -> QMimeData:
         Path.mkdir(folder_path, exist_ok=True)

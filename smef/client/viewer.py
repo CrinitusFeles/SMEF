@@ -127,10 +127,12 @@ class Viewer(QtWidgets.QWidget):
     def load_session(self, path: Path, calibrator: Calibrator):
         self.setWindowTitle(f'Результаты сеанса {path.name}')
         self.plotter.delete_all_data()
+        files = list(path.glob("*.csv"))
+        files.sort()
         self.sensors_data = [ProbeData(file.stem, calibrator(self.extract_id(file.stem)),
                                        pd.read_csv(file, sep='\t', decimal=',',
                                                    encoding='utf-8'))
-                             for file in path.glob("*.csv")]
+                             for file in files]
         [self.plotter.add_data_line(sensor.probe_id) for sensor in self.sensors_data]
         if not len(self.sensors_data):
             logger.error(f'No session data in folder {path}')
