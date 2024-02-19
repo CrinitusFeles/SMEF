@@ -7,8 +7,8 @@ from pathlib import Path
 from loguru import logger
 import pandas as pd
 from pandas import DataFrame
-from qtpy.uic import loadUi
-from PyQt6 import QtWidgets, QtCore, QtGui
+from PyQt5.uic import loadUi
+from PyQt5 import QtWidgets, QtCore, QtGui
 from qtmodern.styles import dark, light
 from qtmodern.windows import ModernWindow
 from smef.client.custom_plot.CustomPlot import CustomPlot

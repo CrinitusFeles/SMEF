@@ -1,8 +1,8 @@
 import sys
 import pandas as pd
-from PyQt6 import QtCore
-from PyQt6.QtWidgets import QApplication, QTableView
-from PyQt6.QtCore import pyqtProperty  #type: ignore
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QApplication, QTableView
+from PyQt5.QtCore import pyqtProperty  #type: ignore
 
 
 
@@ -34,6 +34,7 @@ class DataFrameModel(QtCore.QAbstractTableModel):
                 return self._df.columns[section]
             else:
                 return str(self._df.index[section])
+
         return QtCore.QVariant()
 
     def rowCount(self, parent=QtCore.QModelIndex()):

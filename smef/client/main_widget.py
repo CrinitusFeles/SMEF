@@ -4,10 +4,10 @@ from pathlib import Path
 import sys
 import subprocess
 
-from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtWidgets import QFileDialog
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QFileDialog
 from qtmodern.windows import ModernWindow
 
 from smef.fi7000_interface.config import FL7000_Config
@@ -56,7 +56,7 @@ class MainWidget(Viewer):
         options = QtWidgets.QFileDialog.Option.DontUseNativeDialog
         options |= QtWidgets.QFileDialog.Option.ShowDirsOnly
         calib_path: str = QFileDialog.getExistingDirectory(self, title,
-                                                           folder_path, options)
+                                                           folder_path, options)  # type:ignore
         self.calib_path_line_edit.setText(calib_path)
 
     def on_open_calib_button_pressed(self):

@@ -4,9 +4,9 @@ from functools import reduce
 from pathlib import Path
 import sys
 import pandas as pd
-from PyQt6.QtCore import QPointF, QMimeData, QUrl, QRectF
+from PyQt5.QtCore import QPointF, QMimeData, QUrl, QRectF
 from pyqtgraph.exporters import ImageExporter
-from PyQt6.QtWidgets import QWidget, QApplication, QVBoxLayout, QSizePolicy
+from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QSizePolicy
 import pyqtgraph as pg
 from pyqtgraph import PlotItem, PlotWidget
 from pyqtgraph.graphicsItems.LegendItem import PlotDataItem

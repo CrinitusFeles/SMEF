@@ -1,4 +1,5 @@
 
+from importlib.abc import Loader
 from pathlib import Path
 from dynaconf import Dynaconf
 from dynaconf import loaders
@@ -75,7 +76,7 @@ def my_write(settings_path, settings_data, merge=True):
     settings_path = Path(settings_path)
     if settings_path.exists() and merge:  # pragma: no cover
         with open(str(settings_path), encoding='utf-8') as open_file:
-            object_merge(yaml.safe_load(open_file), settings_data)
+            object_merge(yaml.load(open_file, Loader=yaml.UnsafeLoader), settings_data)
 
     with open(str(settings_path), "w", encoding='utf-8') as open_file:
         yaml.dump(
@@ -96,7 +97,7 @@ class FL7000_Config:
             root_path=root_path,
             envvar_prefix="DYNACONF",
             encoding='utf-8',
-            settings_files=['settings.yaml', '*.yaml'],
+            settings_files=['settings.yaml'],
             ip='10.6.1.95',
             generator_ip='10.6.1.95',
             generator_port='8080',
@@ -106,7 +107,7 @@ class FL7000_Config:
             images_folder=str(Path(__file__).parent.joinpath('ImagesOutput')),
             calibration_path=str(Path(__file__).parent.parent.joinpath('sensor_calibrations')),
             ports=[4001, 4002, 4003, 4004, 4005],
-            output_path=f'{Path(__file__).parent}',
+            output_path=str(Path.cwd().joinpath('sessions')),
             dark_theme=True,
             line_colors=['red', 'blue', 'orange', 'brown', 'gray'],
 

@@ -7,6 +7,8 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
+pyqt5-qt5 = "5.15.2"
+pyqt5-sip = "^12.13.0"
 filehash = "^0.2.dev1"
 numpy = "^1.25.2"
 pandas = "^2.1.0"
@@ -14,15 +16,9 @@ pyqtgraph = "^0.13.3"
 coloredlogs = "^15.0.1"
 qdarkstyle = "^3.1"
 qtmodern = "^0.2.0"
-ruamel-yaml = "0.17.1"
 loguru = "^0.7.1"
 dynaconf = "^3.2.3"
-pyqt6 = "^6.6.1"
-
-[tool.poetry.dev-dependencies]
-
-[tool.poetry.group.dev.dependencies]
-auto-py-to-exe = "^2.40.0"
+pyqt5 = "^5.15.10"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

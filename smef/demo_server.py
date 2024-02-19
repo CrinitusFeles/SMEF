@@ -32,6 +32,7 @@ class DemoServer:
         sock.sendall(packet)
 
     def routine(self, sock: socket.socket, i: int, probe_id: int):
+        print('demo server started at localhost')
         while True:
             self.debug_print(f'Socket {i} waiting connection...')
             connection, client_address = sock.accept()

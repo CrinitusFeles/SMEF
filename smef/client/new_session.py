@@ -1,9 +1,10 @@
+from os import makedirs
 from pathlib import Path
 import time
-from PyQt6 import QtWidgets, QtCore
-from qtpy.uic import loadUi
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.uic import loadUi
 
-from PyQt6.QtWidgets import QWidget, QMessageBox
+from PyQt5.QtWidgets import QWidget, QMessageBox
 from smef.fi7000_interface.config import FL7000_Config
 from loguru import logger
 from smef.utils import open_file_system
@@ -37,7 +38,10 @@ class NewSession(QWidget):
         self.cancel_button.pressed.connect(self.cancel_clicked)
         self.generate_name_button.pressed.connect(self.generate_name)
         # =========================
-        self.path_line_edit.setText(str(self.config.settings.output_path))
+        result_path = Path(self.config.settings.output_path)
+        self.path_line_edit.setText(str(result_path))
+        if not result_path.exists():
+            makedirs(result_path)
 
         self.check_boxes: list[QtWidgets.QCheckBox] = []
         # [checkbox.setChecked(self.config['connected_sensors'][i]) for i, checkbox in enumerate(self.check_box_list)]

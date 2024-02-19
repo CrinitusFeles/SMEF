@@ -2,11 +2,11 @@
 from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
-from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import QMainWindow, QMessageBox
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import QTimer
+from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from qtmodern.windows import ModernWindow
-from qtpy.uic import loadUi
+from PyQt5.uic import loadUi
 from smef.client.settings_widget import ConnectionsSettings
 
 from smef.fi7000_interface.config import FL7000_Config
@@ -15,7 +15,7 @@ from smef.client.main_widget import MainWidget
 from smef.client.viewer import Viewer
 from smef.client.new_session import NewSession
 from loguru import logger
-from PyQt6.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication
 from smef.utils import open_file_system
 
 class MainWindow(QMainWindow):
@@ -115,6 +115,7 @@ class MainWindow(QMainWindow):
                                 if probe.probe_id in self.new_session_widget.checked_text()]
             self.device.connect(self.config.settings.ip, ports)
         self.timer.start(int(self.main_widget.plotter_interval_spin_box.value() * 1000))
+        self.calibrate_measures(self.main_widget.calib_probs_check_box.isChecked())
 
     def finish_session(self) -> None:
         finish_time = datetime.now().isoformat(" ", "seconds")
@@ -173,6 +174,10 @@ class MainWindow(QMainWindow):
 
 
 def main() -> None:
+    from smef.demo_server import DemoServer
+    server = DemoServer(debug_print=False)
+    server.start_server()
+
     app = QApplication([])
     main_window = MainWindow()
     mw = ModernWindow(main_window)

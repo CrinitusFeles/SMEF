@@ -1,9 +1,9 @@
 import pyqtgraph as pg
 import datetime
 import time
-from PyQt6 import QtGui, QtWidgets
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPen
+from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPen
 
 
 def timestamp() -> int:
