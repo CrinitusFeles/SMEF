@@ -110,7 +110,7 @@ class ProbeCalibrator:
         xyz: ArrayNx3 = df.iloc[:, 1:4].to_numpy()
         calib_xyz: ArrayNx3 = np.apply_along_axis(self.calibrate_value, 1, xyz,
                                                   freq=freq)
-        v_m: ArrayNx1 = np.apply_along_axis(np.linalg.norm, 1, xyz + calib_xyz)
+        v_m: ArrayNx1 = np.apply_along_axis(np.linalg.norm, 1, xyz * calib_xyz)
         w_m2: ArrayNx1 = np.apply_along_axis(lambda x: x / 377, 0, v_m)
         dBuV_m: ArrayNx1 = np.apply_along_axis(lambda x: 20 * np.log10(x * 10**6, where=x > 0), 0, v_m)
 
