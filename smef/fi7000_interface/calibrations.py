@@ -173,48 +173,46 @@ def load_calibration_by_id(path: Path, id: str) -> ProbeCalibrator | None:
 
 
 
-if __name__ == '__main__':
-    #print(load_calibration_by_id(Path('X:\\NextCloudStorage\\ImportantData\\PyQt_projects\\SMEF\\sensor_calibrations'),
-    #                              '0357218'))
-    from matplotlib import pyplot as plt
-    calib = Calibrator(Path('X:\\NextCloudStorage\\ImportantData\\VSCode_projects\\SMEF\\smef\\sensor_calibrations'))
-    print(calib('357218'))
+# if __name__ == '__main__':
+    # from matplotlib import pyplot as plt
+    # calib = Calibrator(Path('X:\\NextCloudStorage\\ImportantData\\VSCode_projects\\SMEF\\smef\\sensor_calibrations'))
+    # print(calib('357218'))
 
-    # calibrations = find_calibration_pairs(load_freq_calibrations(), load_amplitude_calibrations())
-    freq_grid = np.linspace(0, 40e9, 10000)
-    amp_grid = np.linspace(5, 300, 1000)
-    print(calib.probes['357218'].calibrate_value(np.array([15.44, 5.44, 12.23]), 10000000))
-    for i, calib in enumerate(calib.probes.values()):
-        plt.subplot(4, 5, i + 1)
-        plt.subplots_adjust(wspace=0.6, top=0.9, bottom=0.1, hspace=0.6, left=0.1, right=0.9)
-        plt.plot(calib.freq_list, calib.x_freq_points, '-o', label='x')
-        plt.plot(calib.freq_list, calib.y_freq_points, '-o', label='y')
-        plt.plot(calib.freq_list, calib.z_freq_points, '-o', label='z')
-        plt.title(f"Frequency calibration data for {calib.sensor_id} sensor")
-        plt.xlabel("frequency")
+    # # calibrations = find_calibration_pairs(load_freq_calibrations(), load_amplitude_calibrations())
+    # freq_grid = np.linspace(0, 40e9, 10000)
+    # amp_grid = np.linspace(5, 300, 1000)
+    # print(calib.probes['357218'].calibrate_value(np.array([15.44, 5.44, 12.23]), 10000000))
+    # for i, calib in enumerate(calib.probes.values()):
+    #     plt.subplot(4, 5, i + 1)
+    #     plt.subplots_adjust(wspace=0.6, top=0.9, bottom=0.1, hspace=0.6, left=0.1, right=0.9)
+    #     plt.plot(calib.freq_list, calib.x_freq_points, '-o', label='x')
+    #     plt.plot(calib.freq_list, calib.y_freq_points, '-o', label='y')
+    #     plt.plot(calib.freq_list, calib.z_freq_points, '-o', label='z')
+    #     plt.title(f"Frequency calibration data for {calib.sensor_id} sensor")
+    #     plt.xlabel("frequency")
 
-        plt.subplot(4, 5, i + 6)
-        plt.plot(freq_grid, np.interp(freq_grid, calib.freq_list, calib.x_freq_points), '-o', label='x')
-        plt.plot(freq_grid, np.interp(freq_grid, calib.freq_list, calib.y_freq_points), '-o', label='y')
-        plt.plot(freq_grid, np.interp(freq_grid, calib.freq_list, calib.z_freq_points), '-o', label='z')
-        plt.title(f"Linear interpolation for {calib.sensor_id} sensor")
-        plt.xlabel("frequency")
+    #     plt.subplot(4, 5, i + 6)
+    #     plt.plot(freq_grid, np.interp(freq_grid, calib.freq_list, calib.x_freq_points), '-o', label='x')
+    #     plt.plot(freq_grid, np.interp(freq_grid, calib.freq_list, calib.y_freq_points), '-o', label='y')
+    #     plt.plot(freq_grid, np.interp(freq_grid, calib.freq_list, calib.z_freq_points), '-o', label='z')
+    #     plt.title(f"Linear interpolation for {calib.sensor_id} sensor")
+    #     plt.xlabel("frequency")
 
-        plt.subplot(4, 5, i + 11)
-        plt.plot(calib.liear, calib.x_linear_points, '-o', label='x')
-        plt.plot(calib.liear, calib.y_linear_points, '-o', label='y')
-        plt.plot(calib.liear, calib.z_linear_points, '-o', label='z')
-        plt.title(f"Amplitude calibration data for {calib.sensor_id} sensor")
-        plt.xlabel("amplitude")
+    #     plt.subplot(4, 5, i + 11)
+    #     plt.plot(calib.liear, calib.x_linear_points, '-o', label='x')
+    #     plt.plot(calib.liear, calib.y_linear_points, '-o', label='y')
+    #     plt.plot(calib.liear, calib.z_linear_points, '-o', label='z')
+    #     plt.title(f"Amplitude calibration data for {calib.sensor_id} sensor")
+    #     plt.xlabel("amplitude")
 
-        plt.subplot(4, 5, i + 16)
-        plt.plot(amp_grid, np.interp(amp_grid, calib.liear, calib.x_linear_points), '-o', label='x')
-        plt.plot(amp_grid, np.interp(amp_grid, calib.liear, calib.y_linear_points), '-o', label='y')
-        plt.plot(amp_grid, np.interp(amp_grid, calib.liear, calib.z_linear_points), '-o', label='z')
-        plt.title(f"Linear interpolation for {calib.sensor_id} sensor")
+    #     plt.subplot(4, 5, i + 16)
+    #     plt.plot(amp_grid, np.interp(amp_grid, calib.liear, calib.x_linear_points), '-o', label='x')
+    #     plt.plot(amp_grid, np.interp(amp_grid, calib.liear, calib.y_linear_points), '-o', label='y')
+    #     plt.plot(amp_grid, np.interp(amp_grid, calib.liear, calib.z_linear_points), '-o', label='z')
+    #     plt.title(f"Linear interpolation for {calib.sensor_id} sensor")
 
-        plt.legend()
-        plt.xlabel("amplitude")
-        plt.ylabel("factor")
+    #     plt.legend()
+    #     plt.xlabel("amplitude")
+    #     plt.ylabel("factor")
 
-    plt.show()
+    # plt.show()

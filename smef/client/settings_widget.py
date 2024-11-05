@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QLabel, QPushButton, QGroupBox
-from PyQt5.uic import loadUi
+from PyQt6 import QtCore, QtWidgets
+from PyQt6.QtWidgets import QApplication, QWidget, QLineEdit, QLabel, QPushButton, QGroupBox
+from PyQt6.uic.load_ui import loadUi
 from smef.fi7000_interface.config import FL7000_Config
 
 

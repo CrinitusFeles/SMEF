@@ -1,1 +1,0 @@
-lrelease ru-eng.ts ru-eng.qm

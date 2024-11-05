@@ -2,11 +2,10 @@
 from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QMainWindow, QMessageBox
-from qtmodern.windows import ModernWindow
-from PyQt5.uic import loadUi
+from PyQt6 import QtWidgets, QtGui
+from PyQt6.QtCore import QTimer
+from PyQt6.QtWidgets import QMainWindow, QMessageBox, QApplication
+from PyQt6.uic.load_ui import loadUi
 from smef.client.settings_widget import ConnectionsSettings
 
 from smef.fi7000_interface.config import FL7000_Config
@@ -15,19 +14,21 @@ from smef.client.main_widget import MainWidget
 from smef.client.viewer import Viewer
 from smef.client.new_session import NewSession
 from loguru import logger
-from PyQt5.QtWidgets import QApplication
 from smef.utils import open_file_system
+from smef import __version__
 
 class MainWindow(QMainWindow):
     main_layout: QtWidgets.QVBoxLayout
     def __init__(self) -> None:
         super().__init__()
         loadUi(Path(__file__).parent.joinpath('ui', 'main.ui'), self)
-        self.setWindowTitle('СМЭП Клиент v2.2.0')
-        self.config = FL7000_Config()
+        self.setWindowTitle(f'СМЭП Клиент v{__version__}')
+        self.config = FL7000_Config(Path.cwd())
         self.device = FL7000_Interface(self.config)
         self.main_widget = MainWidget(self.config)
         self.viewer = Viewer(self.config)
+        self.setWindowIcon(QtGui.QIcon(str(self.viewer.icon_path)))
+
         self.new_session_widget = NewSession(self.config)
         self.settings_widget = ConnectionsSettings(self.config)
         self.main_layout.addWidget(self.main_widget)
@@ -55,6 +56,7 @@ class MainWindow(QMainWindow):
         self.viewer.units_changed.connect(self.viewer.update_plotter)
         self.viewer.calib_probs_check_box.stateChanged.connect(self.viewer.update_plotter)
         self.viewer.calib_freq_spin_box.valueChanged.connect(self.viewer.update_plotter)
+        self.viewer.dark_theme_checkbox.stateChanged.connect(self.main_widget.change_theme)
         self.new_session_widget.updade_sensors_button.pressed.connect(self.check_connection)
         self.new_session_widget.session_inited.connect(self.init_new_session)
         self.center()
@@ -67,6 +69,7 @@ class MainWindow(QMainWindow):
         if result_path := open_file_system(True):
             self.viewer.show()
             self.viewer.load_session(Path(result_path), self.device.calibrator)
+            self.viewer.dark_theme_checkbox.setChecked(self.main_widget.dark_theme_checkbox.isChecked())
 
     def calibrate_measures(self, state: bool) -> None:
         if state:
@@ -87,10 +90,10 @@ class MainWindow(QMainWindow):
                                     QMessageBox.StandardButton.Ok)
         except (KeyError, ValueError, OSError) as err:
             QMessageBox.critical(self, 'Обновление калибровок',
-                        'Не удалось обновить калибровки\n'\
-                        'Возможно, указан неправильный путь',
-                        QMessageBox.StandardButton.Ok,
-                        QMessageBox.StandardButton.Ok)
+                                 'Не удалось обновить калибровки\n'\
+                                 'Возможно, указан неправильный путь',
+                                 QMessageBox.StandardButton.Ok,
+                                 QMessageBox.StandardButton.Ok)
             logger.error(err)
 
     def init_new_session(self, output_path: str) -> None:
@@ -143,12 +146,13 @@ class MainWindow(QMainWindow):
         self.new_session_widget.clear_checbox_list()
         [self.new_session_widget.add_sensors(probe.probe_id) for probe in probes]
 
-    def close(self) -> None:
-        super().close()
+    def close(self) -> bool:
+        result = super().close()
         self.viewer.close()
         self.new_session_widget.close()
         self.settings_widget.close()
         print('close')
+        return result
 
     def center(self) -> None:
         frameGm = self.frameGeometry()
@@ -172,19 +176,28 @@ class MainWindow(QMainWindow):
         self.main_widget.plotter.plot_df(dataframes)
         self.main_widget.update_minmax_table()
 
+def copy_calibs():
+    import shutil
+    calib_path = Path.cwd() / 'sensor_calibrations'
+    if not calib_path.exists():
+        shutil.copytree(Path(__file__).parents[1] / 'sensor_calibrations',
+                        calib_path, dirs_exist_ok=True)
 
 def main() -> None:
     from smef.demo_server import DemoServer
-    server = DemoServer(debug_print=False)
-    server.start_server()
+    import sys
 
+    if len(sys.argv) > 1 and sys.argv[1].upper() == '--DEMO':
+        server = DemoServer(debug_print=False)
+        server.start_server()
+    copy_calibs()
     app = QApplication([])
     main_window = MainWindow()
-    mw = ModernWindow(main_window)
-    mw.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground, False)  # fix flickering on resize window
-    mw.show()
+    main_window.show()
     app.exec()
 
 
 if __name__ == '__main__':
+    import sys
+    sys.argv.append('--demo')
     main()

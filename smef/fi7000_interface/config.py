@@ -1,68 +1,10 @@
 
-from importlib.abc import Loader
 from pathlib import Path
 from dynaconf import Dynaconf
 from dynaconf import loaders
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils import object_merge
 from dynaconf.vendor.ruamel import yaml
-
-default_config = {
-    'name': 'config',
-    'device_ip': '10.6.1.95',
-    'ports': [4001, 4002, 4003, 4004, 4005],
-    'connected_sensors': [False, False, False, False, False],
-    'alive_sensors': [False, False, False, False, False],
-    'dark_theme': False,
-    'units': 'В/м',
-    'norma_check': False,
-    'norma_value': 0,
-    'measure_period': 1,
-    'plot_header': '',
-    'slide_window_time_h': 1,
-    'last_output_path': '',
-    'generator_ip': '',
-    'generator_port': 8080,
-    'right_axis': None,
-    'left_axis': {
-        'label': 'Напряженность поля',
-        'units': None,
-        'legend_label': ''
-    },
-    'bottom_axis': {
-        'label': 'Время',
-        'units': None
-    },
-    'top_axis': {
-        'label': '',
-        'units': ''
-    },
-    'anim_period': 1000,
-    'theme': 'dark',
-    'style': {
-        'dark': {
-            'plot_background_color': '#232323',
-            'frame_background_color': '#353535',
-            'legend_background': '#14141420',
-            'legend_boundary': 'k',
-            'axis_labels_color': '#AAAAAA',
-            'crosshair_color': '#6bcd99',
-            'norma_line_color': '#603f9f'
-        },
-        'light': {
-            'plot_background_color': '#FFFFFF',
-            'frame_background_color': '#EEEEEE',
-            'legend_background': '#FFFFFF30',
-            'legend_boundary': '#AAAAAA',
-            'axis_labels_color': '#555555',
-            'crosshair_color': '#6bcd99',
-            'norma_line_color':  '#603f9f'
-        }
-    },
-    'image_folder': './Images/',
-    'session_folder': './Output/',  # uses only at first start of application for creating session folder
-}
-
 
 
 def my_write(settings_path, settings_data, merge=True):
@@ -91,7 +33,7 @@ def my_write(settings_path, settings_data, merge=True):
 loaders.yaml_loader.write = my_write
 
 class FL7000_Config:
-    def __init__(self, root_path: str | Path = Path(__file__).parent) -> None:
+    def __init__(self, root_path: Path = Path.cwd()) -> None:
         self.config_path = root_path
         self.settings = Dynaconf(
             root_path=root_path,
@@ -104,10 +46,10 @@ class FL7000_Config:
             plotter_title='',
             norma_color='purple',
             alive_sensors=[False]*5,
-            images_folder=str(Path(__file__).parent.joinpath('ImagesOutput')),
-            calibration_path=str(Path(__file__).parent.parent.joinpath('sensor_calibrations')),
+            images_folder=str(root_path.joinpath('ImagesOutput')),
+            calibration_path=str(root_path.joinpath('sensor_calibrations')),
             ports=[4001, 4002, 4003, 4004, 4005],
-            output_path=str(Path.cwd().joinpath('sessions')),
+            output_path=str(root_path.joinpath('sessions')),
             dark_theme=True,
             line_colors={'357217': 'red',
                          '357218': 'blue',

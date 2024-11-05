@@ -37,13 +37,15 @@ class FieldResult:
 
     def dataframe(self) -> pd.DataFrame:
         suffix: str = f'{self.data.freq / 1e6:.2f} МГц' if isinstance(self.data, DataCalib) else ''
-        return pd.DataFrame({'Timestamp': [time.time()],
+        timestamp = time.time()
+        return pd.DataFrame({'Timestamp': [timestamp],
                              f'{self.probe_id} x\n{suffix}': [self.data.x],
                              f'{self.probe_id} y\n{suffix}': [self.data.y],
                              f'{self.probe_id} z\n{suffix}': [self.data.z],
                              f'{self.probe_id} В/м\n{suffix}': [self.data.s],
                              f'{self.probe_id} дБмкВ/м\n{suffix}': [self.data.s_log],
-                             f'{self.probe_id} Вт/м²\n{suffix}': [self.data.s_w]})
+                             f'{self.probe_id} Вт/м²\n{suffix}': [self.data.s_w],}
+                            )
 
 class FL7040_Probe:
     sock: socket.socket

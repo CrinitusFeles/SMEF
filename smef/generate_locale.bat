@@ -1,1 +1,0 @@
-pylupdate5 mainwindow.py session_viewer.py new_session_window.py connections_settings.py -ts ru-eng.ts

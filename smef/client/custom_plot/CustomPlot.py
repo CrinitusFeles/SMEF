@@ -6,11 +6,11 @@ import re
 import sys
 from loguru import logger
 import pandas as pd
-from PyQt5.QtCore import QPointF, QMimeData, QUrl, QRectF
+from PyQt6.QtCore import QPointF, QMimeData, QUrl, QRectF
+from PyQt6.QtWidgets import QWidget, QApplication, QVBoxLayout, QSizePolicy
 from pyqtgraph.exporters import ImageExporter
-from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QSizePolicy
 import pyqtgraph as pg
-from pyqtgraph import PlotItem, PlotWidget
+from pyqtgraph import PlotItem, PlotWidget, GraphicsScene, ViewBox
 from pyqtgraph.graphicsItems.LegendItem import PlotDataItem
 import numpy as np
 from smef.client.custom_plot.plotter_style import PlotterStyle
@@ -34,6 +34,7 @@ class CustomPlot(QWidget):
         self.setLayout(self.plotter_layout)
 
         self.pw = PlotWidget(axisItems={'bottom': TimeAxisItem(orientation='bottom')})
+
         self.plotter_style = PlotterStyle(self.pw, config)
         self.canvas: PlotItem = self.plotter_style.plot_item
 
@@ -44,8 +45,11 @@ class CustomPlot(QWidget):
                           timestamp() + self.sliding_window_size / 2)
         self.minmax: pd.DataFrame = pd.DataFrame()
 
-        self.canvas.setLimits(yMin=-10000, yMax=10000, xMin=timestamp(),
-                              xMax=timestamp() + 50000000)
+        vb: ViewBox | None = self.canvas.getViewBox()
+        if vb:
+            self.vb: ViewBox = vb
+            self.vb.setLimits(yMin=-10000, yMax=10000, xMin=timestamp(),
+                         xMax=timestamp() + 50000000)
 
         # cross hair
         self.cursor_vLine = pg.InfiniteLine(angle=90, movable=False,
@@ -63,9 +67,10 @@ class CustomPlot(QWidget):
         self.last_mouse_position: QPointF = QPointF(0, 0)
         self.data_lines: list[PlotDataItem] = []
         self.data: list[pd.DataFrame] = []
-
-        self.proxy = pg.SignalProxy(self.canvas.scene().sigMouseMoved,
-                                    rateLimit=100, slot=self.mouse_moved)
+        scene: GraphicsScene | None = self.canvas.scene()  # type: ignore
+        if scene:
+            self.proxy = pg.SignalProxy(scene.sigMouseMoved,
+                                        rateLimit=100, slot=self.mouse_moved)
 
     def set_visible_crosshair(self, state: bool) -> None:
         self.visible_crosshair = state
@@ -75,15 +80,17 @@ class CustomPlot(QWidget):
 
     def add_data_line(self, name: str, color: str | None = None):
 
-        line_color: str = color or self.plotter_style.line_colors[name]
-        dataline: PlotDataItem = self.canvas.plot(name=name, pen={'color': line_color, 'width': 1})
+        line_color: str = color or self.plotter_style.line_colors[name[3:-1]]
+        dataline: PlotDataItem = self.canvas.plot(name=name,
+                                                  pen={'color': line_color,
+                                                       'width': 1})
         dataline.setDownsampling(auto=True)
         self.data_lines.append(dataline)
 
     def auto_scale(self):
         # self.right_axis_view_box.setYRange()
-        self.canvas.enableAutoRange(axis='y')
-        self.canvas.enableAutoRange(axis='x')
+        self.vb.enableAutoRange(axis='y')
+        self.vb.enableAutoRange(axis='x')
         # if self.right_axis_view_box is not None:
         #     self.right_axis_view_box.enableAutoRange(axis='y')
 
@@ -122,8 +129,8 @@ class CustomPlot(QWidget):
         self.cursor_vLine.setPos(mouse_point.x())
         self.cursor_hLine.setPos(mouse_point.y())
 
-    def mouseDoubleClickEvent(self, ev) -> None:
-        super().mouseDoubleClickEvent(ev)
+    def mouseDoubleClickEvent(self, a0) -> None:
+        super().mouseDoubleClickEvent(a0)
         self.freeze_cursor = not self.freeze_cursor
 
     def plot_df(self, data: list[pd.DataFrame]) -> None:

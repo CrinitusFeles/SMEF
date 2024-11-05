@@ -4,10 +4,10 @@ from pathlib import Path
 import sys
 import subprocess
 
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtWidgets import QFileDialog
+from PyQt6 import QtCore, QtWidgets
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QFileDialog
 from qtmodern.windows import ModernWindow
 
 from smef.fi7000_interface.config import FL7000_Config
@@ -49,6 +49,7 @@ class MainWidget(Viewer):
         self.slide_window_time_spinbox.valueChanged.connect(
             lambda size: self.plotter.set_sliding_window_size(size * 3600))
         self.calib_path_line_edit.setText(self.config.settings.calibration_path)
+        self.minmax_table_view.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)  # type: ignore
 
     def on_choose_calib_folder_button_pressed(self):
         title = 'Choose folder'
@@ -100,6 +101,7 @@ class MainWidget(Viewer):
         self.new_session_button.setEnabled(True)
         self.plotter_start_button.setEnabled(False)
         self.plotter_stop_button.setEnabled(False)
+
 
 if __name__ == '__main__':
     app = QApplication([])

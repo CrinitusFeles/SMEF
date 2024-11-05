@@ -1,9 +1,9 @@
 import pyqtgraph as pg
 import datetime
 import time
-from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPen
+from PyQt6 import QtGui, QtWidgets
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPen
 
 
 def timestamp() -> int:
@@ -11,7 +11,8 @@ def timestamp() -> int:
 
 
 def get_label(probe_id: str) -> str:
-    labels: dict[str, str] = {str(key): f'Д{value}' for key, value in zip(range(357217, 3572122), range(1, 6))}
+    labels: dict[str, str] = {str(key): f'Д{value}'
+                              for key, value in zip(range(357217, 3572122), range(1, 6))}
     return labels.get(probe_id, '')
 
 

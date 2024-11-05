@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 import time
 from typing import Literal
-from PyQt5.QtCore import Qt
-from PyQt5 import QtGui
-from PyQt5.QtGui import QPen
+from PyQt6.QtCore import Qt
+from PyQt6 import QtGui
+from PyQt6.QtGui import QPen
 from pyqtgraph import PlotItem, PlotWidget, AxisItem, TextItem, LabelItem, InfiniteLine, mkPen
 from pyqtgraph.graphicsItems.LegendItem import LegendItem
 from smef.fi7000_interface.config import FL7000_Config
@@ -34,11 +34,12 @@ class PlotterStyle:
         self.light_palette = PlotterPalette('#FFFFFF',Qt.GlobalColor.black,'#08080805','k','#000000','black')
         self.palette: PlotterPalette = self.dark_palette
         self.pw: PlotWidget = widget
+        if not widget.plotItem:
+            raise ValueError('PlotItem not defined')
         self.plot_item: PlotItem = widget.plotItem
-        self.norma_line = InfiniteLine(angle=0, pos=0, movable=False, pen=mkPen(self.config.settings.norma_color,
-                                                                               width=3),
-                            label='                                                     '
-                            '                                                 norma')
+        self.norma_line = InfiniteLine(angle=0, pos=0, movable=False,
+                                       pen=mkPen(self.config.settings.norma_color, width=3),
+                                       label=' ' * 40 + 'norma')
         self.norma_line.setVisible(False)
         self.title: str = self.config.settings.plotter_title
         if not self.plot_item:

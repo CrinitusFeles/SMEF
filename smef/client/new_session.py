@@ -1,10 +1,9 @@
 from os import makedirs
 from pathlib import Path
 import time
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.uic import loadUi
-
-from PyQt5.QtWidgets import QWidget, QMessageBox
+from PyQt6 import QtWidgets, QtCore
+from PyQt6.uic.load_ui import loadUi
+from PyQt6.QtWidgets import QWidget, QMessageBox
 from smef.fi7000_interface.config import FL7000_Config
 from loguru import logger
 from smef.utils import open_file_system

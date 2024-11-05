@@ -7,10 +7,9 @@ from pathlib import Path
 from loguru import logger
 import pandas as pd
 from pandas import DataFrame
-from PyQt5.uic import loadUi
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt6.uic.load_ui import loadUi
+from PyQt6 import QtWidgets, QtCore, QtGui
 from qtmodern.styles import dark, light
-from qtmodern.windows import ModernWindow
 from smef.client.custom_plot.CustomPlot import CustomPlot
 from smef.fi7000_interface.calibrations import Calibrator, ProbeCalibrator
 from smef.fi7000_interface.config import FL7000_Config
@@ -31,6 +30,7 @@ class Viewer(QtWidgets.QWidget):
     marker_checkbox: QtWidgets.QCheckBox
     norma_checkbox: QtWidgets.QCheckBox
     calib_probs_check_box: QtWidgets.QCheckBox
+    dark_theme_checkbox: QtWidgets.QCheckBox
     plot_layout: QtWidgets.QVBoxLayout
     norma_unit_label: QtWidgets.QLabel
 
@@ -43,16 +43,23 @@ class Viewer(QtWidgets.QWidget):
     copy_data_button: QtWidgets.QPushButton
     open_calib_button: QtWidgets.QPushButton
     choose_calib_folder_button: QtWidgets.QPushButton
+    set_scale_button: QtWidgets.QPushButton
+    current_scale_button: QtWidgets.QPushButton
+
     calib_freq_spin_box: QtWidgets.QDoubleSpinBox
     session_description_text_browser: QtWidgets.QTextBrowser
     minmax_table_view: QtWidgets.QTableView
+    from_dt_edit: QtWidgets.QDateTimeEdit
+    to_dt_edit: QtWidgets.QDateTimeEdit
+
     def __init__(self, config: FL7000_Config, ui_path: str = '') -> None:
         super().__init__()
         loadUi(Path(__file__).parent.joinpath('ui', ui_path or 'viewer.ui'), self)
         self.config: FL7000_Config = config
         self.plotter = CustomPlot(self.config)
         self.plot_layout.addWidget(self.plotter)
-
+        self.icon_path: Path = Path(__file__).parents[1].joinpath('icon', 'engeneering.ico')
+        self.setWindowIcon(QtGui.QIcon(str(self.icon_path)))
         self.marker_checkbox.stateChanged.connect(self.plotter.set_visible_crosshair)
         self.tittle_line_edit.textChanged.connect(self.plotter.plotter_style.set_title)
         self.units_rbutton1.toggled.connect(self.change_units)
@@ -62,6 +69,7 @@ class Viewer(QtWidgets.QWidget):
         self.copy_data_button.pressed.connect(self.copy_data)
         self.copy_image_button.pressed.connect(self.copy_image)
         self.norma_val_spinbox.valueChanged.connect(self.plotter.plotter_style.norma_line.setPos)
+        self.minmax_table_view.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)  # type: ignore
 
         self.change_theme(self.config.settings.dark_theme)
         self.current_units: int = 0
@@ -69,6 +77,19 @@ class Viewer(QtWidgets.QWidget):
         self.dataframes: list[DataFrame] = []
         self.calib_dataframes:list[DataFrame] = []
         self.sensors_data: list[ProbeData] = []
+
+    def on_set_scale_button_pressed(self):
+        start = self.from_dt_edit.dateTime().toPyDateTime().timestamp()
+        finish = self.to_dt_edit.dateTime().toPyDateTime().timestamp()
+        self.plotter.vb.autoRange()
+        self.plotter.vb.setXRange(start, finish)
+
+    def on_current_scale_button_pressed(self):
+        x_range, y_range = self.plotter.vb.viewRange()
+        start = datetime.fromtimestamp(x_range[0])
+        finish = datetime.fromtimestamp(x_range[1])
+        self.from_dt_edit.setDateTime(start)
+        self.to_dt_edit.setDateTime(finish)
 
     def update_calibrator(self, new_calibrator: Calibrator):
         for data in self.sensors_data:
@@ -78,8 +99,6 @@ class Viewer(QtWidgets.QWidget):
         minmax: DataFrame = self.plotter.minmax
         model = DataFrameModel(minmax)
         self.minmax_table_view.setModel(model)
-        # self.minmax_table_view.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        self.minmax_table_view.resizeColumnsToContents()
 
     def change_theme(self, state: bool) -> None:
         self.plotter.plotter_style.set_theme(state)
@@ -137,17 +156,21 @@ class Viewer(QtWidgets.QWidget):
         if not len(self.sensors_data):
             logger.error(f'No session data in folder {path}')
             return
-        dataframes = [sensor.data.iloc[:, [0, 4]] for sensor in self.sensors_data]
+        dataframes = [sensor.data.iloc[:, [0, 4]]
+                      for sensor in self.sensors_data]
         ts_start: float = dataframes[0].iat[0, 0]
         ts_stop: float = dataframes[0].iat[-1, 0]
         start_ts = datetime.fromtimestamp(ts_start).isoformat(" ", "seconds")
         stop_ts = datetime.fromtimestamp(ts_stop).isoformat(" ", "seconds")
         self.setWindowTitle(f'Результаты сеанса {start_ts}: {stop_ts}')
-        self.plotter.canvas.setLimits(yMin=-10000, yMax=10000,
-                                      xMin=ts_start - 5000, xMax=ts_stop + 5000)
+        self.plotter.vb.setLimits(yMin=-10000, yMax=10000,
+                                  xMin=ts_start - 5000, xMax=ts_stop + 5000)
         self.update_plotter()
         with open(path.joinpath('description.txt'), encoding='utf-8') as file:
             self.session_description_text_browser.setText(file.read())
+        self.from_dt_edit.setDateTime(datetime.fromtimestamp(ts_start))
+        self.to_dt_edit.setDateTime(datetime.fromtimestamp(ts_stop))
+
 
 
     def update_plotter(self) -> None:
@@ -161,7 +184,7 @@ class Viewer(QtWidgets.QWidget):
         else:
             self.dataframes = [sensor.data  for sensor in self.sensors_data]
             df: list[DataFrame] = [sensor.data.iloc[:, [0, 4 + self.current_units]]
-                                             for sensor in self.sensors_data]
+                                   for sensor in self.sensors_data]
             self.plotter.plot_df(df)
         self.update_minmax_table()
         self.plotter.auto_scale()
@@ -172,16 +195,16 @@ class Viewer(QtWidgets.QWidget):
             df_list: list[DataFrame] = self.calib_dataframes
         else:
             df_list = self.dataframes
-        frame_slice: list[pd.DataFrame] = [data[data['Timestamp'].between(start, finish)] for data in df_list]
+        frame_slice: list[pd.DataFrame] = [data[data['Timestamp'].between(start, finish)]
+                                           for data in df_list]
         df: pd.DataFrame = reduce(lambda left, right: pd.merge_asof(left, right, on='Timestamp', tolerance=10),
-                            frame_slice)
+                                  frame_slice)
+        df['Datetime'] = df.apply(lambda row: datetime.fromtimestamp(row.Timestamp), axis=1)
         df.iloc[1:].to_clipboard(index=False, decimal=',')
 
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
     main_window = Viewer(FL7000_Config())
-    mw = ModernWindow(main_window)
-    mw.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground, False)  # fix flickering on resize window
-    mw.show()
+    main_window.show()
     app.exec()

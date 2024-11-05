@@ -1,4 +1,7 @@
 sessions
+*.exe
+sensor_calibrations
+ImagesOutput
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

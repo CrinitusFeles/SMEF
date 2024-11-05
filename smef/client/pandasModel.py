@@ -1,8 +1,7 @@
 import sys
 import pandas as pd
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication, QTableView
-from PyQt5.QtCore import pyqtProperty  #type: ignore
+from PyQt6 import QtCore
+from PyQt6.QtWidgets import QApplication, QTableView
 
 
 
@@ -12,15 +11,10 @@ class DataFrameModel(QtCore.QAbstractTableModel):
 
     def __init__(self, df=pd.DataFrame(), parent=None):
         super(DataFrameModel, self).__init__(parent)
-        self._df = df
+        self._df: pd.DataFrame = df
 
 
-    @pyqtProperty(pd.DataFrame)
-    def df(self):
-        return self._df
-
-    @df.setter
-    def setDataFrame(self, dataframe):
+    def setDataFrame(self, dataframe: pd.DataFrame):
         self.beginResetModel()
         self._df = dataframe.copy()
         self.endResetModel()
@@ -63,7 +57,7 @@ class DataFrameModel(QtCore.QAbstractTableModel):
             return dt
         return QtCore.QVariant()
 
-    def roleNames(self):
+    def roleNames(self):  # type: ignore
         roles = {
             QtCore.Qt.ItemDataRole.DisplayRole: b'display',
             DataFrameModel.DtypeRole: b'dtype',
